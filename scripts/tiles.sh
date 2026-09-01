@@ -52,7 +52,6 @@ tippecanoe \
   --maximum-zoom="$MAX_ZOOM" \
   --drop-densest-as-needed \
   --extend-zooms-if-still-dropping \
-  --read-parallel \
   --force \
   "${chunks[@]}"
 

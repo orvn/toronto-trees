@@ -1,0 +1,73 @@
+{
+  "basemap": "https://tiles.openfreemap.org/styles/positron",
+  "center": [-79.3832, 43.6532],
+  "zoom": 11,
+  "minZoom": 9,
+  "maxZoom": 18,
+  "sources": {
+    "trees": {
+      "type": "vector",
+      "url": "pmtiles:///data/street-trees.pmtiles",
+      "attribution": "City of Toronto Open Data — Street Tree Data"
+    }
+  },
+  "layers": [
+    {
+      "id": "trees-heatmap",
+      "type": "heatmap",
+      "source": "trees",
+      "source-layer": "trees",
+      "maxzoom": 13,
+      "paint": {
+        "heatmap-weight": 0.6,
+        "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 13, 1.2],
+        "heatmap-color": [
+          "interpolate", ["linear"], ["heatmap-density"],
+          0,   "rgba(0,0,0,0)",
+          0.2, "#e9edc9",
+          0.4, "#ccd5ae",
+          0.6, "#a7c957",
+          0.8, "#6a994e",
+          1,   "#386641"
+        ],
+        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 9, 2, 13, 22],
+        "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0.75, 12.5, 0.55, 13, 0]
+      }
+    },
+    {
+      "id": "trees-circles",
+      "type": "circle",
+      "source": "trees",
+      "source-layer": "trees",
+      "minzoom": 12,
+      "paint": {
+        "circle-radius": [
+          "interpolate", ["linear"], ["zoom"],
+          12, ["interpolate", ["linear"], ["coalesce", ["get", "DBH_TRUNK"], 5], 0, 1, 60, 4],
+          14, ["interpolate", ["linear"], ["coalesce", ["get", "DBH_TRUNK"], 5], 0, 2, 60, 8],
+          17, ["interpolate", ["linear"], ["coalesce", ["get", "DBH_TRUNK"], 5], 0, 4, 60, 18]
+        ],
+        "circle-color": [
+          "case",
+          ["==", ["index-of", "Acer",      ["get", "BOTANICAL_NAME"]], 0], "#e07a5f",
+          ["==", ["index-of", "Quercus",   ["get", "BOTANICAL_NAME"]], 0], "#6a994e",
+          ["==", ["index-of", "Tilia",     ["get", "BOTANICAL_NAME"]], 0], "#a7c957",
+          ["==", ["index-of", "Fraxinus",  ["get", "BOTANICAL_NAME"]], 0], "#8d99ae",
+          ["==", ["index-of", "Gleditsia", ["get", "BOTANICAL_NAME"]], 0], "#f2cc8f",
+          ["==", ["index-of", "Ulmus",     ["get", "BOTANICAL_NAME"]], 0], "#bc6c25",
+          ["==", ["index-of", "Picea",     ["get", "BOTANICAL_NAME"]], 0], "#386641",
+          ["==", ["index-of", "Pinus",     ["get", "BOTANICAL_NAME"]], 0], "#386641",
+          ["==", ["index-of", "Malus",     ["get", "BOTANICAL_NAME"]], 0], "#d62828",
+          ["==", ["index-of", "Prunus",    ["get", "BOTANICAL_NAME"]], 0], "#ea638c",
+          ["==", ["index-of", "Betula",    ["get", "BOTANICAL_NAME"]], 0], "#dee2e6",
+          ["==", ["index-of", "Ginkgo",    ["get", "BOTANICAL_NAME"]], 0], "#ffd166",
+          ["==", ["index-of", "Catalpa",   ["get", "BOTANICAL_NAME"]], 0], "#957fef",
+          "#adb5bd"
+        ],
+        "circle-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0, 13, 0.85],
+        "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 13, 0, 16, 0.6],
+        "circle-stroke-color": "rgba(0,0,0,0.35)"
+      }
+    }
+  ]
+}
