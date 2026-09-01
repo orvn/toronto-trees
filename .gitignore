@@ -2,6 +2,9 @@
 dist/
 .astro/
 
+# Generated tiles (rebuild with scripts/tiles.sh)
+public/data/*.pmtiles
+
 # ================================================================= [package] be
 packages/be/cache
 packages/be/public
