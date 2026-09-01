@@ -27,5 +27,11 @@ export default defineConfig({
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
       },
     },
+    optimizeDeps: {
+      exclude: ['maplibre-gl'],
+    },
+    worker: {
+      format: 'es',
+    },
   },
 });
