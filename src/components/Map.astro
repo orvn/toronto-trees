@@ -1,0 +1,103 @@
+---
+---
+
+<div id="map" class="map" aria-label="Map of Toronto street trees"></div>
+
+<script>
+  import maplibregl from 'maplibre-gl';
+  import { Protocol } from 'pmtiles';
+  import 'maplibre-gl/dist/maplibre-gl.css';
+  import cfg from '../content/map-style.json';
+
+  const protocol = new Protocol();
+  maplibregl.addProtocol('pmtiles', protocol.tile);
+
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: cfg.basemap,
+    center: cfg.center as [number, number],
+    zoom: cfg.zoom,
+    minZoom: cfg.minZoom,
+    maxZoom: cfg.maxZoom,
+    attributionControl: false,
+  });
+
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
+  map.addControl(new maplibregl.AttributionControl({ compact: true }));
+
+  map.on('load', () => {
+    for (const [id, src] of Object.entries(cfg.sources)) {
+      map.addSource(id, src as any);
+    }
+    for (const layer of cfg.layers as any[]) {
+      map.addLayer(layer);
+    }
+
+    map.on('click', 'trees-circles', (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      const p = f.properties ?? {};
+
+      const wrap = document.createElement('div');
+      wrap.className = 'tree-popup';
+
+      const common = document.createElement('strong');
+      common.textContent = p.COMMON_NAME || 'Tree';
+      wrap.appendChild(common);
+
+      if (p.BOTANICAL_NAME) {
+        const em = document.createElement('em');
+        em.textContent = p.BOTANICAL_NAME;
+        wrap.appendChild(document.createElement('br'));
+        wrap.appendChild(em);
+      }
+
+      const addr = [p.ADDRESS, p.STREETNAME].filter(Boolean).join(' ');
+      if (addr) {
+        wrap.appendChild(document.createElement('br'));
+        wrap.appendChild(document.createTextNode(addr));
+      }
+
+      if (p.DBH_TRUNK != null) {
+        wrap.appendChild(document.createElement('br'));
+        wrap.appendChild(document.createTextNode(`Trunk: ${p.DBH_TRUNK} cm`));
+      }
+
+      new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
+        .setLngLat(e.lngLat)
+        .setDOMContent(wrap)
+        .addTo(map);
+    });
+
+    map.on('mouseenter', 'trees-circles', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'trees-circles', () => { map.getCanvas().style.cursor = ''; });
+  });
+</script>
+
+<style lang="scss">
+  .map {
+    width: 100%;
+    height: min(80vh, 50rem);
+    background: #0f0f0f;
+  }
+
+  :global(.maplibregl-popup-content) {
+    background: var(--woodsmoke, #181818);
+    color: var(--foam, #f4f4f4);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.35);
+  }
+
+  :global(.maplibregl-popup-tip) {
+    border-top-color: var(--woodsmoke, #181818) !important;
+    border-bottom-color: var(--woodsmoke, #181818) !important;
+  }
+
+  :global(.tree-popup em) {
+    color: var(--sandstone, #a0a0a0);
+    font-style: italic;
+  }
+</style>

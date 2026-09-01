@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Map from '../components/Map.astro';
 import { loadGlobal, loadPage } from '../lib/content';
 
 const global = loadGlobal();
@@ -40,29 +41,8 @@ const jsonLD = {
     </div>
   </section>
 
-  <!-- Example of Alpine.js interactivity with minimal footprint -->
-  <section class="demo-section">
-    <div class="container">
-      <div class="demo-card" x-data="{ count: 0 }">
-        <p>Alpine demo</p>
-        <div class="counter">
-          <button
-            class="btn btn-outline"
-            @click="count--"
-            :disabled="count <= 0"
-            aria-label="Decrement"
-            data-tooltip="Decrement"
-          >−</button>
-          <output x-text="count" aria-live="polite" aria-atomic="true">0</output>
-          <button
-            class="btn btn-outline"
-            @click="count++"
-            aria-label="Increment"
-            data-tooltip="Increment"
-          >+</button>
-        </div>
-      </div>
-    </div>
+  <section class="map-section">
+    <Map />
   </section>
 
 </BaseLayout>
