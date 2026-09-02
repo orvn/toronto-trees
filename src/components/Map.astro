@@ -9,69 +9,97 @@
   import 'maplibre-gl/dist/maplibre-gl.css';
   import cfg from '../content/map-style.json';
 
-  const protocol = new Protocol();
-  maplibregl.addProtocol('pmtiles', protocol.tile);
+  // Register once, protocol persists
+  if (!(window as any).__pmtilesRegistered) {
+    maplibregl.addProtocol('pmtiles', new Protocol().tile);
+    (window as any).__pmtilesRegistered = true;
+  }
 
-  const map = new maplibregl.Map({
-    container: 'map',
-    style: cfg.basemap,
-    center: cfg.center as [number, number],
-    zoom: cfg.zoom,
-    minZoom: cfg.minZoom,
-    maxZoom: cfg.maxZoom,
-    attributionControl: false,
-  });
+  let currentMap: maplibregl.Map | null = null;
 
-  map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
-  map.addControl(new maplibregl.AttributionControl({ compact: true }));
+  function initMap() {
+    const container = document.getElementById('map');
+    if (!container) return;
 
-  map.on('load', () => {
-    for (const [id, src] of Object.entries(cfg.sources)) {
-      map.addSource(id, src as any);
-    }
-    for (const layer of cfg.layers as any[]) {
-      map.addLayer(layer);
-    }
+    // Double-init guard
+    if ((container as any).__mapInstance) return;
 
-    map.on('click', 'trees-circles', (e) => {
-      const f = e.features?.[0];
-      if (!f) return;
-      const p = f.properties ?? {};
-
-      const wrap = document.createElement('div');
-      wrap.className = 'tree-popup';
-
-      const common = document.createElement('strong');
-      common.textContent = p.COMMON_NAME || 'Tree';
-      wrap.appendChild(common);
-
-      if (p.BOTANICAL_NAME) {
-        const em = document.createElement('em');
-        em.textContent = p.BOTANICAL_NAME;
-        wrap.appendChild(document.createElement('br'));
-        wrap.appendChild(em);
-      }
-
-      const addr = [p.ADDRESS, p.STREETNAME].filter(Boolean).join(' ');
-      if (addr) {
-        wrap.appendChild(document.createElement('br'));
-        wrap.appendChild(document.createTextNode(addr));
-      }
-
-      if (p.DBH_TRUNK != null) {
-        wrap.appendChild(document.createElement('br'));
-        wrap.appendChild(document.createTextNode(`Trunk: ${p.DBH_TRUNK} cm`));
-      }
-
-      new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
-        .setLngLat(e.lngLat)
-        .setDOMContent(wrap)
-        .addTo(map);
+    const map = new maplibregl.Map({
+      container,
+      style: cfg.basemap,
+      center: cfg.center as [number, number],
+      zoom: cfg.zoom,
+      minZoom: cfg.minZoom,
+      maxZoom: cfg.maxZoom,
+      attributionControl: false,
     });
 
-    map.on('mouseenter', 'trees-circles', () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', 'trees-circles', () => { map.getCanvas().style.cursor = ''; });
-  });
+    (container as any).__mapInstance = map;
+    currentMap = map;
+
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
+    map.addControl(new maplibregl.AttributionControl({ compact: true }));
+
+    map.on('load', () => {
+      for (const [id, src] of Object.entries(cfg.sources)) {
+        map.addSource(id, src as any);
+      }
+      for (const layer of cfg.layers as any[]) {
+        map.addLayer(layer);
+      }
+
+      map.on('click', 'trees-circles', (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        const p = f.properties ?? {};
+
+        const wrap = document.createElement('div');
+        wrap.className = 'tree-popup';
+
+        const common = document.createElement('strong');
+        common.textContent = p.COMMON_NAME || 'Tree';
+        wrap.appendChild(common);
+
+        if (p.BOTANICAL_NAME) {
+          const em = document.createElement('em');
+          em.textContent = p.BOTANICAL_NAME;
+          wrap.appendChild(document.createElement('br'));
+          wrap.appendChild(em);
+        }
+
+        const addr = [p.ADDRESS, p.STREETNAME].filter(Boolean).join(' ');
+        if (addr) {
+          wrap.appendChild(document.createElement('br'));
+          wrap.appendChild(document.createTextNode(addr));
+        }
+
+        if (p.DBH_TRUNK != null) {
+          wrap.appendChild(document.createElement('br'));
+          wrap.appendChild(document.createTextNode(`Trunk: ${p.DBH_TRUNK} cm`));
+        }
+
+        new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
+          .setLngLat(e.lngLat)
+          .setDOMContent(wrap)
+          .addTo(map);
+      });
+
+      map.on('mouseenter', 'trees-circles', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'trees-circles', () => { map.getCanvas().style.cursor = ''; });
+    });
+  }
+
+  function destroyMap() {
+    if (currentMap) {
+      currentMap.remove();
+      currentMap = null;
+    }
+  }
+
+  // Fires on load and every ClientRouter navigation
+  document.addEventListener('astro:page-load', initMap);
+  // Fires before the new page swaps in
+  document.addEventListener('astro:before-swap', destroyMap);
 </script>
 
 <style lang="scss">
