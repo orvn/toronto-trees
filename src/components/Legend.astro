@@ -1,0 +1,94 @@
+---
+const groups = [
+  { label: 'Maple',         swatch: 'var(--terracotta)', pct: '27%' },
+  { label: 'Linden & oak',  swatch: 'var(--asparagus)',  pct: '14%' },
+  { label: 'Locust & ash',  swatch: 'var(--golden)',     pct: '10%' },
+  { label: 'Other',         swatch: 'var(--bombay)',     pct: '49%' },
+];
+---
+
+<aside class="legend" aria-label="Map legend">
+  <div class="legend-head">
+    <span class="legend-title">legend</span>
+    <span class="legend-note">trunk Ø 10–90 cm</span>
+  </div>
+
+  <div class="trunk-scale" aria-hidden="true">
+    <span style="width: 0.35rem; height: 0.35rem"></span>
+    <span style="width: 0.6rem;  height: 0.6rem"></span>
+    <span style="width: 1rem;    height: 1rem"></span>
+    <span style="width: 1.6rem;  height: 1.6rem"></span>
+  </div>
+
+  <ul class="groups" role="list">
+    {groups.map(g => (
+      <li>
+        <span class="chip" style={`background: ${g.swatch}`} aria-hidden="true"></span>
+        <span class="name">{g.label}</span>
+        <span class="pct">{g.pct}</span>
+      </li>
+    ))}
+  </ul>
+</aside>
+
+<style lang="scss">
+  .legend {
+    background: var(--cararra);
+    border: 1px solid rgb(27 31 26 / 0.08);
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.08);
+    padding: 1.25rem 1.5rem;
+    min-width: 20rem;
+    font-size: var(--text-sm);
+    color: var(--charred);
+  }
+
+  .legend-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+    color: var(--battleship);
+  }
+
+  .legend-title { font-weight: 500; }
+  .legend-note  { font-size: var(--text-xs); }
+
+  .trunk-scale {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+    padding-block: 0.25rem;
+  }
+
+  .trunk-scale span {
+    display: inline-block;
+    background: var(--charred);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .groups {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: 0.85rem;
+    row-gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .groups li {
+    display: contents;
+  }
+
+  .chip {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    align-self: center;
+  }
+
+  .name { color: var(--charred); }
+  .pct  { color: var(--battleship); font-variant-numeric: tabular-nums; }
+</style>

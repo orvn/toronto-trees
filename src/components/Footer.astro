@@ -1,14 +1,12 @@
 ---
-import { loadGlobal } from '../lib/content';
-
-const { name } = loadGlobal();
-const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer" role="contentinfo">
-  <div class="container footer-inner">
+  <div class="footer-inner">
     <p class="footer-copy">
-      &copy; {year} {name}. All rights reserved.
+      Made in Toronto with City of Toronto Open Data. Basemap &copy;
+      <a href="https://openfreemap.org" rel="noopener">OpenFreeMap</a>,
+      &copy; <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors.
     </p>
     <nav class="footer-nav" aria-label="Footer navigation">
       <ul role="list">
@@ -20,9 +18,8 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
-    border-top: 1px solid rgb(27 31 26 / 0.12);
     background-color: var(--cararra);
-    padding-block: 1.5rem;
+    padding: 1.5rem var(--gutter);
   }
 
   .footer-inner {
@@ -36,11 +33,15 @@ const year = new Date().getFullYear();
   .footer-copy {
     font-size: var(--text-sm);
     color: var(--battleship);
+    margin: 0;
   }
 
   .footer-nav ul {
     display: flex;
     gap: 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .footer-nav a {

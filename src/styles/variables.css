@@ -50,6 +50,7 @@
   -------------------------------------------------------------------------- */
    --container-width: 1200px;
    --container-padding: clamp(1rem, 5vw, 2rem);
+   --gutter: clamp(2rem, 6vw, 5rem);
    --header-height: 4rem;
 
 

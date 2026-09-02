@@ -1,7 +1,13 @@
 ---
+import Legend from './Legend.astro';
 ---
 
-<div id="map" class="map" aria-label="Map of Toronto street trees"></div>
+<div class="map-wrap">
+  <div id="map" class="map" aria-label="Map of Toronto street trees"></div>
+  <div class="legend-slot">
+    <Legend />
+  </div>
+</div>
 
 <script>
   import * as maplibregl from 'maplibre-gl';
@@ -37,8 +43,7 @@
     (container as any).__mapInstance = map;
     currentMap = map;
 
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
-    map.addControl(new maplibregl.AttributionControl({ compact: true }));
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
     map.on('load', () => {
       for (const [id, src] of Object.entries(cfg.sources)) {
@@ -103,10 +108,32 @@
 </script>
 
 <style lang="scss">
+  .map-wrap {
+    position: relative;
+    padding-inline: var(--gutter);
+  }
+
   .map {
     width: 100%;
-    height: calc(100dvh - var(--header-height));
+    height: min(70vh, 42rem);
     background: var(--cararra);
+    border-bottom: 1px solid var(--charred);
+  }
+
+  .legend-slot {
+    position: absolute;
+    left: clamp(2rem, 5vw, 4rem);
+    bottom: 2rem;
+    z-index: 2;
+    pointer-events: auto;
+  }
+
+  @media (max-width: 40rem) {
+    .legend-slot {
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+    }
   }
 
   :global(.maplibregl-popup-content) {

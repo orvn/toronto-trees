@@ -1,48 +1,94 @@
 ---
-import Nav from './Nav.astro';
 import { loadGlobal } from '../lib/content';
 
 const { name } = loadGlobal();
+const { pathname } = Astro.url;
+
+const navLinks = [
+  { label: 'map',   href: '/' },
+  { label: 'about', href: '/about' },
+];
+
+function isActive(href: string): boolean {
+  return href === '/' ? pathname === '/' : pathname.startsWith(href);
+}
 ---
 
-<header class="site-header" role="banner">
-  <div class="container header-inner">
-    <a href="/" class="site-logo" aria-label={`${name} — go to homepage`}>
-      {name}
-    </a>
-    <Nav />
-  </div>
+<header class="masthead" role="banner">
+  <a href="/" class="wordmark" aria-label={`${name} — go to homepage`}>
+    {name.toLowerCase()}
+  </a>
+
+  <nav class="nav" aria-label="Main navigation">
+    <ul role="list">
+      {navLinks.map(({ label, href }) => (
+        <li>
+          <a
+            href={href}
+            class="nav-link"
+            aria-current={isActive(href) ? 'page' : undefined}
+          >{label}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
 </header>
 
-<style>
-  .site-header {
-    position: sticky;
-    top: 0;
-    height: var(--header-height);
-    background-color: rgb(244 244 240 / 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgb(27 31 26 / 0.12);
-    z-index: var(--z-header);
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+
+  .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 2rem;
+    padding: 2.5rem var(--gutter) 1.5rem;
   }
 
-  .header-inner {
+  .wordmark {
+    font-weight: 800;
+    font-size: clamp(2.75rem, 9vw, 8rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    color: var(--forest);
+    text-decoration: none;
+    display: block;
+  }
+
+  .nav {
+    padding-top: 1.1rem;
+  }
+
+  .nav ul {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 100%;
+    gap: 1.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
   }
 
-  .site-logo {
-    font-weight: 700;
-    font-size: var(--text-lg);
+  .nav-link {
+    font-size: var(--text-base);
+    font-weight: 500;
     color: var(--charred);
     text-decoration: none;
-    letter-spacing: -0.02em;
     transition: color 200ms ease;
   }
 
-  .site-logo:hover {
+  .nav-link:hover,
+  .nav-link[aria-current='page'] {
     color: var(--forest);
+  }
+
+  @include small {
+    .masthead {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      padding-block: 1.5rem 0.5rem;
+    }
+
+    .nav {
+      padding-top: 0;
+    }
   }
 </style>
