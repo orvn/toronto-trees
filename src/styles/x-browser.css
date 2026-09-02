@@ -18,7 +18,7 @@ input::-moz-focus-inner {
 
 select:-moz-focusring {
   color: transparent;
-  text-shadow: 0 0 0 var(--bone);
+  text-shadow: 0 0 0 var(--cararra);
 }
 
 /* ---------------------------------------------------------------------------
@@ -61,10 +61,10 @@ input[type='search']::-webkit-search-results-decoration {
    Each selector must be its own rule; grouping breaks the block entirely.
 --------------------------------------------------------------------------- */
 
-::-webkit-input-placeholder { color: var(--sandstone); opacity: 1; }
-::-moz-placeholder           { color: var(--sandstone); opacity: 1; }
-:-ms-input-placeholder       { color: var(--sandstone); opacity: 1; }
-::placeholder                { color: var(--sandstone); opacity: 1; }
+::-webkit-input-placeholder { color: var(--battleship); opacity: 1; }
+::-moz-placeholder           { color: var(--battleship); opacity: 1; }
+:-ms-input-placeholder       { color: var(--battleship); opacity: 1; }
+::placeholder                { color: var(--battleship); opacity: 1; }
 
 /* ---------------------------------------------------------------------------
    Safari: prevent tap highlight flash on interactive elements

@@ -77,27 +77,41 @@
 <style lang="scss">
   .map {
     width: 100%;
-    height: min(80vh, 50rem);
-    background: #0f0f0f;
+    height: calc(100dvh - var(--header-height));
+    background: var(--cararra);
   }
 
   :global(.maplibregl-popup-content) {
-    background: var(--woodsmoke, #181818);
-    color: var(--foam, #f4f4f4);
+    background: var(--charred);
+    color: var(--cararra);
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
-    line-height: 1.4;
+    line-height: 1.5;
     border-radius: 0.5rem;
-    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-md);
   }
 
   :global(.maplibregl-popup-tip) {
-    border-top-color: var(--woodsmoke, #181818) !important;
-    border-bottom-color: var(--woodsmoke, #181818) !important;
+    border-top-color: var(--charred) !important;
+    border-bottom-color: var(--charred) !important;
+  }
+
+  :global(.tree-popup strong) {
+    color: var(--forest);
   }
 
   :global(.tree-popup em) {
-    color: var(--sandstone, #a0a0a0);
+    color: var(--battleship);
     font-style: italic;
+  }
+
+  :global(.maplibregl-popup-close-button) {
+    color: var(--battleship);
+    font-size: 1rem;
+    padding: 0.15rem 0.4rem;
+  }
+  :global(.maplibregl-popup-close-button:hover) {
+    color: var(--cararra);
+    background: transparent;
   }
 </style>

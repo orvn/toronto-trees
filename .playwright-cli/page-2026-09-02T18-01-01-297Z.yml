@@ -1,0 +1,57 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "Toronto Trees — go to homepage" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - text: Toronto Trees
+      - navigation "Main navigation" [ref=e6]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "Home" [ref=e9] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e10]:
+            - link "About" [ref=e11] [cursor=pointer]:
+              - /url: /about
+  - main [ref=e12]:
+    - generic "Map of Toronto street trees" [ref=e13]:
+      - region "Map" [ref=e14]
+      - generic:
+        - generic [ref=e15]:
+          - button "Zoom in" [ref=e16] [cursor=pointer]
+          - button "Zoom out" [ref=e18] [cursor=pointer]
+          - button "Drag to rotate map, click to reset north" [ref=e20]
+        - group [ref=e22]:
+          - generic "Toggle attribution" [ref=e23] [cursor=pointer]
+          - generic [ref=e24]:
+            - link "OpenFreeMap" [ref=e25] [cursor=pointer]:
+              - /url: https://openfreemap.org
+            - link "© OpenMapTiles" [ref=e26] [cursor=pointer]:
+              - /url: https://www.openmaptiles.org/
+            - text: Data from
+            - link "OpenStreetMap" [ref=e27] [cursor=pointer]:
+              - /url: https://www.openstreetmap.org/copyright
+  - contentinfo [ref=e28]:
+    - generic [ref=e29]:
+      - paragraph [ref=e30]: © 2026 Toronto Trees. All rights reserved.
+      - navigation "Footer navigation" [ref=e31]:
+        - list [ref=e32]:
+          - listitem [ref=e33]:
+            - link "Privacy" [ref=e34] [cursor=pointer]:
+              - /url: /privacy
+  - generic [ref=e37]:
+    - button "Menu" [ref=e38]:
+      - img [ref=e40]
+      - generic: Menu
+    - button "Inspect" [ref=e44]:
+      - img [ref=e46]
+      - generic: Inspect
+    - button "Audit" [ref=e48]:
+      - generic [ref=e49]:
+        - img [ref=e50]
+        - img [ref=e53]
+      - generic: Audit
+    - button "Settings" [ref=e56]:
+      - img [ref=e58]
+      - generic: Settings

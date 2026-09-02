@@ -4,15 +4,7 @@ import Map from '../components/Map.astro';
 import { loadGlobal, loadPage } from '../lib/content';
 
 const global = loadGlobal();
-const { meta, content } = loadPage('home');
-const c = content as {
-  heading: string;
-  tagline: string;
-  cta_primary: string;
-  cta_primary_href: string;
-  cta_secondary: string;
-  cta_secondary_href: string;
-};
+const { meta } = loadPage('home');
 
 const jsonLD = {
   '@context': 'https://schema.org',
@@ -29,62 +21,5 @@ const jsonLD = {
   ogImage={meta.og_image}
   jsonLD={jsonLD}
 >
-
-  <section class="hero">
-    <div class="container">
-      <h1>{c.heading}</h1>
-      <p class="hero-tagline">{c.tagline}</p>
-      <div class="hero-actions">
-        <a href={c.cta_primary_href} class="btn btn-primary magnify-onhover">{c.cta_primary}</a>
-        <a href={c.cta_secondary_href} class="btn btn-outline magnify-onhover">{c.cta_secondary}</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="map-section">
-    <Map />
-  </section>
-
+  <Map />
 </BaseLayout>
-
-<style lang="scss">
-  @use '../styles/breakpoints' as *;
-  .hero {
-    padding-block: 6rem;
-    text-align: center;
-  }
-
-  .hero h1 {
-    margin-bottom: 1rem;
-  }
-
-  .hero-tagline {
-    font-size: var(--text-xl);
-    color: var(--sandstone);
-    max-width: 40ch;
-    margin-inline: auto;
-  }
-
-  .hero-actions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 2rem;
-  }
-
-  .map-section {
-    border-top: 1px solid var(--tuna);
-  }
-
-  @include small {
-    .hero {
-      padding-block: 3rem;
-    }
-
-    .hero-actions {
-      flex-direction: column;
-    }
-  }
-</style>

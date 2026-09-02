@@ -130,7 +130,7 @@ function isActive(href: string): boolean {
 
   .nav-link {
     position: relative;
-    color: var(--sandstone);
+    color: var(--battleship);
     font-size: var(--text-sm);
     font-weight: 500;
     letter-spacing: 0.04em;
@@ -141,7 +141,7 @@ function isActive(href: string): boolean {
 
   .nav-link:hover,
   .nav-link[aria-current='page'] {
-    color: var(--tan);
+    color: var(--forest);
   }
 
   /* Floating indicator — single element that slides between links */
@@ -149,7 +149,7 @@ function isActive(href: string): boolean {
     position: absolute;
     bottom: -2px;
     height: 2px;
-    background: var(--tan);
+    background: var(--forest);
     border-radius: 9999px;
     pointer-events: none;
     /* No transition on load — snaps to active link instantly */
@@ -201,13 +201,13 @@ function isActive(href: string): boolean {
       border: none;
       cursor: pointer;
       padding: 0.5rem;
-      color: var(--bone);
+      color: var(--cararra);
       border-radius: 0.3rem;
       transition: background-color 200ms ease;
     }
 
     .nav-toggle:hover {
-      background-color: var(--woodsmoke);
+      background-color: var(--charred);
     }
 
     .nav-menu {
@@ -219,8 +219,8 @@ function isActive(href: string): boolean {
       align-items: flex-start;
       gap: 0;
       min-width: 180px;
-      background: var(--woodsmoke);
-      border: 1px solid var(--tuna);
+      background: var(--charred);
+      border: 1px solid var(--battleship);
       border-radius: 0.45rem;
       box-shadow: var(--shadow-lg);
       padding-block: 0.5rem;
@@ -241,8 +241,8 @@ function isActive(href: string): boolean {
     }
 
     .nav-link[aria-current='page'] {
-      background-color: var(--woodsmoke);
-      color: var(--bone);
+      background-color: var(--charred);
+      color: var(--cararra);
     }
 
     .nav-indicator {
