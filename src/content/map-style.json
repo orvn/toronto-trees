@@ -49,10 +49,10 @@
         ],
         "circle-color": [
           "case",
-          ["==", ["index-of", "Acer",      ["get", "BOTANICAL_NAME"]], 0], "#e07a5f",
+          ["==", ["index-of", "Acer",      ["get", "BOTANICAL_NAME"]], 0], "#a7c957",
           ["==", ["index-of", "Quercus",   ["get", "BOTANICAL_NAME"]], 0], "#6a994e",
-          ["==", ["index-of", "Tilia",     ["get", "BOTANICAL_NAME"]], 0], "#a7c957",
-          ["==", ["index-of", "Fraxinus",  ["get", "BOTANICAL_NAME"]], 0], "#8d99ae",
+          ["==", ["index-of", "Tilia",     ["get", "BOTANICAL_NAME"]], 0], "#8d99ae",
+          ["==", ["index-of", "Fraxinus",  ["get", "BOTANICAL_NAME"]], 0], "#e07a5f",
           ["==", ["index-of", "Gleditsia", ["get", "BOTANICAL_NAME"]], 0], "#f2cc8f",
           ["==", ["index-of", "Ulmus",     ["get", "BOTANICAL_NAME"]], 0], "#bc6c25",
           ["==", ["index-of", "Picea",     ["get", "BOTANICAL_NAME"]], 0], "#386641",

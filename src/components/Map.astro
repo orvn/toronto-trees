@@ -61,29 +61,34 @@ import Legend from './Legend.astro';
         const wrap = document.createElement('div');
         wrap.className = 'tree-popup';
 
-        const common = document.createElement('strong');
+        const common = document.createElement('p');
+        common.className = 'tp-common';
         common.textContent = p.COMMON_NAME || 'Tree';
         wrap.appendChild(common);
 
         if (p.BOTANICAL_NAME) {
-          const em = document.createElement('em');
+          const em = document.createElement('p');
+          em.className = 'tp-botanical';
           em.textContent = p.BOTANICAL_NAME;
-          wrap.appendChild(document.createElement('br'));
           wrap.appendChild(em);
         }
 
         const addr = [p.ADDRESS, p.STREETNAME].filter(Boolean).join(' ');
         if (addr) {
-          wrap.appendChild(document.createElement('br'));
-          wrap.appendChild(document.createTextNode(addr));
+          const a = document.createElement('p');
+          a.className = 'tp-meta';
+          a.textContent = addr;
+          wrap.appendChild(a);
         }
 
         if (p.DBH_TRUNK != null) {
-          wrap.appendChild(document.createElement('br'));
-          wrap.appendChild(document.createTextNode(`Trunk: ${p.DBH_TRUNK} cm`));
+          const d = document.createElement('p');
+          d.className = 'tp-meta';
+          d.textContent = `Trunk Ø ${p.DBH_TRUNK} cm`;
+          wrap.appendChild(d);
         }
 
-        new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
+        new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'tp' })
           .setLngLat(e.lngLat)
           .setDOMContent(wrap)
           .addTo(map);
@@ -136,37 +141,59 @@ import Legend from './Legend.astro';
     }
   }
 
-  :global(.maplibregl-popup-content) {
-    background: var(--charred);
-    color: var(--cararra);
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    border-radius: 0.5rem;
-    box-shadow: var(--shadow-md);
+  :global(.tp .maplibregl-popup-content) {
+    background: var(--cararra);
+    color: var(--charred);
+    padding: 0.85rem 1rem 0.9rem;
+    border: 1px solid rgb(27 31 26 / 0.1);
+    border-radius: 0.35rem;
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.12);
+    font-size: var(--text-sm);
+    line-height: 1.4;
+    min-width: 12rem;
   }
 
-  :global(.maplibregl-popup-tip) {
-    border-top-color: var(--charred) !important;
-    border-bottom-color: var(--charred) !important;
+  :global(.tp.maplibregl-popup-anchor-top     .maplibregl-popup-tip),
+  :global(.tp.maplibregl-popup-anchor-top-left  .maplibregl-popup-tip),
+  :global(.tp.maplibregl-popup-anchor-top-right .maplibregl-popup-tip) {
+    border-bottom-color: var(--cararra);
+  }
+  :global(.tp.maplibregl-popup-anchor-bottom     .maplibregl-popup-tip),
+  :global(.tp.maplibregl-popup-anchor-bottom-left  .maplibregl-popup-tip),
+  :global(.tp.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip) {
+    border-top-color: var(--cararra);
+  }
+  :global(.tp.maplibregl-popup-anchor-left  .maplibregl-popup-tip) { border-right-color: var(--cararra); }
+  :global(.tp.maplibregl-popup-anchor-right .maplibregl-popup-tip) { border-left-color:  var(--cararra); }
+
+  :global(.tree-popup p) { margin: 0; }
+
+  :global(.tp-common) {
+    font-weight: 700;
+    font-size: var(--text-base);
+    color: var(--charred);
+    margin-bottom: 0.1rem !important;
   }
 
-  :global(.tree-popup strong) {
-    color: var(--forest);
-  }
-
-  :global(.tree-popup em) {
-    color: var(--battleship);
+  :global(.tp-botanical) {
     font-style: italic;
+    color: var(--forest);
+    margin-bottom: 0.5rem !important;
   }
 
-  :global(.maplibregl-popup-close-button) {
+  :global(.tp-meta) {
     color: var(--battleship);
-    font-size: 1rem;
-    padding: 0.15rem 0.4rem;
+    font-variant-numeric: tabular-nums;
   }
-  :global(.maplibregl-popup-close-button:hover) {
-    color: var(--cararra);
+
+  :global(.tp .maplibregl-popup-close-button) {
+    color: var(--battleship);
+    font-size: 1.1rem;
+    padding: 0.1rem 0.45rem;
+    line-height: 1;
+  }
+  :global(.tp .maplibregl-popup-close-button:hover) {
+    color: var(--charred);
     background: transparent;
   }
 </style>
