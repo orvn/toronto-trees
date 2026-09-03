@@ -13,9 +13,12 @@ import Legend from './Legend.astro';
   import * as maplibregl from 'maplibre-gl';
   import { Protocol } from 'pmtiles';
   import 'maplibre-gl/dist/maplibre-gl.css';
+  import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
   import cfg from '../content/map-style.json';
 
-  // Register once, protocol persists
+
+  maplibregl.setWorkerUrl(workerUrl);
+
   if (!(window as any).__pmtilesRegistered) {
     maplibregl.addProtocol('pmtiles', new Protocol().tile);
     (window as any).__pmtilesRegistered = true;
