@@ -16,6 +16,8 @@ import Legend from './Legend.astro';
   import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
   import cfg from '../content/map-style.json';
 
+  const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
+  (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
 
   maplibregl.setWorkerUrl(workerUrl);
 

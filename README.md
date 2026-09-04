@@ -13,9 +13,12 @@ The raw dataset (`data/street-tree-data-4326.geojson`, ~343 MB) is split into 50
 ```
 scripts/split.sh data/street-tree-data-4326.geojson   # split → data/chunks/
 scripts/tiles.sh                                      # chunks → public/data/street-trees.pmtiles
+scripts/bucket.sh                                     # pmtiles → R2
 ```
 
 The map layer styling lives in `src/content/map-style.json`
+The pmtiles file is hosted on Cloudflare R2 and fetched client-side (see `.env.example`)
+
 
 ## Stack
 
