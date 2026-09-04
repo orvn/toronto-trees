@@ -5,10 +5,11 @@
   "private": true,
   "packageManager": "bun@1.3.9",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "bun run copy:maplibre && astro dev",
+    "build": "bun run copy:maplibre && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro":  "astro",
+    "copy:maplibre": "mkdir -p public/vendor/maplibre && cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs public/vendor/maplibre/"
   },
   "dependencies": {
     "@astrojs/alpinejs": "^0.5.0",

@@ -13,13 +13,13 @@ import Legend from './Legend.astro';
   import * as maplibregl from 'maplibre-gl';
   import { Protocol } from 'pmtiles';
   import 'maplibre-gl/dist/maplibre-gl.css';
-  import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
   import cfg from '../content/map-style.json';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
 
-  maplibregl.setWorkerUrl(workerUrl);
+  // Worker and shared module copied to /vendor/maplibre so client resolves the worker `./maplibre-gl-shared.mjs` import
+  maplibregl.setWorkerUrl('/vendor/maplibre/maplibre-gl-worker.mjs');
 
   if (!(window as any).__pmtilesRegistered) {
     maplibregl.addProtocol('pmtiles', new Protocol().tile);

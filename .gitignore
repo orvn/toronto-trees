@@ -5,6 +5,9 @@ dist/
 # Generated tiles (rebuild with scripts/tiles.sh)
 public/data/*.pmtiles
 
+# MapLibre worker
+public/vendor/
+
 # ================================================================= [package] be
 packages/be/cache
 packages/be/public
