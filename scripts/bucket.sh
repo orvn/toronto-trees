@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Upload the built pmtiles file to Cloudflare R2 (S3-compatible)
-# scripts/upload.sh [FILE]
+# scripts/bucket.sh [FILE]
 
 set -euo pipefail
 
-FILE="${1:-public/data/street-trees.pmtiles}"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-if [ -f .env ]; then
-  set -a; source .env; set +a
+FILE="${1:-$REPO_ROOT/public/data/street-trees.pmtiles}"
+
+if [ -f "$REPO_ROOT/.env" ]; then
+  set -a; source "$REPO_ROOT/.env"; set +a
 fi
 
 : "${R2_ACCOUNT_ID:?set R2_ACCOUNT_ID in .env}"
