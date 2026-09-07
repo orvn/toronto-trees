@@ -3,4 +3,4 @@ tagline: Every street tree in the city, on one map
 description: An interactive map of Toronto's ~688,000 street trees, built from the City of Toronto Open Data.
 url: https://toronto-trees.pages.dev
 title_postfix: " — Toronto Trees"
-og_image: /og-default.png
+og_image: /images/graph-image.png

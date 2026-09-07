@@ -4,6 +4,8 @@
 
 ### 🔗 [https://toronto-trees.pages.dev](toronto-trees.pages.dev)
 
+<img src="/public/images/graph-image.png" alt="toronto trees graph image" width="600">
+
 An interactive map of every street tree in Toronto (~688k points), rendered with MapLibre GL + PMTiles from the City of Toronto Open Data. Built on [Astro](https://astro.build) and [Alpine.js](https://alpinejs.dev), optimised for minimal Javascript footprint, performance, a11y, and SEO.
 
 ## Data pipeline

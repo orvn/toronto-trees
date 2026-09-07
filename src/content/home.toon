@@ -1,7 +1,7 @@
 meta:
   title: null
   description: An interactive map of Toronto's ~688,000 street trees, built from the City of Toronto Open Data.
-  og_image: /og-default.png
+  og_image: /images/graph-image.png
 
 options: null
 
