@@ -2,7 +2,11 @@
 ---
 
 <div class="map-wrap">
-  <div id="map" class="map" aria-label="Map of Toronto street trees"></div>
+  <div id="map" class="map" aria-label="Map of Toronto street trees">
+    <div class="map-loading" aria-hidden="true">
+      <span class="compass-loader"></span>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -80,6 +84,8 @@
     currentMap = map;
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+    map.once('idle', () => container.classList.add('is-loaded'));
 
     map.on('load', () => {
       for (const [id, src] of Object.entries(cfg.sources)) {
@@ -190,9 +196,70 @@
   }
 
   .map {
+    position: relative;
     width: 100%;
     height: min(70vh, 42rem);
     background: var(--cararra);
+  }
+
+  .map-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cararra);
+    pointer-events: none;
+    transition: opacity 350ms ease;
+  }
+
+  .map.is-loaded .map-loading {
+    opacity: 0;
+  }
+
+  .compass-loader {
+    --color-1: color-mix(in srgb, var(--forest) 14%, white);
+    --color-2: var(--forest);
+    --size: 0.75px;
+
+    width: calc(64 * var(--size));
+    height: calc(64 * var(--size));
+    position: relative;
+    background: var(--color-1);
+    border-radius: 50%;
+    transform: rotate(45deg);
+    animation: compass-spin 2s linear infinite;
+  }
+
+  .compass-loader::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(15 * var(--size));
+    height: calc(30 * var(--size));
+    background: var(--color-2);
+    transform: skew(5deg, 60deg) translate(-50%, -5%);
+  }
+
+  .compass-loader::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(6 * var(--size));
+    height: calc(6 * var(--size));
+    border-radius: 50%;
+    background: var(--color-1);
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes compass-spin {
+    0%                 { transform: rotate(45deg); }
+    30%, 50%, 70%      { transform: rotate(230deg); }
+    40%, 60%, 80%      { transform: rotate(240deg); }
+    100%               { transform: rotate(245deg); }
   }
 
   :global(.tp .maplibregl-popup-content) {
