@@ -2,7 +2,7 @@
 
 # Toronto Trees
 
-### 🔗 (toronto-trees.pages.dev)[https://toronto-trees.pages.dev]
+### 🔗 [https://toronto-trees.pages.dev](toronto-trees.pages.dev)
 
 An interactive map of every street tree in Toronto (~688k points), rendered with MapLibre GL + PMTiles from the City of Toronto Open Data. Built on [Astro](https://astro.build) and [Alpine.js](https://alpinejs.dev), optimised for minimal Javascript footprint, performance, a11y, and SEO.
 
@@ -18,7 +18,6 @@ scripts/bucket.sh                                     # pmtiles → R2
 
 The map layer styling lives in `src/content/map-style.json`
 The pmtiles file is hosted on Cloudflare R2 and fetched client-side (see `.env.example`)
-
 
 ## Stack
 

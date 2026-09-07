@@ -1,12 +1,8 @@
 ---
-import Legend from './Legend.astro';
 ---
 
 <div class="map-wrap">
   <div id="map" class="map" aria-label="Map of Toronto street trees"></div>
-  <div class="legend-slot">
-    <Legend />
-  </div>
 </div>
 
 <script>
@@ -17,6 +13,24 @@ import Legend from './Legend.astro';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
+
+  const GENUS_COLOR_VAR: Record<string, string> = {
+    Acer: '--celery',
+    Quercus: '--killarney',
+    Tilia: '--gull',
+    Fraxinus: '--terracotta',
+    Gleditsia: '--golden',
+    Ulmus: '--asparagus',
+    Picea: '--rope',
+    Pinus: '--rope',
+    Malus: '--punch',
+    Prunus: '--blush',
+    Betula: '--geyser',
+    Ginkgo: '--raj',
+    Catalpa: '--lavender',
+  };
+  const cssVarValue = (name: string) =>
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
   // Worker and shared module copied to /vendor/maplibre so client resolves the worker `./maplibre-gl-shared.mjs` import
   maplibregl.setWorkerUrl('/vendor/maplibre/maplibre-gl-worker.mjs');
@@ -75,6 +89,9 @@ import Legend from './Legend.astro';
           const em = document.createElement('p');
           em.className = 'tp-botanical';
           em.textContent = p.BOTANICAL_NAME;
+          const genus = String(p.BOTANICAL_NAME).split(' ')[0];
+          const cssVar = GENUS_COLOR_VAR[genus] || '--bombay';
+          em.style.color = cssVarValue(cssVar);
           wrap.appendChild(em);
         }
 
@@ -121,29 +138,24 @@ import Legend from './Legend.astro';
   .map-wrap {
     position: relative;
     padding-inline: var(--gutter);
+    padding-top: 1.5rem;
+  }
+
+  .map-wrap::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--gutter);
+    right: var(--gutter);
+    height: 5px;
+    background: linear-gradient(90deg, var(--forest), var(--charred));
+    opacity: 0.8;
   }
 
   .map {
     width: 100%;
     height: min(70vh, 42rem);
     background: var(--cararra);
-    border-bottom: 1px solid var(--charred);
-  }
-
-  .legend-slot {
-    position: absolute;
-    left: clamp(2rem, 5vw, 4rem);
-    bottom: 2rem;
-    z-index: 2;
-    pointer-events: auto;
-  }
-
-  @media (max-width: 40rem) {
-    .legend-slot {
-      left: 1rem;
-      right: 1rem;
-      bottom: 1rem;
-    }
   }
 
   :global(.tp .maplibregl-popup-content) {
