@@ -1,0 +1,119 @@
+{
+  "_note": "ISA growth-factor approximations. Age ≈ DBH_inches * factor. Lookup order: exact botanical name → genus + species → genus → _default. Urban street conditions typically slow growth, so estimates skew young. Source: International Society of Arboriculture per-species tables (composite).",
+
+  "Acer platanoides": 4.5,
+  "Acer saccharinum": 3.0,
+  "Acer saccharum": 5.5,
+  "Acer rubrum": 4.5,
+  "Acer negundo": 4.0,
+  "Acer nigrum": 5.0,
+  "Acer tataricum": 5.0,
+  "Acer campestre": 4.0,
+  "Acer ginnala": 5.0,
+  "Acer freemanii": 4.0,
+  "Acer": 4.5,
+
+  "Quercus rubra": 4.0,
+  "Quercus alba": 5.0,
+  "Quercus palustris": 3.0,
+  "Quercus macrocarpa": 5.0,
+  "Quercus bicolor": 5.0,
+  "Quercus velutina": 4.0,
+  "Quercus": 4.5,
+
+  "Tilia americana": 3.0,
+  "Tilia cordata": 3.0,
+  "Tilia tomentosa": 4.0,
+  "Tilia": 3.0,
+
+  "Fraxinus americana": 5.0,
+  "Fraxinus pennsylvanica": 4.0,
+  "Fraxinus nigra": 4.0,
+  "Fraxinus quadrangulata": 5.0,
+  "Fraxinus": 4.0,
+
+  "Ulmus americana": 4.0,
+  "Ulmus pumila": 3.0,
+  "Ulmus rubra": 4.0,
+  "Ulmus glabra": 4.0,
+  "Ulmus": 4.0,
+
+  "Gleditsia triacanthos": 3.0,
+  "Gleditsia": 3.0,
+
+  "Picea abies": 4.7,
+  "Picea glauca": 4.5,
+  "Picea pungens": 4.5,
+  "Picea omorika": 5.0,
+  "Picea": 4.7,
+
+  "Pinus strobus": 5.0,
+  "Pinus sylvestris": 5.0,
+  "Pinus nigra": 4.5,
+  "Pinus resinosa": 5.0,
+  "Pinus": 4.7,
+
+  "Malus": 5.0,
+  "Prunus": 5.0,
+
+  "Betula papyrifera": 5.0,
+  "Betula nigra": 3.5,
+  "Betula alleghaniensis": 5.0,
+  "Betula": 5.0,
+
+  "Ginkgo biloba": 8.0,
+  "Ginkgo": 8.0,
+
+  "Catalpa speciosa": 3.0,
+  "Catalpa": 3.0,
+
+  "Gymnocladus dioicus": 3.0,
+  "Gymnocladus": 3.0,
+
+  "Syringa reticulata": 5.0,
+  "Syringa": 5.0,
+
+  "Celtis occidentalis": 3.0,
+  "Celtis": 3.0,
+
+  "Amelanchier": 4.5,
+
+  "Aesculus hippocastanum": 8.0,
+  "Aesculus glabra": 7.0,
+  "Aesculus": 8.0,
+
+  "Pyrus calleryana": 4.5,
+  "Pyrus": 4.5,
+
+  "Platanus occidentalis": 4.0,
+  "Platanus acerifolia": 4.5,
+  "Platanus": 4.5,
+
+  "Thuja occidentalis": 5.0,
+  "Thuja": 5.0,
+
+  "Liriodendron tulipifera": 3.0,
+  "Liriodendron": 3.0,
+
+  "Morus alba": 4.5,
+  "Morus": 4.5,
+
+  "Ailanthus altissima": 1.0,
+  "Allianthus altissima": 1.0,
+
+  "Fagus grandifolia": 6.0,
+  "Fagus sylvatica": 4.0,
+  "Fagus": 6.0,
+
+  "Sorbus americana": 5.0,
+  "Sorbus": 5.0,
+
+  "Magnolia": 4.5,
+  "Robinia pseudoacacia": 3.0,
+  "Robinia": 3.0,
+  "Cercis canadensis": 5.0,
+  "Cercis": 5.0,
+  "Crataegus": 5.0,
+
+  "_default": 4.0
+}

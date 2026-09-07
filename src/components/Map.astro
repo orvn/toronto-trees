@@ -10,6 +10,7 @@
   import { Protocol } from 'pmtiles';
   import 'maplibre-gl/dist/maplibre-gl.css';
   import cfg from '../content/map-style.json';
+  import growthFactors from '../content/growth-factors.json';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
@@ -137,6 +138,25 @@
           d.className = 'tp-meta';
           d.textContent = `Trunk Ø ${p.DBH_TRUNK} cm`;
           wrap.appendChild(d);
+
+          const gf = growthFactors as Record<string, number>;
+          const botanical = String(p.BOTANICAL_NAME || '').trim();
+          const parts = botanical.split(/\s+/).filter(w => w !== 'x' && w !== '×');
+          const speciesKey = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : '';
+          const factor =
+            gf[botanical] ??
+            (speciesKey && gf[speciesKey]) ??
+            gf[genus] ??
+            gf._default;
+
+          if (factor && p.DBH_TRUNK > 0) {
+            const years = Math.max(1, Math.round((Number(p.DBH_TRUNK) / 2.54) * factor));
+            const age = document.createElement('p');
+            age.className = 'tp-meta tp-age';
+            age.textContent = `~${years} years old`;
+            age.title = 'Rough estimate from trunk diameter × ISA growth factor for this species';
+            wrap.appendChild(age);
+          }
         }
 
         new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'tp' })
