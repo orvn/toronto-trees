@@ -30,6 +30,8 @@
   }
 
   h1 { margin-bottom: 2.5rem; }
+  h2 { font-size: var(--text-xl); color: var(--forest); }
+  h3 { font-size: var(--text-lg); }
 
   /* ---- Body text -------------------------------------------------------- */
 
@@ -37,13 +39,8 @@
     margin-bottom: 1rem;
   }
 
-  a {
-    color: var(--forest);
-    text-underline-offset: 0.2em;
-  }
-
   a:hover {
-    color: var(--apricot);
+    color: var(--mojo);
   }
 
   /* ---- Divider ---------------------------------------------------------- */

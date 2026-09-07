@@ -38,11 +38,23 @@ function isActive(href: string): boolean {
   @use '../styles/breakpoints' as *;
 
   .masthead {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: end;
     gap: 2rem;
     padding: 2.5rem var(--gutter) 1.5rem;
+  }
+
+  .masthead::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: var(--gutter);
+    right: var(--gutter);
+    height: 5px;
+    background: linear-gradient(90deg, var(--forest), var(--charred));
+    opacity: 0.8;
   }
 
   .wordmark {

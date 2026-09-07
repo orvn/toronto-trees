@@ -63,12 +63,16 @@ main {
 
 a {
   color: var(--forest);
-  text-underline-offset: 0.2em;
-  transition: color 200ms ease;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--forest) 40%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: color 200ms ease, text-decoration-color 200ms ease;
 }
 
 a:hover {
-  color: var(--apricot);
+  color: var(--mojo);
+  text-decoration-color: currentColor;
 }
 
 /* ---------------------------------------------------------------------------

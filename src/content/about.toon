@@ -1,12 +1,13 @@
 meta:
   title: About
-  description: Learn more about who we are and what we do.
+  description: About Toronto Trees, an interactive map of every street tree in the city.
   og_image: /og-default.png
 
 options: null
 
 content:
   heading: About
-  paragraphs[2]:
-    - "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-    - "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo."
+  paragraphs[3]:
+    - "Toronto Trees is an interactive map of every documented street tree in the city, well over a half-million of them, visualized from open data. Each point represents one tree, coloured by genus and sized by trunk diameter. This project was created because there wasn't a clear place to find this information in the most intuitive medium for it: a map."
+    - "The data comes from the city's urban forestry data, updated every quarter. Only trees on public road allowances are included; private, park, and ravine trees are limited this dataset. If you happen to know how to access all city park trees, please reach out."
+    - "Send feedback on this site via <a href=\"https://github.com/orvn/toronto-trees\" target=\"_blank\" rel=\"noopener\">GitHub</a>."

@@ -15,16 +15,14 @@ const c = content as {
   ogImage={meta.og_image}
 >
   <section class="page-section">
-    <div class="container">
-      <h1>{c.heading}</h1>
-      <div class="markdown">
-        {c.sections.map(({ heading, body }) => (
-          <>
-            <h2>{heading}</h2>
-            <p>{body}</p>
-          </>
-        ))}
-      </div>
+    <h1>{c.heading}</h1>
+    <div class="markdown">
+      {c.sections.map(({ heading, body }) => (
+        <>
+          <h2>{heading}</h2>
+          <p set:html={body}></p>
+        </>
+      ))}
     </div>
   </section>
 </BaseLayout>
@@ -33,6 +31,8 @@ const c = content as {
   @use '../styles/breakpoints' as *;
   .page-section {
     padding-block: 4rem;
+    padding-inline: calc(var(--gutter) + 2rem);
+    padding-right: calc(var(--gutter) + 4rem);
   }
 
   h1 {
@@ -40,12 +40,13 @@ const c = content as {
   }
 
   .markdown {
-    max-width: 68ch;
+    max-width: 62ch;
   }
 
   @include small {
     .page-section {
       padding-block: 2rem;
+      padding-inline: var(--gutter);
     }
   }
 </style>

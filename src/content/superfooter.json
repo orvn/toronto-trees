@@ -1,14 +1,13 @@
 {
   "precis": [
-    "a precis of every",
-    "street tree in the city,",
+    "Toronto's public canopy",
+    "mapped tree-by-tree,",
     "by species and size"
   ],
   "stats": [
     "688,335 trees",
     "304 species",
-    "one dot, one tree",
-    "City of Toronto open data"
+    "one dot, one tree"
   ],
   "species": [],
   "streets": []
