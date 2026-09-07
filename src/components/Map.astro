@@ -32,6 +32,22 @@
   const cssVarValue = (name: string) =>
     getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+  const GENUS_ICON: Record<string, string> = {
+    Acer: 'maple',
+    Quercus: 'oak',
+    Tilia: 'linden',
+    Fraxinus: 'ash',
+    Gleditsia: 'locust',
+    Ulmus: 'elm',
+    Picea: 'spruce-pine',
+    Pinus: 'spruce-pine',
+    Malus: 'apple',
+    Prunus: 'cherry',
+    Betula: 'birch',
+    Ginkgo: 'ginkgo',
+    Catalpa: 'catalpa',
+  };
+
   // Worker and shared module copied to /vendor/maplibre so client resolves the worker `./maplibre-gl-shared.mjs` import
   maplibregl.setWorkerUrl('/vendor/maplibre/maplibre-gl-worker.mjs');
 
@@ -80,19 +96,32 @@
         const wrap = document.createElement('div');
         wrap.className = 'tree-popup';
 
+        const genus = String(p.BOTANICAL_NAME || '').split(' ')[0];
+        const iconName = GENUS_ICON[genus] || 'other';
+
         const common = document.createElement('p');
         common.className = 'tp-common';
-        common.textContent = p.COMMON_NAME || 'Tree';
+
+        const leaf = document.createElement('img');
+        leaf.className = 'tp-leaf';
+        leaf.src = `/icons/leaves/${iconName}.png`;
+        leaf.alt = '';
+        leaf.width = 24;
+        leaf.height = 24;
+        common.appendChild(leaf);
+        common.appendChild(document.createTextNode(p.COMMON_NAME || 'Tree'));
         wrap.appendChild(common);
 
         if (p.BOTANICAL_NAME) {
-          const em = document.createElement('p');
+          const chipWrap = document.createElement('div');
+          chipWrap.className = 'tp-botanical-wrap';
+          const em = document.createElement('span');
           em.className = 'tp-botanical';
           em.textContent = p.BOTANICAL_NAME;
-          const genus = String(p.BOTANICAL_NAME).split(' ')[0];
           const cssVar = GENUS_COLOR_VAR[genus] || '--bombay';
-          em.style.color = cssVarValue(cssVar);
-          wrap.appendChild(em);
+          em.style.setProperty('--tp-color', cssVarValue(cssVar));
+          chipWrap.appendChild(em);
+          wrap.appendChild(chipWrap);
         }
 
         const addr = [p.ADDRESS, p.STREETNAME].filter(Boolean).join(' ');
@@ -186,21 +215,44 @@
   :global(.tree-popup p) { margin: 0; }
 
   :global(.tp-common) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
     font-weight: 700;
     font-size: var(--text-base);
+    line-height: 1.2;
     color: var(--charred);
-    margin-bottom: 0.1rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  :global(.tp-leaf) {
+    height: 2.25rem;
+    width: auto;
+    flex-shrink: 0;
+    display: block;
+    margin-top: 0.05rem;
+  }
+
+  :global(.tp-botanical-wrap) {
+    margin-bottom: 0.6rem;
   }
 
   :global(.tp-botanical) {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--tp-color, var(--forest)) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tp-color, var(--forest)) 55%, transparent);
+    color: color-mix(in srgb, var(--tp-color, var(--forest)) 55%, black);
     font-style: italic;
-    color: var(--forest);
-    margin-bottom: 0.5rem !important;
+    font-size: 0.9em;
+    line-height: 1.25;
   }
 
   :global(.tp-meta) {
     color: var(--battleship);
     font-variant-numeric: tabular-nums;
+    line-height: 1.3;
   }
 
   :global(.tp .maplibregl-popup-close-button) {
