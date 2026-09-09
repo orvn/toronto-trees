@@ -2,7 +2,7 @@
 
 # Toronto Trees
 
-### 🔗 [toronto-trees.pages.dev](https://toronto-trees.pages.dev)
+### 🔗 [torontotrees.fyi](https://torontotrees.fyi)
 
 <img src="/public/images/graph-image.png" alt="toronto trees graph image" width="600">
 
