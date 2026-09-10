@@ -79,6 +79,7 @@
             ["==", ["index-of", "fagus",        ["var", "n"]], 0], "#bc6c25",
             ["==", ["index-of", "sorbus",       ["var", "n"]], 0], "#dc4829",
             ["==", ["index-of", "magnolia",     ["var", "n"]], 0], "#eeb3ae",
+            ["==", ["index-of", "juglans",      ["var", "n"]], 0], "#705c3d",
             ["==", ["index-of", "ailanthus",    ["var", "n"]], 0], "#dc4829",
             ["==", ["index-of", "allianthus",   ["var", "n"]], 0], "#dc4829",
             "#adb5bd"
