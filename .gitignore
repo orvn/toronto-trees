@@ -87,6 +87,7 @@ packages/fe/static/datasets
 cypress/*
 playwright-report/
 playwright-trace/
+.playwright-cli/
 test-results/
 .playwright/
 .puppeteer/
