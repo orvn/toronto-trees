@@ -142,6 +142,18 @@
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
+    // Geolocation control
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true, timeout: 10000 },
+        trackUserLocation: false,
+        showUserLocation: true,
+        showAccuracyCircle: true,
+        fitBoundsOptions: { maxZoom: 16 },
+      }),
+      'top-right'
+    );
+
     map.once('idle', () => container.classList.add('is-loaded'));
 
     map.on('load', () => {
@@ -316,6 +328,22 @@
     30%, 50%, 70%      { transform: rotate(230deg); }
     40%, 60%, 80%      { transform: rotate(240deg); }
     100%               { transform: rotate(245deg); }
+  }
+
+  /* MapLibre default location dot */
+  :global(.maplibregl-user-location-dot),
+  :global(.maplibregl-user-location-dot::before) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  :global(.maplibregl-user-location-dot::after) {
+    width: 1.375rem;
+    height: 1.375rem;
+    top: -0.1875rem;
+    left: -0.1875rem;
+    border-width: 0.1875rem;
+    box-shadow: 0 0.125rem 0.5rem rgb(0 0 0 / 0.35);
   }
 
   :global(.tp .maplibregl-popup-content) {
