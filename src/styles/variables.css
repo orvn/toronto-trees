@@ -9,19 +9,23 @@
    --apricot: #e59776;
    --mojo: #bf5436;
 
-   --celery: #a7c957;      /*  maple       */
-   --asparagus: #6a994e;   /*  elm         */
-   --killarney: #386641;   /*  oak         */
-   --terracotta: #e07a5f;  /*  ash         */
-   --rope: #bc6c25;        /*  spruce,pine */
-   --golden: #f2cc8f;      /*  locust      */
-   --raj: #ffd166;         /*  ginkgo      */
-   --gull: #8d99ae;        /*  linden      */
-   --geyser: #dee2e6;      /*  birch       */
-   --punch: #d62828;       /*  apple       */
-   --blush: #ea638c;       /*  cherry      */
-   --lavender: #957fef;    /*  catalpa     */
-   --bombay: #adb5bd;      /*  other       */
+   --celery: #a7c957;      /*  maple                         */
+   --asparagus: #6a994e;   /*  elm,tulip                     */
+   --killarney: #386641;   /*  oak,hackberry,chestnut,cedar  */
+   --spectra: #2c4e53;     /*  coffeetree                    */
+   --terracotta: #e07a5f;  /*  ash                           */
+   --rope: #bc6c25;        /*  spruce,pine,beech             */
+   --golden: #f2cc8f;      /*  locust,linden                 */
+   --raj: #ffd166;         /*  ginkgo,pear                   */
+   --casablanca: #f3a443;  /*  serviceberry                  */
+   --punch: #d62828;       /*  apple                         */
+   --pomegranate: #dc4829; /*  rowan,toh                     */
+   --blush: #ea638c;       /*  cherry                        */
+   --zinnwaldite: #eeb3ae; /*  magnolia                      */
+   --lavender: #957fef;    /*  catalpa,mulberry,lilac        */
+   --gumleaf: #acc5b6;     /*  sycamore                      */
+   --geyser: #dee2e6;      /*  birch                         */
+   --bombay: #adb5bd;      /*  other                         */
 
 
    /* -------------------------------------------------------------------------

@@ -19,38 +19,73 @@
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
 
+  // Keys are lowercase — the inventory is inconsistently cased (mostly 'ginkgo biloba', a few 'Ginkgo')
   const GENUS_COLOR_VAR: Record<string, string> = {
-    Acer: '--celery',
-    Quercus: '--killarney',
-    Tilia: '--gull',
-    Fraxinus: '--terracotta',
-    Gleditsia: '--golden',
-    Ulmus: '--asparagus',
-    Picea: '--rope',
-    Pinus: '--rope',
-    Malus: '--punch',
-    Prunus: '--blush',
-    Betula: '--geyser',
-    Ginkgo: '--raj',
-    Catalpa: '--lavender',
+    acer: '--celery',
+    gleditsia: '--golden',
+    picea: '--rope',
+    pinus: '--rope',
+    quercus: '--killarney',
+    tilia: '--golden',
+    ulmus: '--asparagus',
+    gymnocladus: '--spectra',
+    malus: '--punch',
+    syringa: '--lavender',
+    ginkgo: '--raj',
+    celtis: '--killarney',
+    betula: '--geyser',
+    amelanchier: '--casablanca',
+    aesculus: '--killarney',
+    pyrus: '--raj',
+    prunus: '--blush',
+    fraxinus: '--terracotta',
+    platanus: '--gumleaf',
+    thuja: '--killarney',
+    liriodendron: '--asparagus',
+    catalpa: '--lavender',
+    morus: '--lavender',
+    fagus: '--rope',
+    sorbus: '--pomegranate',
+    magnolia: '--zinnwaldite',
+    ailanthus: '--pomegranate',
+    allianthus: '--pomegranate', // misspelled in the source dataset
   };
   const cssVarValue = (name: string) =>
     getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+  const GROWTH_FACTOR: Record<string, number> = Object.fromEntries(
+    Object.entries(growthFactors as Record<string, number>).map(([k, v]) => [k.toLowerCase(), v])
+  );
+
   const GENUS_ICON: Record<string, string> = {
-    Acer: 'maple',
-    Quercus: 'oak',
-    Tilia: 'linden',
-    Fraxinus: 'ash',
-    Gleditsia: 'locust',
-    Ulmus: 'elm',
-    Picea: 'spruce-pine',
-    Pinus: 'spruce-pine',
-    Malus: 'apple',
-    Prunus: 'cherry',
-    Betula: 'birch',
-    Ginkgo: 'ginkgo',
-    Catalpa: 'catalpa',
+    acer: 'maple',
+    gleditsia: 'locust',
+    picea: 'spruce-pine',
+    pinus: 'spruce-pine',
+    quercus: 'oak',
+    tilia: 'linden',
+    ulmus: 'elm',
+    gymnocladus: 'kentucky-coffeetree',
+    malus: 'apple',
+    syringa: 'lilac',
+    ginkgo: 'ginkgo',
+    celtis: 'hackberry',
+    betula: 'birch',
+    amelanchier: 'serviceberry',
+    aesculus: 'horse-chestnut',
+    pyrus: 'ornamental-pear',
+    prunus: 'cherry',
+    fraxinus: 'ash',
+    platanus: 'sycamore',
+    thuja: 'cedar',
+    liriodendron: 'tulip-tree',
+    catalpa: 'catalpa',
+    morus: 'mulberry',
+    fagus: 'beech',
+    sorbus: 'rowan',
+    magnolia: 'magnolia',
+    ailanthus: 'tree-of-heaven',
+    allianthus: 'tree-of-heaven',
   };
 
   // Worker and shared module copied to /vendor/maplibre so client resolves the worker `./maplibre-gl-shared.mjs` import
@@ -103,8 +138,9 @@
         const wrap = document.createElement('div');
         wrap.className = 'tree-popup';
 
-        const genus = String(p.BOTANICAL_NAME || '').split(' ')[0];
-        const iconName = GENUS_ICON[genus] || 'other';
+        const genus = String(p.BOTANICAL_NAME || '').trim().split(/\s+/)[0];
+        const genusKey = genus.toLowerCase();
+        const iconName = GENUS_ICON[genusKey] || 'other';
 
         const common = document.createElement('p');
         common.className = 'tp-common';
@@ -125,7 +161,7 @@
           const em = document.createElement('span');
           em.className = 'tp-botanical';
           em.textContent = p.BOTANICAL_NAME;
-          const cssVar = GENUS_COLOR_VAR[genus] || '--bombay';
+          const cssVar = GENUS_COLOR_VAR[genusKey] || '--bombay';
           em.style.setProperty('--tp-color', cssVarValue(cssVar));
           chipWrap.appendChild(em);
           wrap.appendChild(chipWrap);
@@ -145,15 +181,14 @@
           d.textContent = `Trunk Ø ${p.DBH_TRUNK} cm`;
           wrap.appendChild(d);
 
-          const gf = growthFactors as Record<string, number>;
-          const botanical = String(p.BOTANICAL_NAME || '').trim();
+          const botanical = String(p.BOTANICAL_NAME || '').trim().toLowerCase();
           const parts = botanical.split(/\s+/).filter(w => w !== 'x' && w !== '×');
           const speciesKey = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : '';
           const factor =
-            gf[botanical] ??
-            (speciesKey && gf[speciesKey]) ??
-            gf[genus] ??
-            gf._default;
+            GROWTH_FACTOR[botanical] ??
+            (speciesKey && GROWTH_FACTOR[speciesKey]) ??
+            GROWTH_FACTOR[genusKey] ??
+            GROWTH_FACTOR._default;
 
           if (factor && p.DBH_TRUNK > 0) {
             const years = Math.max(1, Math.round((Number(p.DBH_TRUNK) / 2.54) * factor));
