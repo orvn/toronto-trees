@@ -3,7 +3,7 @@ import alpinejs from '@astrojs/alpinejs';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://toronto-trees.pages.dev',
+  site: 'https://torontotrees.fyi',
 
   output: 'static',
 
