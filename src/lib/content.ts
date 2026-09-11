@@ -38,3 +38,8 @@ export function loadGlobal(): GlobalContent {
 export function loadPage<C = Record<string, unknown>>(name: string): PageContent<C> {
   return decode(readToon(`${name}.toon`)) as unknown as PageContent<C>;
 }
+
+// Component-level copy, without the meta/options wrapper a page carries
+export function loadFragment<C = Record<string, unknown>>(name: string): C {
+  return decode(readToon(`${name}.toon`)) as unknown as C;
+}
