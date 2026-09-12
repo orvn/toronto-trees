@@ -8,6 +8,7 @@
   "locateMaxZoom": 16,
   "locateMinZoom": 14,
   "tintOpacity": 0.1,
+  "locateMaxAccuracy": 300,
   "sources": {
     "trees": {
       "type": "vector",

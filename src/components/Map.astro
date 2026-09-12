@@ -176,6 +176,21 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     });
     map.addControl(geolocate, 'top-right');
 
+    // Cap on radius of accuracy circle
+    const capAccuracyCircle = (longitude: number, latitude: number) => {
+      const circle = container.querySelector<HTMLElement>(
+        '.maplibregl-user-location-accuracy-circle'
+      );
+      if (!circle) return;
+      const centre = new maplibregl.LngLat(longitude, latitude);
+      const origin = map.project(centre);
+      const metresPerPixel = centre.distanceTo(map.unproject([origin.x + 100, origin.y])) / 100;
+      const diameter = (2 * cfg.locateMaxAccuracy) / metresPerPixel;
+      (geolocate as any)._accuracy = cfg.locateMaxAccuracy;
+      circle.style.width = `${diameter.toFixed(2)}px`;
+      circle.style.height = `${diameter.toFixed(2)}px`;
+    };
+
     // MapLibre fits the accuracy circle to the viewport, so a coarse fix on a narrow
     // phone screen lands at or below the starting zoom and reads as no movement at all
     geolocate.on('geolocate', (e: any) => {
@@ -189,6 +204,11 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         center: [longitude, latitude],
         zoom: Math.max(fitted ?? cfg.locateMinZoom, cfg.locateMinZoom),
       });
+
+      // Shown at true size while the camera moves, then eased down once it settles, MapLibre rewrites the element every frame during the ease, so this has to wait
+      if (accuracy > cfg.locateMaxAccuracy) {
+        setTimeout(() => capAccuracyCircle(longitude, latitude), 700);
+      }
     });
 
     const geoButton = container.querySelector('.maplibregl-ctrl-geolocate');
@@ -563,6 +583,10 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
   :global(.maplibregl-ctrl button:disabled .geolocate-label) {
     opacity: 0.25;
+  }
+
+  :global(.maplibregl-map .maplibregl-user-location-accuracy-circle) {
+    transition: width 600ms ease, height 600ms ease;
   }
 
   /* Scoped under .maplibregl-map to outrank maplibre-gl.css, which loads after this */
