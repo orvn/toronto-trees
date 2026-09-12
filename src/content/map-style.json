@@ -5,6 +5,8 @@
   "minZoom": 9,
   "maxZoom": 18,
   "maxBounds": [[-80.4, 43.25], [-78.4, 44.45]],
+  "locateMaxZoom": 16,
+  "locateMinZoom": 14,
   "sources": {
     "trees": {
       "type": "vector",

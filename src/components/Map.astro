@@ -1,11 +1,16 @@
 ---
 import { loadFragment } from '../lib/content';
 
-const copy = loadFragment<{ geolocate_out_of_bounds: string }>('map');
+const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: string }>('map');
 ---
 
 <div class="map-wrap">
-  <div id="map" class="map" aria-label="Map of Toronto street trees">
+  <div
+    id="map"
+    class="map"
+    aria-label="Map of Toronto street trees"
+    data-geolocate-label={copy.geolocate_label}
+  >
     <div class="map-loading" aria-hidden="true">
       <span class="compass-loader"></span>
     </div>
@@ -78,6 +83,17 @@ const copy = loadFragment<{ geolocate_out_of_bounds: string }>('map');
     return { display, genus };
   }
 
+  // Storage is unavailable in some private-browsing modes, so never let it throw
+  const GEOLOCATE_USED_KEY = 'tt:geolocate-used';
+
+  const readFlag = (key: string) => {
+    try { return localStorage.getItem(key) === '1'; } catch { return false; }
+  };
+
+  const writeFlag = (key: string) => {
+    try { localStorage.setItem(key, '1'); } catch { /* ignore */ }
+  };
+
   const readCommon = (raw: unknown) => {
     const name = String(raw ?? '').trim();
     return !name || name === 'None' ? 'Tree' : name;
@@ -131,8 +147,12 @@ const copy = loadFragment<{ geolocate_out_of_bounds: string }>('map');
     // Double-init guard
     if ((container as any).__mapInstance) return;
 
+    // Overriding the UI string keeps the tooltip and accessible name matching the visible label
+    const geolocateLabel = container.dataset.geolocateLabel || '';
+
     const map = new maplibregl.Map({
       container,
+      locale: geolocateLabel ? { 'GeolocateControl.FindMyLocation': geolocateLabel } : undefined,
       style: cfg.basemap,
       center: cfg.center as [number, number],
       zoom: cfg.zoom,
@@ -145,19 +165,49 @@ const copy = loadFragment<{ geolocate_out_of_bounds: string }>('map');
     (container as any).__mapInstance = map;
     currentMap = map;
 
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-
     // Geolocation control
     const geolocate = new maplibregl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true, timeout: 10000 },
       trackUserLocation: false,
       showUserLocation: true,
       showAccuracyCircle: true,
-      fitBoundsOptions: { maxZoom: 16 },
+      fitBoundsOptions: { maxZoom: cfg.locateMaxZoom },
     });
     map.addControl(geolocate, 'top-right');
 
-    // Fired when the fix lands outside maxBounds; MapLibre drops the marker silently otherwise
+    // MapLibre fits the accuracy circle to the viewport, so a coarse fix on a narrow
+    // phone screen lands at or below the starting zoom and reads as no movement at all
+    geolocate.on('geolocate', (e: any) => {
+      const { longitude, latitude, accuracy } = e.coords;
+      const bounds = maplibregl.LngLatBounds.fromLngLat(
+        new maplibregl.LngLat(longitude, latitude),
+        accuracy
+      );
+      const fitted = map.cameraForBounds(bounds, { maxZoom: cfg.locateMaxZoom })?.zoom;
+      map.easeTo({
+        center: [longitude, latitude],
+        zoom: Math.max(fitted ?? cfg.locateMinZoom, cfg.locateMinZoom),
+      });
+    });
+
+    const geoButton = container.querySelector('.maplibregl-ctrl-geolocate');
+    if (geoButton && geolocateLabel) {
+      const label = document.createElement('span');
+      label.className = 'geolocate-label';
+      label.textContent = geolocateLabel;
+      geoButton.appendChild(label);
+
+      // Icon collapses once used
+      if (readFlag(GEOLOCATE_USED_KEY)) geoButton.classList.add('is-collapsed');
+      geoButton.addEventListener('click', () => {
+        geoButton.classList.add('is-collapsed');
+        writeFlag(GEOLOCATE_USED_KEY);
+      });
+    }
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+    // Fired when the geolocate lands outside maxBounds
     const notice = container.querySelector('.map-notice');
     let noticeTimer: ReturnType<typeof setTimeout>;
     geolocate.on('outofmaxbounds', () => {
@@ -369,6 +419,48 @@ const copy = loadFragment<{ geolocate_out_of_bounds: string }>('map');
     30%, 50%, 70%      { transform: rotate(230deg); }
     40%, 60%, 80%      { transform: rotate(240deg); }
     100%               { transform: rotate(245deg); }
+  }
+
+  :global(.maplibregl-ctrl-group button.maplibregl-ctrl-geolocate) {
+    display: flex;
+    align-items: center;
+    width: auto;
+    gap: 0.3rem;
+    padding-right: 0.7rem;
+    transition: gap 200ms ease, padding-right 200ms ease;
+  }
+
+  :global(.maplibregl-ctrl-group button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon) {
+    width: 1.8125rem;
+    flex-shrink: 0;
+  }
+
+  :global(.geolocate-label) {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--charred);
+    white-space: nowrap;
+    max-width: 10rem;
+    overflow: hidden;
+    transition: max-width 200ms ease, opacity 150ms ease;
+  }
+
+  /* Collapses to the bare icon once the feature has been used.
+     Must out-specify the button rule above, which carries an element selector */
+  :global(.maplibregl-ctrl-group button.maplibregl-ctrl-geolocate.is-collapsed) {
+    gap: 0;
+    padding-right: 0;
+  }
+
+  :global(.maplibregl-ctrl-geolocate.is-collapsed .geolocate-label) {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  :global(.maplibregl-ctrl button:disabled .geolocate-label) {
+    opacity: 0.25;
   }
 
   /* Scoped under .maplibregl-map to outrank maplibre-gl.css, which loads after this */
