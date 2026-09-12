@@ -139,6 +139,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   }
 
   let currentMap: maplibregl.Map | null = null;
+  let filterHandler: ((e: Event) => void) | null = null;
 
   function initMap() {
     const container = document.getElementById('map');
@@ -227,8 +228,101 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         map.addLayer(layer);
       }
 
+      // Legend filtering
+      const rawAliases: Record<string, string[]> = {};
+      for (const [raw, fixed] of Object.entries(GENUS_FIX)) {
+        (rawAliases[fixed] ||= []).push(raw);
+      }
+      const spellings = (genus: string) => [genus, ...(rawAliases[genus] || [])];
+
+      const iconGenera: Record<string, string[]> = {};
+      for (const [genus, icon] of Object.entries(GENUS_ICON)) {
+        (iconGenera[icon] ||= []).push(...spellings(genus));
+      }
+      const namedGenera = Object.keys(GENUS_ICON).flatMap(spellings);
+
+      const nameExpr = ['downcase', ['coalesce', ['get', 'BOTANICAL_NAME'], '']];
+      const isGenus = (g: string) => ['==', ['index-of', g, nameExpr], 0];
+      const matchFor = (icon: string) =>
+        icon === 'other'
+          ? ['!', ['any', ...namedGenera.map(isGenus)]]
+          : ['any', ...(iconGenera[icon] || []).map(isGenus)];
+
+      // Zoom may only drive a top-level interpolate, so the dimming goes inside each stop
+      const dimStops = (base: any[], match: any[], faded: number) => {
+        const out = base.slice(0, 3);
+        for (let i = 3; i < base.length; i += 2) {
+          out.push(base[i], ['case', match, base[i + 1], faded]);
+        }
+        return out;
+      };
+
+      const paintOf = (id: string, prop: string) =>
+        (cfg.layers as any[]).find(l => l.id === id).paint[prop];
+      const baseCircle = paintOf('trees-circles', 'circle-opacity');
+      const baseHeat = paintOf('trees-heatmap', 'heatmap-opacity');
+      const baseStrokeWidth = paintOf('trees-circles', 'circle-stroke-width');
+      const baseStrokeColor = paintOf('trees-circles', 'circle-stroke-color');
+
+      const selectedStroke = (match: any[]) => [
+        'interpolate', ['linear'], ['zoom'],
+        9, ['case', match, 0.6, 0],
+        13, ['case', match, 1, 0],
+        16, ['case', match, 1.6, 0],
+      ];
+
+      const iconColorVar: Record<string, string> = { other: '--bombay' };
+      for (const [genus, icon] of Object.entries(GENUS_ICON)) {
+        iconColorVar[icon] ||= GENUS_COLOR_VAR[genus];
+      }
+
+      // Sits above the basemap but below the trees, so the wash never mutes the selection
+      map.addLayer(
+        {
+          id: 'genus-tint',
+          type: 'background',
+          paint: { 'background-color': cssVarValue('--bombay'), 'background-opacity': 0 },
+        },
+        'trees-heatmap'
+      );
+
+      let activeIcon: string | null = null;
+      const iconOf = (raw: unknown) => GENUS_ICON[readBotanical(raw).genus] || 'other';
+      const isSelectable = (raw: unknown) => activeIcon === null || iconOf(raw) === activeIcon;
+
+      filterHandler = (e: Event) => {
+        const icon = (e as CustomEvent).detail?.icon ?? null;
+        const match = icon ? matchFor(icon) : null;
+        activeIcon = icon;
+
+        map.setPaintProperty(
+          'trees-circles',
+          'circle-opacity',
+          match ? dimStops(baseCircle, match, 0.15) : baseCircle
+        );
+        map.setPaintProperty(
+          'trees-circles',
+          'circle-stroke-width',
+          match ? selectedStroke(match) : baseStrokeWidth
+        );
+        map.setPaintProperty(
+          'trees-circles',
+          'circle-stroke-color',
+          match ? cssVarValue('--charred') : baseStrokeColor
+        );
+
+        // The heatmap covers every species, so it would drown out a single-genus selection
+        map.setPaintProperty('trees-heatmap', 'heatmap-opacity', icon ? 0 : baseHeat);
+
+        if (icon) {
+          map.setPaintProperty('genus-tint', 'background-color', cssVarValue(iconColorVar[icon]));
+        }
+        map.setPaintProperty('genus-tint', 'background-opacity', icon ? cfg.tintOpacity : 0);
+      };
+      document.addEventListener('tt:genus-filter', filterHandler);
+
       map.on('click', 'trees-circles', (e) => {
-        const f = e.features?.[0];
+        const f = e.features?.find(x => isSelectable(x.properties?.BOTANICAL_NAME));
         if (!f) return;
         const p = f.properties ?? {};
 
@@ -302,12 +396,20 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           .addTo(map);
       });
 
-      map.on('mouseenter', 'trees-circles', () => { map.getCanvas().style.cursor = 'pointer'; });
+      // mousemove rather than mouseenter, so the cursor tracks selectability within the layer
+      map.on('mousemove', 'trees-circles', (e) => {
+        const hit = e.features?.some(x => isSelectable(x.properties?.BOTANICAL_NAME));
+        map.getCanvas().style.cursor = hit ? 'pointer' : '';
+      });
       map.on('mouseleave', 'trees-circles', () => { map.getCanvas().style.cursor = ''; });
     });
   }
 
   function destroyMap() {
+    if (filterHandler) {
+      document.removeEventListener('tt:genus-filter', filterHandler);
+      filterHandler = null;
+    }
     if (currentMap) {
       currentMap.remove();
       currentMap = null;

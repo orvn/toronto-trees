@@ -7,6 +7,7 @@
   "maxBounds": [[-80.4, 43.25], [-78.4, 44.45]],
   "locateMaxZoom": 16,
   "locateMinZoom": 14,
+  "tintOpacity": 0.1,
   "sources": {
     "trees": {
       "type": "vector",
