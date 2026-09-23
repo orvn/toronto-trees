@@ -9,6 +9,8 @@
   "locateMinZoom": 14,
   "tintOpacity": 0.1,
   "locateMaxAccuracy": 300,
+  "haloOpacity": 1,
+  "filterStrokeColor": "rgba(0,0,0,0.4)",
   "sources": {
     "trees": {
       "type": "vector",
