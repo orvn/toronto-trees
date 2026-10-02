@@ -24,84 +24,17 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   import 'maplibre-gl/dist/maplibre-gl.css';
   import cfg from '../content/map-style.json';
   import growthFactors from '../content/growth-factors.json';
+  import { GENUS_COLOR_VAR, GENUS_ICON, GENUS_FIX, readBotanical, readCommon } from '../lib/botanical';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
 
-  // Keys are lowercase; readBotanical() normalises the inventory's casing and misspellings
-  const GENUS_COLOR_VAR: Record<string, string> = {
-    acer: '--celery',
-    gleditsia: '--golden',
-    picea: '--casal',
-    pinus: '--asparagus',
-    quercus: '--killarney',
-    tilia: '--golden',
-    ulmus: '--asparagus',
-    gymnocladus: '--spectra',
-    malus: '--punch',
-    syringa: '--lavender',
-    ginkgo: '--raj',
-    celtis: '--killarney',
-    betula: '--geyser',
-    amelanchier: '--casablanca',
-    aesculus: '--killarney',
-    pyrus: '--raj',
-    prunus: '--blush',
-    fraxinus: '--terracotta',
-    platanus: '--gumleaf',
-    thuja: '--killarney',
-    liriodendron: '--asparagus',
-    catalpa: '--lavender',
-    morus: '--lavender',
-    fagus: '--rope',
-    sorbus: '--pomegranate',
-    magnolia: '--zinnwaldite',
-    juglans: '--kabul',
-    ailanthus: '--pomegranate',
-    juniperus: '--casal',
-    robinia: '--celery',
-    cercis: '--blush',
-    crataegus: '--punch',
-    cercidiphyllum: '--casablanca',
-    abies: '--killarney',
-    zelkova: '--terracotta',
-    corylus: '--rope',
-    ostrya: '--celery',
-    cladrastis: '--raj',
-    salix: '--mantle',
-    taxus: '--pomegranate',
-    phellodendron: '--donkey',
-    populus: '--regent',
-    pseudotsuga: '--kabul',
-    cornus: '--zinnwaldite',
-    carpinus: '--barley',
-    tsuga: '--golden',
-    liquidambar: '--terracotta',
-    chamaecyparis: '--mantle',
-  };
   const cssVarValue = (name: string) =>
     getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
   const GROWTH_FACTOR: Record<string, number> = Object.fromEntries(
     Object.entries(growthFactors as Record<string, number>).map(([k, v]) => [k.toLowerCase(), v])
   );
-
-  // The City's inventory misspells three genera and stores 'None' where a name is missing
-  const GENUS_FIX: Record<string, string> = {
-    alix: 'salix',           // 101 weeping willows
-    allianthus: 'ailanthus', // tree of heaven
-    crategus: 'crataegus',   // 2 Crusade hawthorns
-  };
-
-  // Genus is capitalised, species epithet left lowercase, per botanical convention
-  function readBotanical(raw: unknown) {
-    const name = String(raw ?? '').trim();
-    if (!name || name === 'None') return { display: '', genus: '' };
-    const [first, ...rest] = name.split(/\s+/);
-    const genus = GENUS_FIX[first.toLowerCase()] ?? first.toLowerCase();
-    const display = [genus.charAt(0).toUpperCase() + genus.slice(1), ...rest].join(' ');
-    return { display, genus };
-  }
 
   // Storage is unavailable in some private-browsing modes, so never let it throw
   const GEOLOCATE_USED_KEY = 'tt:geolocate-used';
@@ -112,62 +45,6 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
   const writeFlag = (key: string) => {
     try { localStorage.setItem(key, '1'); } catch { /* ignore */ }
-  };
-
-  const readCommon = (raw: unknown) => {
-    const name = String(raw ?? '').trim();
-    return !name || name === 'None' ? 'Tree' : name;
-  };
-
-  const GENUS_ICON: Record<string, string> = {
-    acer: 'maple',
-    gleditsia: 'locust',
-    picea: 'spruce',
-    pinus: 'pine',
-    quercus: 'oak',
-    tilia: 'linden',
-    ulmus: 'elm',
-    gymnocladus: 'kentucky-coffeetree',
-    malus: 'apple',
-    syringa: 'lilac',
-    ginkgo: 'ginkgo',
-    celtis: 'hackberry',
-    betula: 'birch',
-    amelanchier: 'serviceberry',
-    aesculus: 'horse-chestnut',
-    pyrus: 'ornamental-pear',
-    prunus: 'cherry',
-    fraxinus: 'ash',
-    platanus: 'sycamore',
-    thuja: 'cedar',
-    liriodendron: 'tulip-tree',
-    catalpa: 'catalpa',
-    morus: 'mulberry',
-    fagus: 'beech',
-    sorbus: 'rowan',
-    magnolia: 'magnolia',
-    juglans: 'walnut',
-    ailanthus: 'tree-of-heaven',
-    juniperus: 'juniper',
-    robinia: 'black-locust',
-    cercis: 'redbud',
-    crataegus: 'hawthorn',
-    cercidiphyllum: 'katsura',
-    abies: 'fir',
-    zelkova: 'zelkova',
-    corylus: 'hazel',
-    ostrya: 'ironwood',
-    cladrastis: 'yellowwood',
-    salix: 'willow',
-    taxus: 'yew',
-    phellodendron: 'cork',
-    populus: 'poplar',
-    pseudotsuga: 'douglas-fir',
-    cornus: 'dogwood',
-    carpinus: 'hornbeam',
-    tsuga: 'hemlock',
-    liquidambar: 'sweetgum',
-    chamaecyparis: 'falsecypress',
   };
 
   // Worker and shared module copied to /vendor/maplibre so client resolves the worker `./maplibre-gl-shared.mjs` import
@@ -368,14 +245,31 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         'trees-heatmap'
       );
 
-      let activeIcon: string | null = null;
+      // A filter is one botanical name, a genus, or a legend icon; the search bar sends the first two
+      let activeTest: ((raw: unknown) => boolean) | null = null;
       const iconOf = (raw: unknown) => GENUS_ICON[readBotanical(raw).genus] || 'other';
-      const isSelectable = (raw: unknown) => activeIcon === null || iconOf(raw) === activeIcon;
+      const isSelectable = (raw: unknown) => activeTest === null || activeTest(raw);
 
       filterHandler = (e: Event) => {
-        const icon = (e as CustomEvent).detail?.icon ?? null;
-        const match = icon ? matchFor(icon) : null;
-        activeIcon = icon;
+        const { icon = null, genus = null, botanical = null } = (e as CustomEvent).detail ?? {};
+        let match: any[] | null = null;
+        let colorVar = '--bombay';
+        if (botanical) {
+          const wanted = String(botanical).trim().toLowerCase();
+          match = ['==', nameExpr, wanted];
+          colorVar = GENUS_COLOR_VAR[readBotanical(botanical).genus] || '--bombay';
+          activeTest = raw => String(raw ?? '').trim().toLowerCase() === wanted;
+        } else if (genus) {
+          match = ['any', ...spellings(genus).map(isGenus)];
+          colorVar = GENUS_COLOR_VAR[genus] || '--bombay';
+          activeTest = raw => readBotanical(raw).genus === genus;
+        } else if (icon) {
+          match = matchFor(icon);
+          colorVar = iconColorVar[icon];
+          activeTest = raw => iconOf(raw) === icon;
+        } else {
+          activeTest = null;
+        }
 
         map.setPaintProperty(
           'trees-circles',
@@ -402,12 +296,12 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         );
 
         // The heatmap covers every species, so it would drown out a single-genus selection
-        map.setPaintProperty('trees-heatmap', 'heatmap-opacity', icon ? 0 : baseHeat);
+        map.setPaintProperty('trees-heatmap', 'heatmap-opacity', match ? 0 : baseHeat);
 
-        if (icon) {
-          map.setPaintProperty('genus-tint', 'background-color', cssVarValue(iconColorVar[icon]));
+        if (match) {
+          map.setPaintProperty('genus-tint', 'background-color', cssVarValue(colorVar));
         }
-        map.setPaintProperty('genus-tint', 'background-opacity', icon ? cfg.tintOpacity : 0);
+        map.setPaintProperty('genus-tint', 'background-opacity', match ? cfg.tintOpacity : 0);
       };
       document.addEventListener('tt:genus-filter', filterHandler);
 

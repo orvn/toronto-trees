@@ -1,0 +1,413 @@
+---
+import { loadFragment } from '../lib/content';
+
+const copy = loadFragment<{ placeholder: string; clear_label: string; no_results: string }>('search');
+---
+
+<div class="search-wrap">
+  <form class="search" role="search" autocomplete="off" data-no-results={copy.no_results}>
+    <div class="field">
+      <svg class="glass" aria-hidden="true" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-3.5-3.5" />
+      </svg>
+      <input
+        class="query"
+        type="text"
+        role="combobox"
+        aria-label={copy.placeholder}
+        aria-expanded="false"
+        aria-controls="search-results"
+        aria-autocomplete="list"
+        placeholder={copy.placeholder}
+        autocomplete="off"
+        spellcheck="false"
+        enterkeyhint="search"
+      />
+      <button class="clear" type="button" aria-label={copy.clear_label} hidden>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+    <ul id="search-results" class="results" role="listbox" hidden></ul>
+  </form>
+</div>
+
+<script>
+  import species from '../content/species.json';
+  import { GENUS_ICON, readBotanical } from '../lib/botanical';
+
+  const FILTER_EVENT = 'tt:genus-filter';
+  const MAX_RESULTS = 8;
+
+  type Row = { botanical: string; common: string; count: number };
+  type Entry = {
+    kind: 'genus' | 'species';
+    name: string;
+    common: string;
+    genus: string;
+    botanical?: string;
+    count: number;
+    text: string;
+    words: string[];
+  };
+
+  const indexed = (e: Omit<Entry, 'text' | 'words'>): Entry => {
+    const text = `${e.name} ${e.common}`.toLowerCase().replace(/['’]/g, '');
+    return { ...e, text, words: text.split(/[\s,()]+/).filter(Boolean) };
+  };
+
+  // Genus rows aggregate their species; their common label is the most planted species' name before the comma
+  const buildIndex = (): Entry[] => {
+    const genera = new Map<string, { count: number; commons: Map<string, number> }>();
+    const entries: Entry[] = [];
+    for (const row of species as Row[]) {
+      const { display, genus } = readBotanical(row.botanical);
+      if (!genus) continue;
+      const g = genera.get(genus) ?? { count: 0, commons: new Map() };
+      g.count += row.count;
+      const head = row.common.split(',')[0].trim();
+      g.commons.set(head, (g.commons.get(head) ?? 0) + row.count);
+      genera.set(genus, g);
+      entries.push(indexed({ kind: 'species', name: display, common: row.common, genus, botanical: row.botanical, count: row.count }));
+    }
+    for (const [genus, g] of genera) {
+      const common = [...g.commons].sort((a, b) => b[1] - a[1])[0][0];
+      const name = genus.charAt(0).toUpperCase() + genus.slice(1);
+      entries.push(indexed({ kind: 'genus', name, common, genus, count: g.count }));
+    }
+    return entries;
+  };
+
+  // Every token must hit; a word-start hit outranks a substring, the leading word outranks the rest
+  const search = (index: Entry[], query: string) => {
+    const tokens = query.toLowerCase().replace(/['’]/g, '').split(/\s+/).filter(Boolean);
+    if (!tokens.length) return [];
+    const scored: [number, Entry][] = [];
+    for (const e of index) {
+      let score = 0;
+      for (const t of tokens) {
+        if (e.words.some(w => w.startsWith(t))) score += e.words[0].startsWith(t) ? 3 : 2;
+        else if (e.text.includes(t)) score += 1;
+        else { score = 0; break; }
+      }
+      if (score) scored.push([score, e]);
+    }
+    return scored
+      .sort((a, b) =>
+        b[0] - a[0] ||
+        Number(b[1].kind === 'genus') - Number(a[1].kind === 'genus') ||
+        b[1].count - a[1].count
+      )
+      .slice(0, MAX_RESULTS)
+      .map(s => s[1]);
+  };
+
+  let teardown: (() => void) | null = null;
+
+  function initSearch() {
+    teardown?.();
+    teardown = null;
+
+    const form = document.querySelector<HTMLFormElement>('.search');
+    const input = form?.querySelector<HTMLInputElement>('.query');
+    const clearBtn = form?.querySelector<HTMLButtonElement>('.clear');
+    const list = form?.querySelector<HTMLUListElement>('.results');
+    if (!form || !input || !clearBtn || !list) return;
+
+    const index = buildIndex();
+    let results: Entry[] = [];
+    let active = 0;
+    let chosen: Entry | null = null;
+
+    const el = (tag: string, cls: string, text: string) => {
+      const n = document.createElement(tag);
+      n.className = cls;
+      n.textContent = text;
+      return n;
+    };
+
+    const setOpen = (open: boolean) => {
+      list.hidden = !open;
+      input.setAttribute('aria-expanded', String(open));
+      if (!open) input.removeAttribute('aria-activedescendant');
+    };
+
+    const paintActive = () => {
+      [...list.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === active)));
+      const id = list.children[active]?.id;
+      if (id) input.setAttribute('aria-activedescendant', id);
+      list.children[active]?.scrollIntoView({ block: 'nearest' });
+    };
+
+    const render = () => {
+      if (!results.length) {
+        list.replaceChildren(el('li', 'empty', form.dataset.noResults ?? ''));
+        return;
+      }
+      list.replaceChildren(
+        ...results.map((e, i) => {
+          const li = document.createElement('li');
+          li.id = `search-option-${i}`;
+          li.setAttribute('role', 'option');
+          const leaf = new Image();
+          leaf.className = 'leaf';
+          leaf.src = `/icons/leaves/${GENUS_ICON[e.genus] || 'other'}.png`;
+          leaf.alt = '';
+          li.append(
+            leaf,
+            el('span', 'name', e.name),
+            el('span', 'sub', e.kind === 'genus' ? `${e.common} · all species` : e.common),
+            el('span', 'count', e.count.toLocaleString('en-CA'))
+          );
+          li.addEventListener('mousedown', ev => ev.preventDefault());
+          li.addEventListener('click', () => choose(e));
+          return li;
+        })
+      );
+      paintActive();
+    };
+
+    const dispatch = (detail: Record<string, unknown>) =>
+      document.dispatchEvent(new CustomEvent(FILTER_EVENT, { detail: { source: 'search', ...detail } }));
+
+    const choose = (e: Entry) => {
+      chosen = e;
+      input.value = e.name;
+      clearBtn.hidden = false;
+      setOpen(false);
+      dispatch({
+        icon: GENUS_ICON[e.genus] || 'other',
+        genus: e.kind === 'genus' ? e.genus : undefined,
+        botanical: e.botanical,
+      });
+    };
+
+    const reset = () => {
+      chosen = null;
+      results = [];
+      input.value = '';
+      clearBtn.hidden = true;
+      setOpen(false);
+    };
+
+    const clear = () => {
+      const hadFilter = chosen !== null;
+      reset();
+      input.focus();
+      if (hadFilter) dispatch({ icon: null });
+    };
+
+    const onInput = () => {
+      const q = input.value.trim();
+      clearBtn.hidden = q === '';
+      if (chosen) {
+        chosen = null;
+        dispatch({ icon: null });
+      }
+      if (!q) { results = []; setOpen(false); return; }
+      results = search(index, q);
+      active = 0;
+      render();
+      setOpen(true);
+    };
+
+    const onKeydown = (ev: KeyboardEvent) => {
+      const open = !list.hidden && results.length > 0;
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        if (!open) return;
+        ev.preventDefault();
+        active = (active + (ev.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length;
+        paintActive();
+      } else if (ev.key === 'Enter') {
+        ev.preventDefault();
+        if (open) choose(results[active]);
+      } else if (ev.key === 'Escape') {
+        if (!list.hidden) setOpen(false);
+        else if (input.value) clear();
+      } else if (ev.key === 'Tab') {
+        setOpen(false);
+      }
+    };
+
+    const onFocus = () => {
+      if (!chosen && input.value.trim() && results.length) setOpen(true);
+    };
+
+    // Legend clicks drive the same filter, so a selection there replaces whatever was typed here
+    const onFilter = (e: Event) => {
+      const d = (e as CustomEvent).detail ?? {};
+      if (d.source !== 'search') reset();
+    };
+
+    input.addEventListener('input', onInput);
+    input.addEventListener('keydown', onKeydown);
+    input.addEventListener('focus', onFocus);
+    input.addEventListener('blur', () => setOpen(false));
+    clearBtn.addEventListener('click', clear);
+    form.addEventListener('submit', ev => ev.preventDefault());
+    document.addEventListener(FILTER_EVENT, onFilter);
+    teardown = () => document.removeEventListener(FILTER_EVENT, onFilter);
+  }
+
+  document.addEventListener('astro:page-load', initSearch);
+  document.addEventListener('astro:before-swap', () => {
+    teardown?.();
+    teardown = null;
+  });
+</script>
+
+<style lang="scss">
+  .search-wrap {
+    padding-inline: var(--gutter);
+    padding-top: 1.5rem;
+  }
+
+  .search {
+    position: relative;
+    max-width: 36rem;
+    margin: 0;
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: 2.9rem;
+    padding-inline: 0.9rem;
+    background: #fff;
+    border: 1px solid rgb(27 31 26 / 0.15);
+    border-radius: 0.5rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .field:focus-within {
+    border-color: var(--forest);
+    box-shadow: 0 0 0 3px rgb(47 143 59 / 0.15);
+  }
+
+  .glass {
+    flex-shrink: 0;
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: var(--battleship);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .query {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--charred);
+    outline: none;
+  }
+
+  .query::placeholder {
+    color: var(--battleship);
+    opacity: 1;
+  }
+
+  .clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--battleship);
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  .clear:hover {
+    background: rgb(27 31 26 / 0.06);
+    color: var(--charred);
+  }
+
+  .clear svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .results {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    right: 0;
+    max-height: 22rem;
+    margin: 0;
+    padding: 0.35rem;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--cararra);
+    border: 1px solid rgb(27 31 26 / 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.12);
+  }
+
+  .results li {
+    display: grid;
+    grid-template-columns: 1.75rem 1fr auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    padding: 0.45rem 0.6rem;
+    border-radius: 0.35rem;
+    font-size: var(--text-sm);
+    line-height: 1.3;
+    cursor: pointer;
+  }
+
+  .results li[aria-selected='true'],
+  .results li:hover {
+    background: rgb(47 143 59 / 0.1);
+  }
+
+  .results .leaf {
+    grid-area: 1 / 1 / 3 / 2;
+    width: 1.75rem;
+    height: 1.75rem;
+    object-fit: contain;
+  }
+
+  .results .name {
+    grid-area: 1 / 2 / 2 / 3;
+    color: var(--charred);
+  }
+
+  .results .sub {
+    grid-area: 2 / 2 / 3 / 3;
+    font-size: var(--text-xs);
+    color: var(--battleship);
+  }
+
+  .results .count {
+    grid-area: 1 / 3 / 3 / 4;
+    font-size: var(--text-xs);
+    color: var(--battleship);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .results .empty {
+    display: block;
+    color: var(--battleship);
+    cursor: default;
+  }
+
+  .results .empty:hover {
+    background: none;
+  }
+</style>

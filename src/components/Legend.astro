@@ -194,13 +194,26 @@ const fmt = (p: number) =>
     const observer = new ResizeObserver(layout);
     observer.observe(list);
 
-    const apply = () => {
+    const paint = () => {
       list.classList.toggle('is-filtering', selected !== null);
       for (const b of buttons) {
         b.setAttribute('aria-pressed', String(b.dataset.icon === selected));
       }
-      document.dispatchEvent(new CustomEvent(FILTER_EVENT, { detail: { icon: selected } }));
     };
+
+    const apply = () => {
+      paint();
+      document.dispatchEvent(new CustomEvent(FILTER_EVENT, { detail: { source: 'legend', icon: selected } }));
+    };
+
+    // The search bar drives the same filter; mirror its genus here without re-dispatching
+    const onFilter = (e: Event) => {
+      const d = (e as CustomEvent).detail ?? {};
+      if (d.source === 'legend') return;
+      selected = d.icon ?? null;
+      paint();
+    };
+    document.addEventListener(FILTER_EVENT, onFilter);
 
     for (const b of buttons) {
       b.addEventListener('click', () => {
@@ -218,6 +231,7 @@ const fmt = (p: number) =>
     document.addEventListener('keydown', onKeydown);
     teardown = () => {
       document.removeEventListener('keydown', onKeydown);
+      document.removeEventListener(FILTER_EVENT, onFilter);
       observer.disconnect();
     };
   }
