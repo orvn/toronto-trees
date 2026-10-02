@@ -120,5 +120,33 @@
   "Cercis": 5.0,
   "Crataegus": 5.0,
 
+  "Juniperus": 5.5,
+  "Abies": 5.0,
+  "Pseudotsuga menziesii": 5.0,
+  "Pseudotsuga": 5.0,
+  "Taxus": 7.0,
+  "Tsuga canadensis": 5.0,
+  "Tsuga": 5.0,
+  "Chamaecyparis": 5.0,
+
+  "Cercidiphyllum japonicum": 4.0,
+  "Cercidiphyllum": 4.0,
+  "Zelkova serrata": 4.0,
+  "Zelkova": 4.0,
+  "Corylus colurna": 4.5,
+  "Corylus": 4.5,
+  "Ostrya virginiana": 6.0,
+  "Ostrya": 6.0,
+  "Cladrastis kentukea": 4.0,
+  "Cladrastis": 4.0,
+  "Salix": 2.5,
+  "Phellodendron amurense": 4.0,
+  "Phellodendron": 4.0,
+  "Populus": 2.0,
+  "Cornus": 7.0,
+  "Carpinus": 6.0,
+  "Liquidambar styraciflua": 4.0,
+  "Liquidambar": 4.0,
+
   "_default": 4.0
 }
