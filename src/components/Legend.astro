@@ -2,7 +2,7 @@
 // Percentages need recalc when tree inventory is updated
 const genera = [
   { icon: 'maple',               label: 'Maple',               pct: 26.97, color: 'var(--celery)'     },
-  { icon: 'locust',              label: 'Locust',              pct: 8.7,   color: 'var(--golden)'     },
+  { icon: 'locust',              label: 'Honey locust',        pct: 8.7,   color: 'var(--golden)'     },
   { icon: 'oak',                 label: 'Oak',                 pct: 7.49,  color: 'var(--killarney)'  },
   { icon: 'linden',              label: 'Linden',              pct: 6.72,  color: 'var(--golden)'     },
   { icon: 'spruce',              label: 'Spruce',              pct: 5.97,  color: 'var(--casal)'      },
@@ -67,32 +67,43 @@ const fmt = (p: number) =>
     </div>
   </div>
 
-  <ul class="genera" role="list">
-    {genera.map(g => (
-      <li>
-        <button class="genus" type="button" data-icon={g.icon} aria-pressed="false">
-          <div class="leaf-slot">
-            <img
-              src={`/icons/leaves/${g.icon}.png`}
-              alt=""
-              class="leaf"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <span class="name">{g.label}</span>
-          <div
-            class="bar"
-            role="img"
-            aria-label={`${fmt(g.pct)} of trees`}
-          >
-            <span style={`width: ${Math.max(g.pct, 0.75)}%; background: ${g.color}`}></span>
-          </div>
-          <span class="pct">{fmt(g.pct)}</span>
-        </button>
-      </li>
-    ))}
-  </ul>
+  <div class="genera-wrap">
+    <div class="drawer">
+      <ul class="genera" id="genera" role="list">
+        {genera.map(g => (
+          <li>
+            <button class="genus" type="button" data-icon={g.icon} aria-pressed="false">
+              <div class="leaf-slot">
+                <img
+                  src={`/icons/leaves/${g.icon}.png`}
+                  alt=""
+                  class="leaf"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <span class="name">{g.label}</span>
+              <div
+                class="bar"
+                role="img"
+                aria-label={`${fmt(g.pct)} of trees`}
+              >
+                <span style={`width: ${Math.max(g.pct, 0.75)}%; background: ${g.color}`}></span>
+              </div>
+              <span class="pct">{fmt(g.pct)}</span>
+            </button>
+          </li>
+        ))}
+        <li class="more-cell" hidden>
+          <button class="more" type="button" aria-expanded="false" aria-controls="genera">
+            <span class="leaf-slot"><span class="glyph" aria-hidden="true">+</span></span>
+            <span class="name">more</span>
+            <span class="pct count"></span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
 </section>
 
 <script>
@@ -110,6 +121,78 @@ const fmt = (p: number) =>
 
     const buttons = [...list.querySelectorAll<HTMLButtonElement>('.genus')];
     let selected: string | null = null;
+
+    // Collapse to two rows; the row count depends on the grid's column breakpoint.
+    // The toggle is a grid cell: collapsed it takes the last slot of row two, expanded it trails the list
+    const drawer = list.parentElement as HTMLElement;
+    const moreCell = list.querySelector<HTMLElement>('.more-cell');
+    const more = list.querySelector<HTMLButtonElement>('.more');
+    const items = [...list.children].filter(li => li !== moreCell) as HTMLElement[];
+    items.forEach((li, i) => (li.style.order = String(i)));
+    let expanded = false;
+    let hiddenCount = 0;
+
+    const rowTops = () => [...new Set(items.map(li => li.offsetTop))];
+
+    const setLabels = () => {
+      if (!more) return;
+      more.querySelector('.glyph')!.textContent = expanded ? '−' : '+';
+      more.querySelector('.name')!.textContent = expanded ? 'fewer' : 'more';
+      more.querySelector('.count')!.textContent = `${expanded ? '−' : '+'}${hiddenCount}`;
+    };
+
+    const layout = () => {
+      if (!more || !moreCell) return;
+      // Measured with the toggle parked at the end so it never shifts the rows being counted
+      moreCell.style.order = String(items.length);
+      let tops = rowTops();
+      const hasMore = tops.length > 2;
+      const open = expanded || !hasMore;
+      moreCell.hidden = !hasMore;
+      if (hasMore) {
+        const cols = items.filter(li => li.offsetTop === tops[0]).length;
+        hiddenCount = items.length - (cols * 2 - 1);
+        moreCell.style.order = String(open ? items.length : cols * 2 - 2);
+        tops = rowTops();
+      }
+      if (!more.classList.contains('is-swapping')) setLabels();
+      const row2 = items.find(li => li.offsetTop === tops[1]) ?? items[0];
+      drawer.style.maxHeight = `${open ? list.scrollHeight : row2.offsetTop + row2.offsetHeight}px`;
+      for (const li of items) li.toggleAttribute('inert', !open && li.offsetTop >= tops[2]);
+    };
+
+    // FLIP: the toggle is laid out in its new slot, then animated from where it was.
+    // It follows the grid lines: opening goes down then across, closing goes across then up
+    const flip = (run: () => void) => {
+      if (!moreCell) return run();
+      const a = moreCell.getBoundingClientRect();
+      run();
+      const b = moreCell.getBoundingClientRect();
+      const dx = a.left - b.left;
+      const dy = a.top - b.top;
+      if ((!dx && !dy) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const legs = [`translate(${dx}px, ${dy}px)`];
+      if (dx && dy) legs.push(expanded ? `translate(${dx}px, 0)` : `translate(0, ${dy}px)`);
+      legs.push('none');
+      moreCell.animate(
+        legs.map(transform => ({ transform, easing: 'ease-in-out' })),
+        { duration: 220 * (legs.length - 1) }
+      );
+    };
+
+    more?.addEventListener('click', () => {
+      expanded = !expanded;
+      more.setAttribute('aria-expanded', String(expanded));
+      more.classList.add('is-swapping');
+      flip(layout);
+      setTimeout(() => {
+        setLabels();
+        more.classList.remove('is-swapping');
+      }, 150);
+    });
+
+    const observer = new ResizeObserver(layout);
+    observer.observe(list);
 
     const apply = () => {
       list.classList.toggle('is-filtering', selected !== null);
@@ -133,7 +216,10 @@ const fmt = (p: number) =>
       }
     };
     document.addEventListener('keydown', onKeydown);
-    teardown = () => document.removeEventListener('keydown', onKeydown);
+    teardown = () => {
+      document.removeEventListener('keydown', onKeydown);
+      observer.disconnect();
+    };
   }
 
   document.addEventListener('astro:page-load', initLegend);
@@ -196,8 +282,86 @@ const fmt = (p: number) =>
     flex-shrink: 0;
   }
 
-  .genera {
+  .genera-wrap {
     flex: 1;
+    min-width: 0;
+  }
+
+  .drawer {
+    position: relative;
+    overflow: hidden;
+    transition: max-height 300ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer,
+    .more > * { transition: none; }
+  }
+
+
+  .genera li[hidden] {
+    display: none;
+  }
+
+  .more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    padding: 0.25rem 0.1rem;
+    border: 0;
+    border-radius: 0.3rem;
+    background: none;
+    font: inherit;
+    color: var(--forest);
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .more > * {
+    transition: opacity 150ms ease;
+  }
+
+  .more.is-swapping > * {
+    opacity: 0;
+  }
+
+  .more .glyph {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding-bottom: 0.25rem; /* glyphs sit low in the em box, so nudge up to centre optically */
+    border: 1.5px solid var(--forest);
+    border-radius: 50%;
+    font-size: 1.4rem;
+    font-weight: 300;
+    line-height: 1;
+  }
+
+  .more .name {
+    color: var(--forest);
+    font-weight: 500;
+  }
+
+  .more .count {
+    margin-top: 0.825rem; /* matches the bar's height and margins so it lines up with the pct row */
+    color: var(--forest);
+    opacity: 0.7;
+  }
+
+  .more:hover {
+    background: rgb(47 143 59 / 0.08);
+  }
+
+  .more:focus-visible {
+    outline: 2px solid var(--forest);
+    outline-offset: 1px;
+  }
+
+  .genera {
     display: grid;
     grid-template-columns: repeat(14, minmax(0, 1fr));
     gap: 0.75rem 0.5rem;
