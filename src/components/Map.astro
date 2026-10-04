@@ -57,6 +57,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
   let currentMap: maplibregl.Map | null = null;
   let filterHandler: ((e: Event) => void) | null = null;
+  let locateHandler: ((e: Event) => void) | null = null;
 
   function initMap() {
     const container = document.getElementById('map');
@@ -305,11 +306,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       };
       document.addEventListener('tt:genus-filter', filterHandler);
 
-      map.on('click', 'trees-circles', (e) => {
-        const f = e.features?.find(x => isSelectable(x.properties?.BOTANICAL_NAME));
-        if (!f) return;
-        const p = f.properties ?? {};
-
+      const openTreePopup = (p: Record<string, any>, lngLat: [number, number]) => {
         const wrap = document.createElement('div');
         wrap.className = 'tree-popup';
 
@@ -375,10 +372,50 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         }
 
         new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'tp' })
-          .setLngLat(e.lngLat)
+          .setLngLat(lngLat)
           .setDOMContent(wrap)
           .addTo(map);
+      };
+
+      map.on('click', 'trees-circles', (e) => {
+        const f = e.features?.find(x => isSelectable(x.properties?.BOTANICAL_NAME));
+        if (f) openTreePopup(f.properties ?? {}, [e.lngLat.lng, e.lngLat.lat]);
       });
+
+      // Address search: fit a whole street, or land near an interpolated house number and
+      // then snap to the loaded tree whose number is closest
+      locateHandler = (e: Event) => {
+        const d = (e as CustomEvent).detail ?? {};
+        const done = (found: boolean) =>
+          document.dispatchEvent(new CustomEvent('tt:locate-done', { detail: { found } }));
+        if (d.bounds) {
+          map.fitBounds(d.bounds, { padding: 48, maxZoom: 16, duration: 900 });
+          map.once('moveend', () => done(true));
+          return;
+        }
+        map.flyTo({ center: [d.lng, d.lat], zoom: 15.5, duration: 1200 });
+        map.once('idle', () => {
+          const feats = map.querySourceFeatures('trees', {
+            sourceLayer: 'trees',
+            filter: ['==', ['get', 'STREETNAME'], d.street],
+          });
+          let best: (typeof feats)[number] | null = null;
+          let bestGap = Infinity;
+          for (const f of feats) {
+            const gap = Math.abs(Number(f.properties?.ADDRESS) - d.address);
+            if (gap < bestGap) { bestGap = gap; best = f; }
+          }
+          if (!best) return done(false);
+          const g = best.geometry as any;
+          const [lng, lat] = g.type === 'Point' ? g.coordinates : g.coordinates[0];
+          map.easeTo({ center: [lng, lat], zoom: 17, duration: 700 });
+          map.once('moveend', () => {
+            openTreePopup(best!.properties ?? {}, [lng, lat]);
+            done(true);
+          });
+        });
+      };
+      document.addEventListener('tt:locate', locateHandler);
 
       // mousemove rather than mouseenter, so the cursor tracks selectability within the layer
       map.on('mousemove', 'trees-circles', (e) => {
@@ -393,6 +430,10 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     if (filterHandler) {
       document.removeEventListener('tt:genus-filter', filterHandler);
       filterHandler = null;
+    }
+    if (locateHandler) {
+      document.removeEventListener('tt:locate', locateHandler);
+      locateHandler = null;
     }
     if (currentMap) {
       currentMap.remove();

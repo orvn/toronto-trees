@@ -1,3 +1,11 @@
+mode_label: Search mode
+mode_trees: Trees
+mode_address: Address
 placeholder: Search by genus, species or common name
+placeholder_address: Street name, or 123 Queen St W
+placeholder_number: "House number, {min} to {max}"
 clear_label: Clear search
+drop_street: Change street
 no_results: No trees match that
+no_street: No street by that name
+no_tree: No tree found near that number
