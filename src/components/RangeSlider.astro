@@ -3,7 +3,7 @@ import ClearButton from './ClearButton.astro';
 
 // Dual-thumb range; dispatches a bubbling tt:range with { name, min, max }, null meaning unbounded.
 // Readout templates take {min} and {max}: anyText, underText (only a max), overText (only a min), betweenText
-const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel } = Astro.props;
+const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel, hidden = false } = Astro.props;
 ---
 
 <div
@@ -15,8 +15,9 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
   data-under={underText}
   data-over={overText}
   data-between={betweenText}
+  hidden={hidden}
 >
-  <span class="control-name">{label}</span>
+  {!labelHidden && <span class="control-name">{label}</span>}
   <div class="dual">
     <span class="rail" aria-hidden="true"><span class="rail-fill"></span></span>
     <input class="lo" type="range" min={min} max={max} step={step} value={min} aria-label={minLabel} />
@@ -91,11 +92,17 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
 </script>
 
 <style lang="scss">
+  @use '../styles/breakpoints' as *;
+
   .range-slider {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     height: 2.5rem;
+  }
+
+  .range-slider[hidden] {
+    display: none;
   }
 
   .control-name {
@@ -114,7 +121,7 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
   .dual {
     position: relative;
     flex: 1;
-    width: 8rem;
+    width: 7rem;
     min-width: 6rem;
     height: 1.5rem;
   }
@@ -200,7 +207,7 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
   }
 
   .value {
-    min-width: 6rem;
+    min-width: 5.5rem;
     font-size: var(--text-xs);
     color: var(--battleship);
     font-variant-numeric: tabular-nums;
@@ -209,5 +216,17 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
 
   .is-active .value {
     color: var(--charred);
+  }
+
+  @include medium {
+    .range-slider {
+      gap: 0.5rem;
+    }
+    .dual {
+      min-width: 4rem;
+    }
+    .value {
+      min-width: 4.5rem;
+    }
   }
 </style>

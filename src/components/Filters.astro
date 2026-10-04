@@ -2,6 +2,7 @@
 import { loadFragment } from '../lib/content';
 import SearchBox from './SearchBox.astro';
 import RangeSlider from './RangeSlider.astro';
+import SegmentedToggle from './SegmentedToggle.astro';
 
 const copy = loadFragment<Record<string, string>>('filters');
 ---
@@ -9,9 +10,20 @@ const copy = loadFragment<Record<string, string>>('filters');
 <div class="filters-wrap">
   <div class="filters">
     <div class="bar ranges">
+      <SegmentedToggle
+        name="range"
+        label={copy.range_mode_label}
+        value="age"
+        options={[
+          { value: 'age', label: copy.range_mode_age },
+          { value: 'dbh', label: copy.range_mode_trunk },
+        ]}
+      />
+      <span class="divider" aria-hidden="true"></span>
       <RangeSlider
         name="age"
         label={copy.age_label}
+        labelHidden
         min={0}
         max={200}
         minLabel={copy.age_min_label}
@@ -22,10 +34,11 @@ const copy = loadFragment<Record<string, string>>('filters');
         betweenText={copy.age_between}
         resetLabel={copy.reset_age}
       />
-      <span class="divider" aria-hidden="true"></span>
       <RangeSlider
         name="dbh"
         label={copy.trunk_label}
+        labelHidden
+        hidden
         min={0}
         max={150}
         minLabel={copy.trunk_min_label}
@@ -50,6 +63,17 @@ const copy = loadFragment<Record<string, string>>('filters');
   document.addEventListener('astro:page-load', () => {
     const bar = document.querySelector<HTMLElement>('.filters');
     if (!bar) return;
+
+    // One range at a time: the toggle swaps which slider shows and clears the one going away
+    bar.addEventListener('tt:toggle', e => {
+      const { name, value } = (e as CustomEvent).detail;
+      if (name !== 'range') return;
+      for (const slider of bar.querySelectorAll<HTMLElement>('.range-slider')) {
+        const show = slider.dataset.name === value;
+        if (!show && slider.classList.contains('is-active')) slider.querySelector<HTMLButtonElement>('.reset')?.click();
+        slider.hidden = !show;
+      }
+    });
     const state: Record<string, number | null> = { ageMin: null, ageMax: null, dbhMin: null, dbhMax: null };
     let raf = 0;
     bar.addEventListener('tt:range', e => {
@@ -95,6 +119,7 @@ const copy = loadFragment<Record<string, string>>('filters');
 
   .ranges {
     flex-shrink: 0;
+    height: 3.25rem;
   }
 
   .search-bar {
@@ -126,15 +151,22 @@ const copy = loadFragment<Record<string, string>>('filters');
   }
 
   @include medium {
+    .bar {
+      padding-inline: 0.75rem;
+    }
     .ranges {
       flex-wrap: wrap;
       row-gap: 0.5rem;
+      height: auto;
     }
     .divider {
       display: none;
     }
     .ranges > :global(*) {
       flex-basis: 100%;
+    }
+    .ranges > :global(.segmented) {
+      min-height: 2.25rem;
     }
   }
 </style>

@@ -25,3 +25,6 @@ trunk_under: "under {max} cm"
 trunk_over: "over {min} cm"
 trunk_between: "{min} to {max} cm"
 reset_trunk: Reset trunk diameter
+range_mode_label: Filter by
+range_mode_age: Est. tree age
+range_mode_trunk: "Trunk Ø"
