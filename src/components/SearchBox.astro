@@ -1,192 +1,72 @@
 ---
-import { loadFragment } from '../lib/content';
+import SegmentedToggle from './SegmentedToggle.astro';
+import ClearButton from './ClearButton.astro';
 
-const copy = loadFragment<Record<string, string>>('search');
+// Combobox with two modes: trees (genus, species, common name) and address (street, then house number)
+const { copy } = Astro.props;
 ---
 
-<div class="search-wrap">
-  <form
-    class="search"
-    role="search"
-    autocomplete="off"
-    data-placeholder={copy.placeholder}
-    data-placeholder-address={copy.placeholder_address}
-    data-placeholder-number={copy.placeholder_number}
-    data-no-results={copy.no_results}
-    data-no-street={copy.no_street}
-    data-no-tree={copy.no_tree}
-  >
-    <div class="field">
-      <div class="modes" role="group" aria-label={copy.mode_label} data-mode="trees">
-        <span class="thumb" aria-hidden="true"></span>
-        <button class="mode" type="button" data-mode="trees" aria-pressed="true">{copy.mode_trees}</button>
-        <button class="mode" type="button" data-mode="address" aria-pressed="false">{copy.mode_address}</button>
-      </div>
-      <span class="divider" aria-hidden="true"></span>
-      <svg class="glass" aria-hidden="true" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="7" />
-        <path d="m20 20-3.5-3.5" />
-      </svg>
-      <span class="spinner" role="status" aria-live="polite" aria-label="Loading" hidden></span>
-      <span class="chip" hidden>
-        <span class="chip-text"></span>
-        <button class="chip-drop" type="button" aria-label={copy.drop_street}>
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
-        </button>
-      </span>
-      <input
-        class="query"
-        type="text"
-        role="combobox"
-        aria-label={copy.placeholder}
-        aria-expanded="false"
-        aria-controls="search-results"
-        aria-autocomplete="list"
-        placeholder={copy.placeholder}
-        autocomplete="off"
-        spellcheck="false"
-        enterkeyhint="search"
-      />
-      <button class="clear" type="button" aria-label={copy.clear_label} hidden>
-        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
-      </button>
-    </div>
-    <ul id="search-results" class="results" role="listbox" hidden></ul>
-  </form>
-</div>
+<form
+  class="search"
+  role="search"
+  autocomplete="off"
+  data-placeholder={copy.placeholder}
+  data-placeholder-address={copy.placeholder_address}
+  data-placeholder-number={copy.placeholder_number}
+  data-no-results={copy.no_results}
+  data-no-street={copy.no_street}
+  data-no-tree={copy.no_tree}
+>
+  <div class="field">
+    <SegmentedToggle
+      name="mode"
+      label={copy.mode_label}
+      value="trees"
+      options={[
+        { value: 'trees', label: copy.mode_trees },
+        { value: 'address', label: copy.mode_address },
+      ]}
+    />
+    <span class="divider" aria-hidden="true"></span>
+    <svg class="glass" aria-hidden="true" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+    <span class="spinner" role="status" aria-live="polite" aria-label="Loading" hidden></span>
+    <span class="chip" hidden>
+      <span class="chip-text"></span>
+      <ClearButton label={copy.drop_street} class="chip-drop" variant="flat" />
+    </span>
+    <input
+      class="query"
+      type="text"
+      role="combobox"
+      aria-label={copy.placeholder}
+      aria-expanded="false"
+      aria-controls="search-results"
+      aria-autocomplete="list"
+      placeholder={copy.placeholder}
+      autocomplete="off"
+      spellcheck="false"
+      enterkeyhint="search"
+    />
+    <ClearButton label={copy.clear_label} class="clear" size="md" hidden />
+  </div>
+  <ul id="search-results" class="results" role="listbox" hidden></ul>
+</form>
 
 <script>
   import species from '../content/species.json';
-  import { GENUS_ICON, readBotanical } from '../lib/botanical';
+  import { GENUS_ICON } from '../lib/botanical';
+  import {
+    buildTreeIndex, loadStreets, searchTrees, searchStreets, parseAddress, interpolate, boundsOf,
+    type TreeEntry, type Street,
+  } from '../lib/search';
 
   const FILTER_EVENT = 'tt:genus-filter';
   const LOCATE_EVENT = 'tt:locate';
   const LOCATE_DONE_EVENT = 'tt:locate-done';
   const STREETS_URL = '/data/streets.json';
-  const MAX_RESULTS = 8;
-
-  type Row = { botanical: string; common: string; count: number };
-  type Searchable = { text: string; words: string[] };
-  type TreeEntry = Searchable & {
-    kind: 'genus' | 'species';
-    name: string;
-    common: string;
-    genus: string;
-    botanical?: string;
-    count: number;
-  };
-  type Street = Searchable & {
-    name: string;
-    display: string;
-    count: number;
-    anchors: [number, number, number][];
-    min: number;
-    max: number;
-  };
-
-  const tokenize = (s: string) => s.toLowerCase().replace(/['’]/g, '').split(/[\s,()]+/).filter(Boolean);
-  const searchable = (text: string): Searchable => {
-    const t = text.toLowerCase().replace(/['’]/g, '');
-    return { text: t, words: tokenize(t) };
-  };
-
-  // Genus rows aggregate their species; their common label is the most planted species' name before the comma
-  const buildTreeIndex = (): TreeEntry[] => {
-    const genera = new Map<string, { count: number; commons: Map<string, number> }>();
-    const entries: TreeEntry[] = [];
-    for (const row of species as Row[]) {
-      const { display, genus } = readBotanical(row.botanical);
-      if (!genus) continue;
-      const g = genera.get(genus) ?? { count: 0, commons: new Map() };
-      g.count += row.count;
-      const head = row.common.split(',')[0].trim();
-      g.commons.set(head, (g.commons.get(head) ?? 0) + row.count);
-      genera.set(genus, g);
-      entries.push({ kind: 'species', name: display, common: row.common, genus, botanical: row.botanical, count: row.count, ...searchable(`${display} ${row.common}`) });
-    }
-    for (const [genus, g] of genera) {
-      const common = [...g.commons].sort((a, b) => b[1] - a[1])[0][0];
-      const name = genus.charAt(0).toUpperCase() + genus.slice(1);
-      entries.push({ kind: 'genus', name, common, genus, count: g.count, ...searchable(`${name} ${common}`) });
-    }
-    return entries;
-  };
-
-  // The inventory shouts street names; single letters are directionals and stay upper
-  const titleCase = (s: string) =>
-    s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()).replace(/\b([a-z])\b/gi, c => c.toUpperCase());
-
-  let streetIndex: Street[] | null = null;
-  let streetLoad: Promise<Street[]> | null = null;
-  const loadStreets = () =>
-    (streetLoad ??= fetch(STREETS_URL)
-      .then(r => r.json())
-      .then((rows: [string, number, [number, number, number][]][]) =>
-        (streetIndex = rows.map(([name, count, anchors]) => ({
-          name,
-          display: titleCase(name),
-          count,
-          anchors,
-          min: anchors[0][0],
-          max: anchors[anchors.length - 1][0],
-          ...searchable(name),
-        })))
-      ));
-
-  // Every token must hit; a word-start hit outranks a substring, the leading word outranks the rest
-  const score = (e: Searchable, tokens: string[]) => {
-    let total = 0;
-    for (const t of tokens) {
-      if (e.words.some(w => w.startsWith(t))) total += e.words[0].startsWith(t) ? 3 : 2;
-      else if (e.text.includes(t)) total += 1;
-      else return 0;
-    }
-    return total;
-  };
-
-  const rank = <T extends Searchable>(index: T[], tokens: string[], tieBreak: (a: T, b: T) => number) => {
-    if (!tokens.length) return [];
-    const scored: [number, T][] = [];
-    for (const e of index) {
-      const s = score(e, tokens);
-      if (s) scored.push([s, e]);
-    }
-    return scored.sort((a, b) => b[0] - a[0] || tieBreak(a[1], b[1])).slice(0, MAX_RESULTS).map(s => s[1]);
-  };
-
-  const searchTrees = (index: TreeEntry[], query: string) =>
-    rank(index, tokenize(query), (a, b) => Number(b.kind === 'genus') - Number(a.kind === 'genus') || b.count - a.count);
-
-  // A leading number is the house number, the rest names the street
-  const parseAddress = (query: string) => {
-    const m = query.trim().match(/^(\d+)\s*(.*)$/);
-    return m ? { number: Number(m[1]), street: m[2] } : { number: null, street: query };
-  };
-
-  const searchStreets = (index: Street[], query: string) =>
-    rank(index, tokenize(query), (a, b) => b.count - a.count);
-
-  // Linear interpolation between the two anchors that bracket the house number
-  const interpolate = (s: Street, n: number): [number, number] => {
-    const a = s.anchors;
-    if (n <= a[0][0]) return [a[0][1], a[0][2]];
-    for (let i = 1; i < a.length; i++) {
-      if (n <= a[i][0]) {
-        const [n0, x0, y0] = a[i - 1];
-        const [n1, x1, y1] = a[i];
-        const t = n1 === n0 ? 0 : (n - n0) / (n1 - n0);
-        return [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t];
-      }
-    }
-    const last = a[a.length - 1];
-    return [last[1], last[2]];
-  };
-
-  const boundsOf = (s: Street): [[number, number], [number, number]] => {
-    const xs = s.anchors.map(p => p[1]);
-    const ys = s.anchors.map(p => p[2]);
-    return [[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]];
-  };
 
   let teardown: (() => void) | null = null;
 
@@ -205,11 +85,10 @@ const copy = loadFragment<Record<string, string>>('search');
     const chip = q<HTMLElement>('.chip');
     const chipText = q<HTMLElement>('.chip-text');
     const chipDrop = q<HTMLButtonElement>('.chip-drop');
-    const modeBtns = [...form.querySelectorAll<HTMLButtonElement>('.mode')];
-    const modes = q<HTMLElement>('.modes');
     const copy = form.dataset;
 
-    const treeIndex = buildTreeIndex();
+    const treeIndex = buildTreeIndex(species);
+    let streetIndex: Street[] | null = null;
     let mode: 'trees' | 'address' = 'trees';
     let results: (TreeEntry | Street)[] = [];
     let active = 0;
@@ -260,8 +139,6 @@ const copy = loadFragment<Record<string, string>>('search');
       chip.hidden = !(mode === 'address' && street);
       if (street) chipText.textContent = street.display;
       clearBtn.hidden = input.value === '';
-      modes.dataset.mode = mode;
-      for (const b of modeBtns) b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
     };
 
     const row = (i: number, name: string, sub: string, count: number, leafIcon?: string) => {
@@ -394,7 +271,7 @@ const copy = loadFragment<Record<string, string>>('search');
       input.focus();
       if (mode === 'address' && !streetIndex) {
         setBusy(true);
-        loadStreets().finally(() => setBusy(false));
+        loadStreets(STREETS_URL).then(i => (streetIndex = i)).finally(() => setBusy(false));
       }
     };
 
@@ -414,7 +291,7 @@ const copy = loadFragment<Record<string, string>>('search');
       }
       if (street) { setOpen(false); return; }
       if (!text) { results = []; setOpen(false); return; }
-      const index = streetIndex ?? (await loadStreets());
+      const index = streetIndex ?? (streetIndex = await loadStreets(STREETS_URL));
       if (input.value.trim() !== text) return;
       const { street: streetQuery } = parseAddress(text);
       results = streetQuery ? searchStreets(index, streetQuery) : [];
@@ -465,7 +342,7 @@ const copy = loadFragment<Record<string, string>>('search');
     input.addEventListener('blur', () => setOpen(false));
     clearBtn.addEventListener('click', clear);
     chipDrop.addEventListener('click', dropStreet);
-    for (const b of modeBtns) b.addEventListener('click', () => setMode(b.dataset.mode as 'trees' | 'address'));
+    form.addEventListener('tt:toggle', e => setMode((e as CustomEvent).detail.value));
     form.addEventListener('submit', ev => ev.preventDefault());
     document.addEventListener(FILTER_EVENT, onFilter);
     document.addEventListener(LOCATE_DONE_EVENT, onLocateDone);
@@ -486,94 +363,28 @@ const copy = loadFragment<Record<string, string>>('search');
 <style lang="scss">
   @use '../styles/breakpoints' as *;
 
-  .search-wrap {
-    padding-inline: var(--gutter);
-    padding-top: 1.5rem;
-  }
-
   .search {
     position: relative;
-    max-width: 36rem;
-    margin: 0 0 0 auto;
+    margin: 0;
   }
 
   .field {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    height: 3.25rem;
-    padding: 0.375rem 0.5rem 0.375rem 0.375rem;
-    border: 1px solid transparent;
-    border-radius: 0.875rem;
-    // Same forest-to-charred rule as the header line, drawn as the border through the transparent edge
-    background:
-      linear-gradient(#fff, #fff) padding-box,
-      linear-gradient(90deg, var(--forest), var(--charred)) border-box;
-    box-shadow: 0 1px 2px rgb(27 31 26 / 0.04);
-    transition: box-shadow 150ms ease;
+    height: 2.5rem;
+    padding-right: 0.25rem;
+    border-radius: 0.6rem;
+    transition: background-color 150ms ease;
   }
 
   .field:focus-within {
-    box-shadow: 0 0 0 0.25rem rgb(47 143 59 / 0.14);
+    background: rgb(47 143 59 / 0.06);
   }
 
   // Flex children would otherwise override the hidden attribute
   .field [hidden] {
     display: none;
-  }
-
-  .modes {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    flex-shrink: 0;
-    height: 100%;
-    padding: 0.2rem;
-    background: rgb(27 31 26 / 0.06);
-    border-radius: 0.6rem;
-  }
-
-  // The thumb slides under whichever mode is pressed; both cells share one width so CSS can drive it
-  .thumb {
-    position: absolute;
-    top: 0.2rem;
-    bottom: 0.2rem;
-    left: 0.2rem;
-    width: calc(50% - 0.2rem);
-    background: var(--forest);
-    border-radius: 0.45rem;
-    box-shadow: 0 1px 3px rgb(27 31 26 / 0.18);
-    transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .modes[data-mode='address'] .thumb {
-    transform: translateX(100%);
-  }
-
-  .mode {
-    position: relative;
-    z-index: 1;
-    margin: 0;
-    padding: 0 0.85rem;
-    border: 0;
-    border-radius: 0.45rem;
-    background: none;
-    font: inherit;
-    font-size: var(--text-xs);
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    color: var(--battleship);
-    cursor: pointer;
-    transition: color 200ms ease;
-  }
-
-  .mode[aria-pressed='true'] {
-    color: #fff;
-  }
-
-  .mode:focus-visible {
-    outline: 2px solid var(--forest);
-    outline-offset: 2px;
   }
 
   .divider {
@@ -628,36 +439,6 @@ const copy = loadFragment<Record<string, string>>('search');
     text-overflow: ellipsis;
   }
 
-  .chip-drop {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.35rem;
-    height: 1.35rem;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0.35rem;
-    background: none;
-    color: inherit;
-    cursor: pointer;
-    transition: background-color 150ms ease;
-  }
-
-  .chip-drop:hover {
-    background: rgb(47 143 59 / 0.15);
-  }
-
-  .chip-drop svg,
-  .clear svg {
-    width: 0.8rem;
-    height: 0.8rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-  }
-
   // Foundation styles text inputs with its own border and inset shadow, so both are reset here and on focus
   .query,
   .query:focus {
@@ -680,31 +461,10 @@ const copy = loadFragment<Record<string, string>>('search');
     opacity: 0.8;
   }
 
-  .clear {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: rgb(27 31 26 / 0.06);
-    color: var(--battleship);
-    cursor: pointer;
-    transition: background-color 150ms ease, color 150ms ease;
-  }
-
-  .clear:hover {
-    background: rgb(27 31 26 / 0.12);
-    color: var(--charred);
-  }
-
   .results {
     position: absolute;
     z-index: 10;
-    top: calc(100% + 0.5rem);
+    top: calc(100% + 0.75rem);
     left: 0;
     right: 0;
     max-height: 22rem;
@@ -727,7 +487,6 @@ const copy = loadFragment<Record<string, string>>('search');
 
   @media (prefers-reduced-motion: reduce) {
     .results { animation: none; }
-    .thumb { transition: none; }
   }
 
   // Rows are built in JS so they carry no scope attribute
@@ -798,9 +557,6 @@ const copy = loadFragment<Record<string, string>>('search');
   }
 
   @include medium {
-    .mode {
-      padding-inline: 0.6rem;
-    }
     .chip {
       max-width: 40%;
     }

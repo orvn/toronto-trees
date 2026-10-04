@@ -1,0 +1,197 @@
+---
+import ClearButton from './ClearButton.astro';
+
+// Dual-thumb range; dispatches a bubbling tt:range with { name, min, max }, null meaning unbounded
+const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, unit = '', resetLabel } = Astro.props;
+---
+
+<div class="range-slider" role="group" aria-label={label} data-name={name} data-any={anyText} data-unit={unit}>
+  <span class="control-name">{label}</span>
+  <div class="dual">
+    <span class="rail" aria-hidden="true"><span class="rail-fill"></span></span>
+    <input class="lo" type="range" min={min} max={max} step={step} value={min} aria-label={minLabel} />
+    <input class="hi" type="range" min={min} max={max} step={step} value={max} aria-label={maxLabel} />
+  </div>
+  <output class="value" aria-live="polite">{anyText}</output>
+  <ClearButton label={resetLabel} class="reset" hidden />
+</div>
+
+<script>
+  function initRangeSlider(root: HTMLElement) {
+    const lo = root.querySelector<HTMLInputElement>('.lo')!;
+    const hi = root.querySelector<HTMLInputElement>('.hi')!;
+    const fill = root.querySelector<HTMLElement>('.rail-fill')!;
+    const value = root.querySelector<HTMLOutputElement>('.value')!;
+    const reset = root.querySelector<HTMLButtonElement>('.reset')!;
+    const floor = Number(lo.min);
+    const ceil = Number(lo.max);
+
+    const paint = () => {
+      const a = Number(lo.value);
+      const b = Number(hi.value);
+      const span = ceil - floor;
+      fill.style.left = `${((a - floor) / span) * 100}%`;
+      fill.style.right = `${100 - ((b - floor) / span) * 100}%`;
+      const any = a === floor && b === ceil;
+      value.textContent = any ? root.dataset.any ?? '' : `${a} to ${b === ceil ? `${ceil}+` : b} ${root.dataset.unit ?? ''}`.trim();
+      reset.hidden = any;
+      root.classList.toggle('is-active', !any);
+      // Thumbs overlap at the top end, so the lower one rises to stay grabbable there
+      lo.classList.toggle('is-on-top', a >= ceil - span * 0.05);
+      return { any, a, b };
+    };
+
+    const emit = () => {
+      const { any, a, b } = paint();
+      root.dispatchEvent(
+        new CustomEvent('tt:range', {
+          bubbles: true,
+          detail: { name: root.dataset.name, min: !any && a > floor ? a : null, max: !any && b < ceil ? b : null },
+        })
+      );
+    };
+
+    // The thumbs may not cross; the one being dragged pushes the other along
+    const onInput = (ev: Event) => {
+      if (Number(lo.value) > Number(hi.value)) {
+        if (ev.target === lo) hi.value = lo.value;
+        else lo.value = hi.value;
+      }
+      emit();
+    };
+
+    lo.addEventListener('input', onInput);
+    hi.addEventListener('input', onInput);
+    reset.addEventListener('click', () => {
+      lo.value = String(floor);
+      hi.value = String(ceil);
+      emit();
+    });
+    paint();
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.range-slider').forEach(initRangeSlider);
+  });
+</script>
+
+<style lang="scss">
+  .range-slider {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: 2.5rem;
+  }
+
+  .control-name {
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--battleship);
+    white-space: nowrap;
+  }
+
+  .is-active .control-name {
+    color: var(--forest);
+  }
+
+  // Two native ranges stacked; only their thumbs take the pointer, so either can be grabbed
+  .dual {
+    position: relative;
+    flex: 1;
+    min-width: 7rem;
+    height: 1.5rem;
+  }
+
+  .rail {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 0.25rem;
+    transform: translateY(-50%);
+    background: rgb(27 31 26 / 0.1);
+    border-radius: 999px;
+  }
+
+  .rail-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: var(--forest);
+    border-radius: 999px;
+  }
+
+  input[type='range'] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    appearance: none;
+    pointer-events: none;
+    outline: none;
+  }
+
+  .is-on-top {
+    z-index: 2;
+  }
+
+  @mixin thumb {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--forest);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(27 31 26 / 0.2);
+    cursor: grab;
+    pointer-events: auto;
+    transition: transform 120ms ease;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    appearance: none;
+    @include thumb;
+  }
+
+  input[type='range']::-moz-range-thumb {
+    @include thumb;
+  }
+
+  input[type='range']::-webkit-slider-runnable-track,
+  input[type='range']::-moz-range-track {
+    background: none;
+  }
+
+  input[type='range']:active::-webkit-slider-thumb {
+    cursor: grabbing;
+    transform: scale(1.15);
+  }
+
+  input[type='range']:active::-moz-range-thumb {
+    cursor: grabbing;
+    transform: scale(1.15);
+  }
+
+  input[type='range']:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 0.25rem rgb(47 143 59 / 0.25);
+  }
+
+  input[type='range']:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 0.25rem rgb(47 143 59 / 0.25);
+  }
+
+  .value {
+    min-width: 5.5rem;
+    font-size: var(--text-xs);
+    color: var(--battleship);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .is-active .value {
+    color: var(--charred);
+  }
+</style>

@@ -1,0 +1,131 @@
+---
+import { loadFragment } from '../lib/content';
+import SearchBox from './SearchBox.astro';
+import RangeSlider from './RangeSlider.astro';
+import MinMaxInput from './MinMaxInput.astro';
+
+const copy = loadFragment<Record<string, string>>('filters');
+---
+
+<div class="filters-wrap">
+  <div class="filters">
+    <div class="slot search-slot">
+      <SearchBox copy={copy} />
+    </div>
+    <span class="divider" aria-hidden="true"></span>
+    <div class="slot">
+      <RangeSlider
+        name="age"
+        label={copy.age_label}
+        min={0}
+        max={200}
+        minLabel={copy.age_min_label}
+        maxLabel={copy.age_max_label}
+        anyText={copy.any}
+        unit={copy.years}
+        resetLabel={copy.reset_age}
+      />
+    </div>
+    <span class="divider" aria-hidden="true"></span>
+    <div class="slot">
+      <MinMaxInput
+        name="dbh"
+        label={copy.trunk_label}
+        unit={copy.cm}
+        minLabel={copy.trunk_min_label}
+        maxLabel={copy.trunk_max_label}
+        minPlaceholder={copy.min}
+        maxPlaceholder={copy.max}
+        toText={copy.to}
+        resetLabel={copy.reset_trunk}
+      />
+    </div>
+  </div>
+</div>
+
+<script>
+  // Each control reports its own bounds; the bar merges them into one event for the map
+  const RANGE_EVENT = 'tt:range-filter';
+
+  document.addEventListener('astro:page-load', () => {
+    const bar = document.querySelector<HTMLElement>('.filters');
+    if (!bar) return;
+    const state: Record<string, number | null> = { ageMin: null, ageMax: null, dbhMin: null, dbhMax: null };
+    let raf = 0;
+    bar.addEventListener('tt:range', e => {
+      const { name, min, max } = (e as CustomEvent).detail;
+      state[`${name}Min`] = min;
+      state[`${name}Max`] = max;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() =>
+        document.dispatchEvent(new CustomEvent(RANGE_EVENT, { detail: { ...state } }))
+      );
+    });
+  });
+</script>
+
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+
+  .filters-wrap {
+    padding-inline: var(--gutter);
+    padding-top: 1.5rem;
+  }
+
+  // One bar for everything; the forest-to-charred rule from the header is drawn as its border
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0.375rem 1rem 0.375rem 0.375rem;
+    border: 1px solid transparent;
+    border-radius: 0.875rem;
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(90deg, var(--forest), var(--charred)) border-box;
+    box-shadow: 0 1px 2px rgb(27 31 26 / 0.04);
+  }
+
+  .slot {
+    flex-shrink: 0;
+  }
+
+  .search-slot {
+    flex: 1 1 22rem;
+    min-width: 0;
+  }
+
+  .divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 1.75rem;
+    background: rgb(27 31 26 / 0.12);
+  }
+
+  @include xl {
+    .filters {
+      flex-wrap: wrap;
+      row-gap: 0.5rem;
+      padding-right: 0.75rem;
+    }
+    .search-slot {
+      flex-basis: 100%;
+    }
+    .search-slot + .divider {
+      display: none;
+    }
+    .slot {
+      padding-left: 0.25rem;
+    }
+  }
+
+  @include medium {
+    .divider {
+      display: none;
+    }
+    .slot {
+      flex-basis: 100%;
+    }
+  }
+</style>
