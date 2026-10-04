@@ -2,18 +2,13 @@
 import { loadFragment } from '../lib/content';
 import SearchBox from './SearchBox.astro';
 import RangeSlider from './RangeSlider.astro';
-import MinMaxInput from './MinMaxInput.astro';
 
 const copy = loadFragment<Record<string, string>>('filters');
 ---
 
 <div class="filters-wrap">
   <div class="filters">
-    <div class="slot search-slot">
-      <SearchBox copy={copy} />
-    </div>
-    <span class="divider" aria-hidden="true"></span>
-    <div class="slot">
+    <div class="bar ranges">
       <RangeSlider
         name="age"
         label={copy.age_label}
@@ -21,24 +16,29 @@ const copy = loadFragment<Record<string, string>>('filters');
         max={200}
         minLabel={copy.age_min_label}
         maxLabel={copy.age_max_label}
-        anyText={copy.any}
-        unit={copy.years}
+        anyText={copy.age_any}
+        underText={copy.age_under}
+        overText={copy.age_over}
+        betweenText={copy.age_between}
         resetLabel={copy.reset_age}
       />
-    </div>
-    <span class="divider" aria-hidden="true"></span>
-    <div class="slot">
-      <MinMaxInput
+      <span class="divider" aria-hidden="true"></span>
+      <RangeSlider
         name="dbh"
         label={copy.trunk_label}
-        unit={copy.cm}
+        min={0}
+        max={150}
         minLabel={copy.trunk_min_label}
         maxLabel={copy.trunk_max_label}
-        minPlaceholder={copy.min}
-        maxPlaceholder={copy.max}
-        toText={copy.to}
+        anyText={copy.trunk_any}
+        underText={copy.trunk_under}
+        overText={copy.trunk_over}
+        betweenText={copy.trunk_between}
         resetLabel={copy.reset_trunk}
       />
+    </div>
+    <div class="bar search-bar">
+      <SearchBox copy={copy} />
     </div>
   </div>
 </div>
@@ -72,13 +72,19 @@ const copy = loadFragment<Record<string, string>>('filters');
     padding-top: 1.5rem;
   }
 
-  // One bar for everything; the forest-to-charred rule from the header is drawn as its border
   .filters {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  // The forest-to-charred rule from the header is drawn as each bar's border
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     min-height: 3.25rem;
-    padding: 0.375rem 1rem 0.375rem 0.375rem;
+    padding: 0.375rem 1rem;
     border: 1px solid transparent;
     border-radius: 0.875rem;
     background:
@@ -87,12 +93,19 @@ const copy = loadFragment<Record<string, string>>('filters');
     box-shadow: 0 1px 2px rgb(27 31 26 / 0.04);
   }
 
-  .slot {
+  .ranges {
     flex-shrink: 0;
   }
 
-  .search-slot {
+  .search-bar {
     flex: 1 1 22rem;
+    min-width: 0;
+    padding: 0.375rem 0.5rem 0.375rem 0.375rem;
+  }
+
+  // The search form fills its bar so the dropdown spans the same width
+  .search-bar > :global(*) {
+    flex: 1;
     min-width: 0;
   }
 
@@ -106,25 +119,21 @@ const copy = loadFragment<Record<string, string>>('filters');
   @include xl {
     .filters {
       flex-wrap: wrap;
-      row-gap: 0.5rem;
-      padding-right: 0.75rem;
     }
-    .search-slot {
+    .bar {
       flex-basis: 100%;
-    }
-    .search-slot + .divider {
-      display: none;
-    }
-    .slot {
-      padding-left: 0.25rem;
     }
   }
 
   @include medium {
+    .ranges {
+      flex-wrap: wrap;
+      row-gap: 0.5rem;
+    }
     .divider {
       display: none;
     }
-    .slot {
+    .ranges > :global(*) {
       flex-basis: 100%;
     }
   }

@@ -1,11 +1,21 @@
 ---
 import ClearButton from './ClearButton.astro';
 
-// Dual-thumb range; dispatches a bubbling tt:range with { name, min, max }, null meaning unbounded
-const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, unit = '', resetLabel } = Astro.props;
+// Dual-thumb range; dispatches a bubbling tt:range with { name, min, max }, null meaning unbounded.
+// Readout templates take {min} and {max}: anyText, underText (only a max), overText (only a min), betweenText
+const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel } = Astro.props;
 ---
 
-<div class="range-slider" role="group" aria-label={label} data-name={name} data-any={anyText} data-unit={unit}>
+<div
+  class="range-slider"
+  role="group"
+  aria-label={label}
+  data-name={name}
+  data-any={anyText}
+  data-under={underText}
+  data-over={overText}
+  data-between={betweenText}
+>
   <span class="control-name">{label}</span>
   <div class="dual">
     <span class="rail" aria-hidden="true"><span class="rail-fill"></span></span>
@@ -13,7 +23,7 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
     <input class="hi" type="range" min={min} max={max} step={step} value={max} aria-label={maxLabel} />
   </div>
   <output class="value" aria-live="polite">{anyText}</output>
-  <ClearButton label={resetLabel} class="reset" hidden />
+  <ClearButton label={resetLabel} class="reset" ghost />
 </div>
 
 <script>
@@ -33,8 +43,13 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
       fill.style.left = `${((a - floor) / span) * 100}%`;
       fill.style.right = `${100 - ((b - floor) / span) * 100}%`;
       const any = a === floor && b === ceil;
-      value.textContent = any ? root.dataset.any ?? '' : `${a} to ${b === ceil ? `${ceil}+` : b} ${root.dataset.unit ?? ''}`.trim();
-      reset.hidden = any;
+      const fill_ = (t: string) => t.replace('{min}', String(a)).replace('{max}', String(b));
+      value.textContent = any
+        ? root.dataset.any ?? ''
+        : a === floor ? fill_(root.dataset.under ?? '')
+        : b === ceil ? fill_(root.dataset.over ?? '')
+        : fill_(root.dataset.between ?? '');
+      reset.classList.toggle('ghost', any);
       root.classList.toggle('is-active', !any);
       // Thumbs overlap at the top end, so the lower one rises to stay grabbable there
       lo.classList.toggle('is-on-top', a >= ceil - span * 0.05);
@@ -99,7 +114,8 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
   .dual {
     position: relative;
     flex: 1;
-    min-width: 7rem;
+    width: 8rem;
+    min-width: 6rem;
     height: 1.5rem;
   }
 
@@ -184,7 +200,7 @@ const { name, label, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, 
   }
 
   .value {
-    min-width: 5.5rem;
+    min-width: 6rem;
     font-size: var(--text-xs);
     color: var(--battleship);
     font-variant-numeric: tabular-nums;

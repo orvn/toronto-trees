@@ -9,17 +9,19 @@ drop_street: Change street
 no_results: No trees match that
 no_street: No street by that name
 no_tree: No tree found near that number
-age_label: Age
-age_min_label: Minimum age
-age_max_label: Maximum age
-any: any age
-years: yrs
+age_label: Est. tree age
+age_min_label: Minimum estimated age
+age_max_label: Maximum estimated age
+age_any: any age
+age_under: "under {max} yrs"
+age_over: "over {min} yrs"
+age_between: "{min} to {max} yrs"
 reset_age: Reset age
 trunk_label: "Trunk Ø"
 trunk_min_label: Minimum trunk diameter
 trunk_max_label: Maximum trunk diameter
-min: min
-max: max
-to: to
-cm: cm
+trunk_any: any size
+trunk_under: "under {max} cm"
+trunk_over: "over {min} cm"
+trunk_between: "{min} to {max} cm"
 reset_trunk: Reset trunk diameter

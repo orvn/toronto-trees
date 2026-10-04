@@ -1,9 +1,9 @@
 ---
 // Small × button shared by the search field, street chip, and range resets
-const { label, size = 'sm', variant = 'disc', class: className, hidden = false } = Astro.props;
+const { label, size = 'sm', variant = 'disc', class: className, hidden = false, ghost = false } = Astro.props;
 ---
 
-<button class:list={['clear-btn', size, variant, className]} type="button" aria-label={label} hidden={hidden}>
+<button class:list={['clear-btn', size, variant, className, { ghost }]} type="button" aria-label={label} hidden={hidden}>
   <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
 </button>
 
@@ -25,6 +25,11 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false }
 
   .clear-btn[hidden] {
     display: none;
+  }
+
+  .ghost {
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .clear-btn:hover {
