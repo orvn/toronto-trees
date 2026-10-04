@@ -226,7 +226,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
       // estimateAge() for the GPU: most specific growth-factor key first, each matched as a name prefix.
       // The inventory's misspelt genera get their own keys so they pick up the right factor
-      const factorEntries = Object.entries(GROWTH_FACTOR).filter(([k]) => k !== '_default');
+      const factorEntries = Object.entries(GROWTH_FACTOR).filter(([k, v]) => k !== '_default' && typeof v === 'number');
       for (const [raw, fixed] of Object.entries(GENUS_FIX)) {
         for (const [k, v] of [...factorEntries]) {
           if (k.startsWith(fixed)) factorEntries.push([raw + k.slice(fixed.length), v]);
