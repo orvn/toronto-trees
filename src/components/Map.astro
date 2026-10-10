@@ -25,6 +25,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   import cfg from '../content/map-style.json';
   import growthFactors from '../content/growth-factors.json';
   import { GENUS_COLOR_VAR, GENUS_ICON, GENUS_FIX, readBotanical, readCommon } from '../lib/botanical';
+  import { readViewParams, writeViewParams, readSpotlightParam, writeSpotlightParam } from '../lib/params';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
@@ -90,12 +91,14 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     // Overriding the UI string keeps the tooltip and accessible name matching the visible label
     const geolocateLabel = container.dataset.geolocateLabel || '';
 
+    const view = readViewParams();
+
     const map = new maplibregl.Map({
       container,
       locale: geolocateLabel ? { 'GeolocateControl.FindMyLocation': geolocateLabel } : undefined,
       style: cfg.basemap,
-      center: cfg.center as [number, number],
-      zoom: cfg.zoom,
+      center: view.center ?? (cfg.center as [number, number]),
+      zoom: view.zoom ?? cfg.zoom,
       minZoom: cfg.minZoom,
       maxZoom: cfg.maxZoom,
       maxBounds: cfg.maxBounds as [[number, number], [number, number]],
@@ -104,6 +107,8 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
     (container as any).__mapInstance = map;
     currentMap = map;
+
+    map.on('moveend', () => writeViewParams(map));
 
     // Geolocation control
     const geolocate = new maplibregl.GeolocateControl({
@@ -376,7 +381,20 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       };
       document.addEventListener('tt:range-filter', rangeHandler);
 
+      // Which tile source and id property each key prefix resolves to
+      const TREE_SOURCES: Record<string, { source: string; sourceLayer: string; idProp: string }> = {
+        t: { source: circles.source, sourceLayer: circles['source-layer'], idProp: 'OBJECTID' },
+      };
+      const treeKey = (prefix: string, p: Record<string, any>) => {
+        const id = Number(p[TREE_SOURCES[prefix].idProp]);
+        return Number.isInteger(id) && id > 0 ? `${prefix}${id}` : null;
+      };
+
+      let currentPopup: maplibregl.Popup | null = null;
+
       const openTreePopup = (p: Record<string, any>, lngLat: [number, number]) => {
+        currentPopup?.remove();
+
         const wrap = document.createElement('div');
         wrap.className = 'tree-popup';
 
@@ -432,10 +450,24 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           }
         }
 
-        new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'tp' })
+        const popup = new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'tp' })
           .setLngLat(lngLat)
           .setDOMContent(wrap)
           .addTo(map);
+        currentPopup = popup;
+
+        const key = treeKey('t', p);
+        if (key) {
+          writeViewParams(map);
+          writeSpotlightParam(key);
+          popup.on('close', () => {
+            if (currentPopup === popup) {
+              currentPopup = null;
+              writeSpotlightParam(null);
+            }
+          });
+        }
+        return popup;
       };
 
       map.on('click', 'trees-circles', (e) => {
@@ -477,6 +509,23 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         });
       };
       document.addEventListener('tt:locate', locateHandler);
+
+      // Deep link: the tree is only findable once its tile has loaded, so wait for the first idle
+      const spotlight = readSpotlightParam();
+      const spotlightSrc = spotlight && TREE_SOURCES[spotlight.prefix];
+      if (spotlight && spotlightSrc) {
+        map.once('idle', () => {
+          const [f] = map.querySourceFeatures(spotlightSrc.source, {
+            sourceLayer: spotlightSrc.sourceLayer,
+            filter: ['==', ['get', spotlightSrc.idProp], spotlight.id],
+          });
+          if (!f) return;
+          const g = f.geometry as any;
+          const coord = g.type === 'MultiPoint' ? g.coordinates[0] : g.coordinates;
+          if (!coord) return;
+          openTreePopup(f.properties ?? {}, coord as [number, number]);
+        });
+      }
 
       // mousemove rather than mouseenter, so the cursor tracks selectability within the layer
       map.on('mousemove', 'trees-circles', (e) => {
