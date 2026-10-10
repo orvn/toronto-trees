@@ -24,6 +24,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   import 'maplibre-gl/dist/maplibre-gl.css';
   import cfg from '../content/map-style.json';
   import growthFactors from '../content/growth-factors.json';
+  import { readViewParams, writeViewParams } from '../lib/params';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
@@ -191,12 +192,14 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     // Overriding the UI string keeps the tooltip and accessible name matching the visible label
     const geolocateLabel = container.dataset.geolocateLabel || '';
 
+    const view = readViewParams();
+
     const map = new maplibregl.Map({
       container,
       locale: geolocateLabel ? { 'GeolocateControl.FindMyLocation': geolocateLabel } : undefined,
       style: cfg.basemap,
-      center: cfg.center as [number, number],
-      zoom: cfg.zoom,
+      center: view.center ?? (cfg.center as [number, number]),
+      zoom: view.zoom ?? cfg.zoom,
       minZoom: cfg.minZoom,
       maxZoom: cfg.maxZoom,
       maxBounds: cfg.maxBounds as [[number, number], [number, number]],
@@ -205,6 +208,8 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
     (container as any).__mapInstance = map;
     currentMap = map;
+
+    map.on('moveend', () => writeViewParams(map));
 
     // Geolocation control
     const geolocate = new maplibregl.GeolocateControl({
