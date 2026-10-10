@@ -24,7 +24,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   import 'maplibre-gl/dist/maplibre-gl.css';
   import cfg from '../content/map-style.json';
   import growthFactors from '../content/growth-factors.json';
-  import { readViewParams, writeViewParams } from '../lib/params';
+  import { readViewParams, writeViewParams, readSpotlightParam, writeSpotlightParam } from '../lib/params';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
@@ -416,10 +416,10 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       };
       document.addEventListener('tt:genus-filter', filterHandler);
 
-      map.on('click', 'trees-circles', (e) => {
-        const f = e.features?.find(x => isSelectable(x.properties?.BOTANICAL_NAME));
-        if (!f) return;
-        const p = f.properties ?? {};
+      let currentPopup: maplibregl.Popup | null = null;
+
+      const openTreePopup = (p: Record<string, any>, lngLat: maplibregl.LngLatLike) => {
+        currentPopup?.remove();
 
         const wrap = document.createElement('div');
         wrap.className = 'tree-popup';
@@ -485,11 +485,47 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           }
         }
 
-        new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'tp' })
-          .setLngLat(e.lngLat)
+        const popup = new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'tp' })
+          .setLngLat(lngLat)
           .setDOMContent(wrap)
           .addTo(map);
+        currentPopup = popup;
+
+        const id = Number(p.OBJECTID);
+        if (Number.isInteger(id) && id > 0) {
+          writeViewParams(map);
+          writeSpotlightParam(id);
+          popup.on('close', () => {
+            if (currentPopup === popup) {
+              currentPopup = null;
+              writeSpotlightParam(null);
+            }
+          });
+        }
+        return popup;
+      };
+
+      map.on('click', 'trees-circles', (e) => {
+        const f = e.features?.find(x => isSelectable(x.properties?.BOTANICAL_NAME));
+        if (!f) return;
+        openTreePopup(f.properties ?? {}, e.lngLat);
       });
+
+      // Deep link: the tree is only findable once its tile has loaded, so wait for the first idle
+      const spotlight = readSpotlightParam();
+      if (spotlight !== null) {
+        map.once('idle', () => {
+          const [f] = map.querySourceFeatures('trees', {
+            sourceLayer: circles['source-layer'],
+            filter: ['==', ['get', 'OBJECTID'], spotlight],
+          });
+          if (!f) return;
+          const g = f.geometry as any;
+          const coord = g.type === 'MultiPoint' ? g.coordinates[0] : g.coordinates;
+          if (!coord) return;
+          openTreePopup(f.properties ?? {}, coord as [number, number]);
+        });
+      }
 
       // mousemove rather than mouseenter, so the cursor tracks selectability within the layer
       map.on('mousemove', 'trees-circles', (e) => {
