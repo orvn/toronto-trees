@@ -27,7 +27,7 @@ const updateQuery = (mutate: (q: URLSearchParams) => void) => {
 
 export function readViewParams() {
   const q = new URLSearchParams(location.search);
-  const lng = readNum(q, 'lng');
+  const lng = readNum(q, 'long');
   const lat = readNum(q, 'lat');
   const zoom = readNum(q, 'zoom');
   return {
@@ -39,18 +39,21 @@ export function readViewParams() {
 export function writeViewParams(map: ViewMap) {
   const { lng, lat } = map.getCenter();
   updateQuery(q => {
-    q.set('lng', lng.toFixed(5));
+    q.set('long', lng.toFixed(5));
     q.set('lat', lat.toFixed(5));
     q.set('zoom', map.getZoom().toFixed(2));
   });
 }
 
-// OBJECTID of the tree whose popup is open
+// Tree keys are a source prefix plus that source's own numeric id, e.g. t555172,
+// so ids from other inventories can be merged later without renumbering
+export const TREE_KEY = /^([a-z])(\d+)$/;
+
 export function readSpotlightParam() {
-  const id = readNum(new URLSearchParams(location.search), 'spotlight');
-  return id !== null && Number.isInteger(id) && id > 0 ? id : null;
+  const m = TREE_KEY.exec(new URLSearchParams(location.search).get('spotlight') ?? '');
+  return m ? { prefix: m[1], id: Number(m[2]) } : null;
 }
 
-export function writeSpotlightParam(id: number | null) {
-  updateQuery(q => (id === null ? q.delete('spotlight') : q.set('spotlight', String(id))));
+export function writeSpotlightParam(key: string | null) {
+  updateQuery(q => (key === null ? q.delete('spotlight') : q.set('spotlight', key)));
 }

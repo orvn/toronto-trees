@@ -416,6 +416,15 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       };
       document.addEventListener('tt:genus-filter', filterHandler);
 
+      // Which tile source and id property each key prefix resolves to
+      const TREE_SOURCES: Record<string, { source: string; sourceLayer: string; idProp: string }> = {
+        t: { source: circles.source, sourceLayer: circles['source-layer'], idProp: 'OBJECTID' },
+      };
+      const treeKey = (prefix: string, p: Record<string, any>) => {
+        const id = Number(p[TREE_SOURCES[prefix].idProp]);
+        return Number.isInteger(id) && id > 0 ? `${prefix}${id}` : null;
+      };
+
       let currentPopup: maplibregl.Popup | null = null;
 
       const openTreePopup = (p: Record<string, any>, lngLat: maplibregl.LngLatLike) => {
@@ -491,10 +500,10 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           .addTo(map);
         currentPopup = popup;
 
-        const id = Number(p.OBJECTID);
-        if (Number.isInteger(id) && id > 0) {
+        const key = treeKey('t', p);
+        if (key) {
           writeViewParams(map);
-          writeSpotlightParam(id);
+          writeSpotlightParam(key);
           popup.on('close', () => {
             if (currentPopup === popup) {
               currentPopup = null;
@@ -513,11 +522,12 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
       // Deep link: the tree is only findable once its tile has loaded, so wait for the first idle
       const spotlight = readSpotlightParam();
-      if (spotlight !== null) {
+      const spotlightSrc = spotlight && TREE_SOURCES[spotlight.prefix];
+      if (spotlight && spotlightSrc) {
         map.once('idle', () => {
-          const [f] = map.querySourceFeatures('trees', {
-            sourceLayer: circles['source-layer'],
-            filter: ['==', ['get', 'OBJECTID'], spotlight],
+          const [f] = map.querySourceFeatures(spotlightSrc.source, {
+            sourceLayer: spotlightSrc.sourceLayer,
+            filter: ['==', ['get', spotlightSrc.idProp], spotlight.id],
           });
           if (!f) return;
           const g = f.geometry as any;
