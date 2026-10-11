@@ -1,0 +1,1542 @@
+[
+   {
+      "botanical" : "Acer platanoides",
+      "common" : "Maple, Norway",
+      "count" : 69468
+   },
+   {
+      "botanical" : "Gleditsia triacanthos",
+      "common" : "Honey locust",
+      "count" : 27758
+   },
+   {
+      "botanical" : "Picea pungens",
+      "common" : "Spruce, Colorado blue",
+      "count" : 24086
+   },
+   {
+      "botanical" : "Quercus rubra",
+      "common" : "Oak, red",
+      "count" : 23707
+   },
+   {
+      "botanical" : "Tilia cordata",
+      "common" : "Linden, littleleaf",
+      "count" : 21366
+   },
+   {
+      "botanical" : "Acer saccharinum",
+      "common" : "Maple, silver",
+      "count" : 19876
+   },
+   {
+      "botanical" : "Syringa reticulata",
+      "common" : "Lilac, Japanese",
+      "count" : 17580
+   },
+   {
+      "botanical" : "Gymnocladus dioicus",
+      "common" : "Kentucky coffeetree",
+      "count" : 17352
+   },
+   {
+      "botanical" : "Malus sargentii",
+      "common" : "Apple, Sargents",
+      "count" : 16897
+   },
+   {
+      "botanical" : "ginkgo biloba",
+      "common" : "Ginkgo",
+      "count" : 16324
+   },
+   {
+      "botanical" : "Gleditsia triacanthos f. inermis 'Skyline'",
+      "common" : "Honey locust Skyline",
+      "count" : 16227
+   },
+   {
+      "botanical" : "Acer x freemanii (A. rubrum x saccharinum) 'Autumn Blaze'",
+      "common" : "Maple, Freeman Autumn Blaze",
+      "count" : 15025
+   },
+   {
+      "botanical" : "Celtis occidentalis",
+      "common" : "Hackberry",
+      "count" : 14129
+   },
+   {
+      "botanical" : "Amelanchier canadensis",
+      "common" : "Serviceberry",
+      "count" : 12062
+   },
+   {
+      "botanical" : "Gleditsia triacanthos f. inermis 'Shademaster'",
+      "common" : "Honey locust Shademaster",
+      "count" : 11773
+   },
+   {
+      "botanical" : "Acer platanoides 'Schwedleri'",
+      "common" : "Maple, Norway Schwedler",
+      "count" : 11757
+   },
+   {
+      "botanical" : "Pinus nigra",
+      "common" : "Pine, Austrian",
+      "count" : 11335
+   },
+   {
+      "botanical" : "Acer saccharum",
+      "common" : "Maple, sugar",
+      "count" : 11325
+   },
+   {
+      "botanical" : "Picea glauca",
+      "common" : "Spruce, white",
+      "count" : 9782
+   },
+   {
+      "botanical" : "Ulmus pumila",
+      "common" : "Elm, Siberian",
+      "count" : 9782
+   },
+   {
+      "botanical" : "Acer platanoides 'Crimson King'",
+      "common" : "Maple, Norway Crimson King",
+      "count" : 9535
+   },
+   {
+      "botanical" : "Tilia",
+      "common" : "Linden",
+      "count" : 9318
+   },
+   {
+      "botanical" : "Betula papyrifera",
+      "common" : "Birch, white",
+      "count" : 8525
+   },
+   {
+      "botanical" : "Pyrus calleryana 'Chanticleer'",
+      "common" : "Pear Chanticleer",
+      "count" : 8355
+   },
+   {
+      "botanical" : "Quercus macrocarpa",
+      "common" : "Oak, bur",
+      "count" : 7915
+   },
+   {
+      "botanical" : "Liriodendron tulipifera",
+      "common" : "Tulip tree",
+      "count" : 7738
+   },
+   {
+      "botanical" : "Acer rubrum",
+      "common" : "Maple, red",
+      "count" : 7684
+   },
+   {
+      "botanical" : "Catalpa speciosa",
+      "common" : "Catalpa, northern",
+      "count" : 7496
+   },
+   {
+      "botanical" : "Acer negundo",
+      "common" : "Maple, Manitoba",
+      "count" : 6696
+   },
+   {
+      "botanical" : "Thuja occidentalis",
+      "common" : "Cedar, white",
+      "count" : 6384
+   },
+   {
+      "botanical" : "Quercus bicolor",
+      "common" : "Oak, swamp white",
+      "count" : 6270
+   },
+   {
+      "botanical" : "Tilia americana 'Redmond'",
+      "common" : "Basswood, Redmond",
+      "count" : 6248
+   },
+   {
+      "botanical" : "Platanus x acerifolia",
+      "common" : "Planetree, London",
+      "count" : 6129
+   },
+   {
+      "botanical" : "Fraxinus pennsylvanica",
+      "common" : "Ash, green",
+      "count" : 5680
+   },
+   {
+      "botanical" : "Ulmus americana 'Valley Forge'",
+      "common" : "Elm, American Valley Forge",
+      "count" : 4763
+   },
+   {
+      "botanical" : "Ulmus",
+      "common" : "Elm",
+      "count" : 4185
+   },
+   {
+      "botanical" : "Ulmus davidiana 'japonica Morton",
+      "common" : "Elm, Accolade",
+      "count" : 4153
+   },
+   {
+      "botanical" : "Gymnocladus dioicus 'Espresso'",
+      "common" : "Kentucky coffeetree, Espresso",
+      "count" : 4130
+   },
+   {
+      "botanical" : "Gleditsia triacanthos 'Sunburst'",
+      "common" : "Honey locust Sunburst",
+      "count" : 3812
+   },
+   {
+      "botanical" : "Quercus alba",
+      "common" : "Oak, white",
+      "count" : 3807
+   },
+   {
+      "botanical" : "Tilia cordata 'Greenspire'",
+      "common" : "Linden, littleleaf Greenspire",
+      "count" : 3752
+   },
+   {
+      "botanical" : "Acer tataricum subsp. ginnala",
+      "common" : "Maple, Amur",
+      "count" : 3695
+   },
+   {
+      "botanical" : "Picea abies",
+      "common" : "Spruce, Norway",
+      "count" : 3552
+   },
+   {
+      "botanical" : "Acer campestre",
+      "common" : "Maple, hedge",
+      "count" : 3420
+   },
+   {
+      "botanical" : "Acer palmatum",
+      "common" : "Maple, Japanese",
+      "count" : 3335
+   },
+   {
+      "botanical" : "Acer platanoides 'columnare'",
+      "common" : "Maple, Norway columnar",
+      "count" : 3301
+   },
+   {
+      "botanical" : "Picea",
+      "common" : "Spruce",
+      "count" : 3294
+   },
+   {
+      "botanical" : "Tilia americana",
+      "common" : "Basswood, American",
+      "count" : 3088
+   },
+   {
+      "botanical" : "Betula",
+      "common" : "Birch",
+      "count" : 3028
+   },
+   {
+      "botanical" : "Aesculus hippocastanum",
+      "common" : "Horsechestnut",
+      "count" : 2978
+   },
+   {
+      "botanical" : "Aesculus glabra",
+      "common" : "Buckeye, Ohio",
+      "count" : 2913
+   },
+   {
+      "botanical" : "Cercis canadensis",
+      "common" : "Redbud",
+      "count" : 2899
+   },
+   {
+      "botanical" : "Morus alba 'pendula'",
+      "common" : "Mulberry, white weeping",
+      "count" : 2854
+   },
+   {
+      "botanical" : "Acer x freemanii (A. rubrum x saccharinum) 'Armstrong'",
+      "common" : "Maple, Freeman Armstrong",
+      "count" : 2781
+   },
+   {
+      "botanical" : "Platanus x acerifolia 'Bloodgood'",
+      "common" : "Planetree, London Bloodgood",
+      "count" : 2739
+   },
+   {
+      "botanical" : "Aesculus flava",
+      "common" : "Buckeye, yellow",
+      "count" : 2714
+   },
+   {
+      "botanical" : "Magnolia x soulngeana (M. denudata x liliiflora)",
+      "common" : "Magnolia, saucer",
+      "count" : 2688
+   },
+   {
+      "botanical" : "Cercidiphyllum japonicum",
+      "common" : "Katsura, Japanese",
+      "count" : 2667
+   },
+   {
+      "botanical" : "Morus alba",
+      "common" : "Mulberry, white",
+      "count" : 2656
+   },
+   {
+      "botanical" : "Prunus spp.",
+      "common" : "Cherry",
+      "count" : 2591
+   },
+   {
+      "botanical" : "Pinus strobus",
+      "common" : "Pine, eastern white",
+      "count" : 2581
+   },
+   {
+      "botanical" : "Acer nigrum",
+      "common" : "Maple, black",
+      "count" : 2570
+   },
+   {
+      "botanical" : "Acer platanoides 'Emerald Queen'",
+      "common" : "Maple, Norway Emerald Queen",
+      "count" : 2570
+   },
+   {
+      "botanical" : "Aesculus x carnea 'Briotii'",
+      "common" : "Horsechestnut, Ruby red",
+      "count" : 2544
+   },
+   {
+      "botanical" : "Pinus sylvestris",
+      "common" : "Pine scots",
+      "count" : 2515
+   },
+   {
+      "botanical" : "Fagus sylvatica",
+      "common" : "Beech, European",
+      "count" : 2438
+   },
+   {
+      "botanical" : "Ulmus americana",
+      "common" : "Elm, American",
+      "count" : 2311
+   },
+   {
+      "botanical" : "Quercus robur",
+      "common" : "Oak, English",
+      "count" : 2280
+   },
+   {
+      "botanical" : "Acer",
+      "common" : "Maple",
+      "count" : 2275
+   },
+   {
+      "botanical" : "Robinia pseudoacacia",
+      "common" : "Black locust",
+      "count" : 2265
+   },
+   {
+      "botanical" : "Quercus palustris",
+      "common" : "Oak, pin",
+      "count" : 2135
+   },
+   {
+      "botanical" : "Fraxinus americana",
+      "common" : "Ash, white",
+      "count" : 2131
+   },
+   {
+      "botanical" : "Prunus spp.",
+      "common" : "Plum",
+      "count" : 2073
+   },
+   {
+      "botanical" : "Ostrya virginiana",
+      "common" : "Ironwood",
+      "count" : 2034
+   },
+   {
+      "botanical" : "Corylus colurna",
+      "common" : "Hazel, Turkish",
+      "count" : 1997
+   },
+   {
+      "botanical" : "Tilia cordata 'Glenleven'",
+      "common" : "Linden, littleleaf Glenleven",
+      "count" : 1986
+   },
+   {
+      "botanical" : "Malus",
+      "common" : "Apple",
+      "count" : 1977
+   },
+   {
+      "botanical" : "Juglans nigra",
+      "common" : "Walnut, black",
+      "count" : 1955
+   },
+   {
+      "botanical" : "Thuja",
+      "common" : "Cedar",
+      "count" : 1945
+   },
+   {
+      "botanical" : "Juniperus virginiana",
+      "common" : "Cedar, eastern red",
+      "count" : 1932
+   },
+   {
+      "botanical" : "Cladrastis kentukea",
+      "common" : "Yellowwood, Kentucky",
+      "count" : 1926
+   },
+   {
+      "botanical" : "Quercus robur 'Fastigiata'",
+      "common" : "Oak, English pyramidal",
+      "count" : 1758
+   },
+   {
+      "botanical" : "Morus",
+      "common" : "Mulberry",
+      "count" : 1740
+   },
+   {
+      "botanical" : "Pyrus",
+      "common" : "Pear",
+      "count" : 1720
+   },
+   {
+      "botanical" : "Prunus serrulata",
+      "common" : "Cherry, Japanese",
+      "count" : 1586
+   },
+   {
+      "botanical" : "Quercus",
+      "common" : "Oak",
+      "count" : 1580
+   },
+   {
+      "botanical" : "Sorbus thuringiaca 'Fastigiata'",
+      "common" : "Mountain ash, oak leaf",
+      "count" : 1547
+   },
+   {
+      "botanical" : "Allianthus altissima",
+      "common" : "Tree of heaven",
+      "count" : 1535
+   },
+   {
+      "botanical" : "Juniperus",
+      "common" : "Juniper",
+      "count" : 1509
+   },
+   {
+      "botanical" : "Pyrus calleryana 'Bradford'",
+      "common" : "Pear Bradford",
+      "count" : 1489
+   },
+   {
+      "botanical" : "Prunus virginiana Shubert",
+      "common" : "Cherry, choke Shubert",
+      "count" : 1452
+   },
+   {
+      "botanical" : "Ulmus americana 'Princeton'",
+      "common" : "Elm, Princeton",
+      "count" : 1440
+   },
+   {
+      "botanical" : "Sorbus aucuparia",
+      "common" : "Mountain ash, European",
+      "count" : 1430
+   },
+   {
+      "botanical" : "Acer platanoides 'Royal Red'",
+      "common" : "Maple, Norway Red Royal",
+      "count" : 1416
+   },
+   {
+      "botanical" : "Zelkova",
+      "common" : "Zelkova",
+      "count" : 1394
+   },
+   {
+      "botanical" : "Phellodendron amurense",
+      "common" : "Cork tree, Amur",
+      "count" : 1383
+   },
+   {
+      "botanical" : "Crataegus",
+      "common" : "Hawthorn",
+      "count" : 1371
+   },
+   {
+      "botanical" : "Prunus virginiana",
+      "common" : "Cherry, choke",
+      "count" : 1295
+   },
+   {
+      "botanical" : "Taxus",
+      "common" : "Yew",
+      "count" : 1285
+   },
+   {
+      "botanical" : "Ulmus parvifolia",
+      "common" : "Elm, Chinese",
+      "count" : 1150
+   },
+   {
+      "botanical" : "Pseudotsuga menziesii",
+      "common" : "Douglas fir",
+      "count" : 1148
+   },
+   {
+      "botanical" : "Abies balsamaea",
+      "common" : "Fir, balsam",
+      "count" : 1132
+   },
+   {
+      "botanical" : "Syringa",
+      "common" : "Lilac",
+      "count" : 1086
+   },
+   {
+      "botanical" : "Acer saccharum 'Green Mountain'",
+      "common" : "Maple, sugar Green Mountain",
+      "count" : 1058
+   },
+   {
+      "botanical" : "Acer x freemanii (A. rubrum x saccharinum) 'Marmo'",
+      "common" : "Maple, Freeman Marmo",
+      "count" : 1000
+   },
+   {
+      "botanical" : "Acer x freemanii (A. rubrum x saccharinum) 'Celebration'",
+      "common" : "Maple, Freeman Celebration",
+      "count" : 965
+   },
+   {
+      "botanical" : "Fraxinus",
+      "common" : "Ash",
+      "count" : 961
+   },
+   {
+      "botanical" : "Acer saccharinum 'Silver Queen'",
+      "common" : "Maple, silver Queen",
+      "count" : 949
+   },
+   {
+      "botanical" : "Quercus velutina",
+      "common" : "Oak, black",
+      "count" : 943
+   },
+   {
+      "botanical" : "Crataegus viridis 'Winter King'",
+      "common" : "Hawthorn, green Winter King",
+      "count" : 920
+   },
+   {
+      "botanical" : "Sorbus",
+      "common" : "Mountain ash",
+      "count" : 854
+   },
+   {
+      "botanical" : "Acer x freemanii (A. rubrum x saccharinum) 'Sienna Glen'",
+      "common" : "Maple, Freeman Sienna Glen",
+      "count" : 837
+   },
+   {
+      "botanical" : "Acer platanoides 'Globosum'",
+      "common" : "Maple, Norway Globe",
+      "count" : 753
+   },
+   {
+      "botanical" : "Tsuga canadensis",
+      "common" : "Hemlock, eastern",
+      "count" : 731
+   },
+   {
+      "botanical" : "ginkgo biloba Autumn Gold",
+      "common" : "Ginkgo, Autumn Gold",
+      "count" : 729
+   },
+   {
+      "botanical" : "Pinus",
+      "common" : "Pine",
+      "count" : 725
+   },
+   {
+      "botanical" : "Liquidambar styraciflua",
+      "common" : "Sweetgum",
+      "count" : 722
+   },
+   {
+      "botanical" : "Chamaecyparis pisifera",
+      "common" : "Falsecypress, Japanese",
+      "count" : 719
+   },
+   {
+      "botanical" : "Quercus muehlenbergii",
+      "common" : "Oak, chinquapin",
+      "count" : 684
+   },
+   {
+      "botanical" : "Elaeagnus angustifolia",
+      "common" : "Olive, Russian",
+      "count" : 683
+   },
+   {
+      "botanical" : "Robinia pseudoacacia Purple robe",
+      "common" : "Black locust Purple robe",
+      "count" : 676
+   },
+   {
+      "botanical" : "Aesculus hippocastanum 'baumannii'",
+      "common" : "Horsechestnut, Baumanii",
+      "count" : 652
+   },
+   {
+      "botanical" : "Fraxinus excelsior",
+      "common" : "Ash, European",
+      "count" : 617
+   },
+   {
+      "botanical" : "Magnolia acuminata",
+      "common" : "Cucumbertree",
+      "count" : 617
+   },
+   {
+      "botanical" : "Fagus sylvatica 'Purpurea'",
+      "common" : "Beech, European purple leaf",
+      "count" : 610
+   },
+   {
+      "botanical" : "Larix laricina",
+      "common" : "Larch",
+      "count" : 600
+   },
+   {
+      "botanical" : "Abies",
+      "common" : "Fir",
+      "count" : 593
+   },
+   {
+      "botanical" : "Ulmus glabra",
+      "common" : "Elm, wych",
+      "count" : 587
+   },
+   {
+      "botanical" : "Acer x freemanii (A. rubrum x saccharinum)",
+      "common" : "Maple, Freeman",
+      "count" : 563
+   },
+   {
+      "botanical" : "Acer tataricum",
+      "common" : "Maple, tatarian",
+      "count" : 552
+   },
+   {
+      "botanical" : "Salix",
+      "common" : "Willow",
+      "count" : 547
+   },
+   {
+      "botanical" : "Salix x sepulcralis 'Chrysocoma'",
+      "common" : "Willow, golden weeping",
+      "count" : 545
+   },
+   {
+      "botanical" : "Juglans cinerea",
+      "common" : "Butternut",
+      "count" : 542
+   },
+   {
+      "botanical" : "Zelkova serrata 'Village Green'",
+      "common" : "Zelkova, Japanese Village Green",
+      "count" : 535
+   },
+   {
+      "botanical" : "Acer saccharum 'Legacy'",
+      "common" : "Maple, sugar Legacy",
+      "count" : 500
+   },
+   {
+      "botanical" : "Fagus grandifolia",
+      "common" : "Beech, American",
+      "count" : 497
+   },
+   {
+      "botanical" : "Fagus sylvatica Fastigiata",
+      "common" : "Beech, European columnar",
+      "count" : 492
+   },
+   {
+      "botanical" : "Crataegus crus-galli",
+      "common" : "Hawthorn, cockspur",
+      "count" : 478
+   },
+   {
+      "botanical" : "Sorbus americana",
+      "common" : "Mountain ash, American",
+      "count" : 467
+   },
+   {
+      "botanical" : "Cornus florida",
+      "common" : "Dogwood, flowering",
+      "count" : 456
+   },
+   {
+      "botanical" : "Fagus sylvatica Cupria",
+      "common" : "Beech, European Copper",
+      "count" : 452
+   },
+   {
+      "botanical" : "Prunus persica",
+      "common" : "Peach",
+      "count" : 431
+   },
+   {
+      "botanical" : "Ulmus x hollandica (U. glabra x minor) 'Pioneer'",
+      "common" : "Elm, Pioneer",
+      "count" : 425
+   },
+   {
+      "botanical" : "Ginkgo biloba 'Columnar'",
+      "common" : "Ginkgo, columnar",
+      "count" : 411
+   },
+   {
+      "botanical" : "Populus",
+      "common" : "Poplar",
+      "count" : 397
+   },
+   {
+      "botanical" : "Cornus",
+      "common" : "Dogwood",
+      "count" : 395
+   },
+   {
+      "botanical" : "Cotinus obovatus",
+      "common" : "Smoketree, American",
+      "count" : 367
+   },
+   {
+      "botanical" : "Salix nigra",
+      "common" : "Willow, black",
+      "count" : 362
+   },
+   {
+      "botanical" : "Betula nigra",
+      "common" : "Birch, river",
+      "count" : 361
+   },
+   {
+      "botanical" : "Pinus resinosa",
+      "common" : "Pine, red",
+      "count" : 361
+   },
+   {
+      "botanical" : "Carpinus caroliniana",
+      "common" : "Blue Beech",
+      "count" : 348
+   },
+   {
+      "botanical" : "Nyssa sylvatica",
+      "common" : "Blackgum",
+      "count" : 346
+   },
+   {
+      "botanical" : "Ulmus rubra",
+      "common" : "Elm, slippery",
+      "count" : 338
+   },
+   {
+      "botanical" : "Gleditsia triacanthos f. inermis 'Ruby Lace'",
+      "common" : "Honey locust Ruby Lace",
+      "count" : 334
+   },
+   {
+      "botanical" : "Acer platanoides 'Superform'",
+      "common" : "Maple, Norway Superform",
+      "count" : 333
+   },
+   {
+      "botanical" : "Picea omorica",
+      "common" : "Spruce, Serbian",
+      "count" : 331
+   },
+   {
+      "botanical" : "Prunus armeniaca",
+      "common" : "Apricot",
+      "count" : 330
+   },
+   {
+      "botanical" : "Fagus",
+      "common" : "Beech",
+      "count" : 314
+   },
+   {
+      "botanical" : "Platanus x acerifolia 'Exclamation'",
+      "common" : "Planetree, London Exclamation",
+      "count" : 302
+   },
+   {
+      "botanical" : "Abies concolor",
+      "common" : "Fir, white",
+      "count" : 296
+   },
+   {
+      "botanical" : "Alnus glutinosa",
+      "common" : "Alder, European",
+      "count" : 289
+   },
+   {
+      "botanical" : "Rhamnus cathartica",
+      "common" : "Buckthorn, European",
+      "count" : 289
+   },
+   {
+      "botanical" : "Zelkova serrata",
+      "common" : "Zelkova, Japanese",
+      "count" : 281
+   },
+   {
+      "botanical" : "Carpinus betulus",
+      "common" : "Hornbeam, European",
+      "count" : 277
+   },
+   {
+      "botanical" : "Acer platanoides 'Deborah'",
+      "common" : "Maple, Norway Deborah",
+      "count" : 271
+   },
+   {
+      "botanical" : "Abies alba",
+      "common" : "Fir, European white",
+      "count" : 270
+   },
+   {
+      "botanical" : "Prunus serotina",
+      "common" : "Cherry, black",
+      "count" : 254
+   },
+   {
+      "botanical" : "Betula pendula 'European white'",
+      "common" : "Birch, European",
+      "count" : 250
+   },
+   {
+      "botanical" : "Populus x canadensis (Populus nigra x deltoides)",
+      "common" : "Poplar, Carolina",
+      "count" : 249
+   },
+   {
+      "botanical" : "Ulmus thomasii",
+      "common" : "Elm, rock",
+      "count" : 249
+   },
+   {
+      "botanical" : "Acer platanoides 'autumn blaze'",
+      "common" : "Maple, Norway Autumn Blaze",
+      "count" : 243
+   },
+   {
+      "botanical" : "Acer pseudoplatanus",
+      "common" : "Maple, sycamore",
+      "count" : 242
+   },
+   {
+      "botanical" : "Tilia cordata 'Halka'",
+      "common" : "Linden, littleleaf Summer Sprite",
+      "count" : 238
+   },
+   {
+      "botanical" : "Sophora japonica",
+      "common" : "Pagoda, Japanese",
+      "count" : 218
+   },
+   {
+      "botanical" : "Laburnum x watereri (Laburnum alpinum x anagyroides)",
+      "common" : "Golden chain tree",
+      "count" : 216
+   },
+   {
+      "botanical" : "Populus tremuloides",
+      "common" : "Aspen, trembling",
+      "count" : 211
+   },
+   {
+      "botanical" : "Quercus shumardii",
+      "common" : "Oak, Shumard",
+      "count" : 210
+   },
+   {
+      "botanical" : "Metasequoia glyptostroboides",
+      "common" : "Dawn redwood",
+      "count" : 196
+   },
+   {
+      "botanical" : "Juglans regia",
+      "common" : "Walnut, English",
+      "count" : 192
+   },
+   {
+      "botanical" : "Fraxinus pennsylvanica 'Summit'",
+      "common" : "Ash, green Summit",
+      "count" : 190
+   },
+   {
+      "botanical" : "Juglans",
+      "common" : "Walnut",
+      "count" : 186
+   },
+   {
+      "botanical" : "Populus deltoides",
+      "common" : "Poplar, eastern cottonwood",
+      "count" : 186
+   },
+   {
+      "botanical" : "Fraxinus pennsylvanica 'Marshall's seedless'",
+      "common" : "Ash, green Marshall's Seedless",
+      "count" : 163
+   },
+   {
+      "botanical" : "Salix matsudana 'Tortuosa'",
+      "common" : "Willow, corkscrew",
+      "count" : 161
+   },
+   {
+      "botanical" : "Taxus cuspidata",
+      "common" : "Yew, Japanese",
+      "count" : 152
+   },
+   {
+      "botanical" : "Tilia x euchlora (T. cordata x dasystyla)",
+      "common" : "Linden, Crimean",
+      "count" : 151
+   },
+   {
+      "botanical" : "Quercus imbricaria",
+      "common" : "Oak, shingle",
+      "count" : 149
+   },
+   {
+      "botanical" : "Catalpa bignonioides 'Nana'",
+      "common" : "Catalpa, mop head",
+      "count" : 139
+   },
+   {
+      "botanical" : "Prunus serrulata",
+      "common" : "Cherry, Japanese Kwanzan",
+      "count" : 139
+   },
+   {
+      "botanical" : "Quercus coccinea",
+      "common" : "Oak, scarlett",
+      "count" : 134
+   },
+   {
+      "botanical" : "Prunus x cistena (P. pumila x P. cerasifera ‘Atropurpurea’)",
+      "common" : "Cherry, purple-leaf sand",
+      "count" : 133
+   },
+   {
+      "botanical" : "Betula populifolia",
+      "common" : "Birch, grey",
+      "count" : 128
+   },
+   {
+      "botanical" : "Acer rubrum 'Karpick'",
+      "common" : "Maple, red Karpick",
+      "count" : 127
+   },
+   {
+      "botanical" : "Carpinus betulus 'Fastigiata'",
+      "common" : "Hornbeam, European pyramidal",
+      "count" : 124
+   },
+   {
+      "botanical" : "Acer nigrum 'Green column'",
+      "common" : "Maple, black green column",
+      "count" : 122
+   },
+   {
+      "botanical" : "Aesculus x carnea (A. hippocastanum x pavia) 'Fort Mcnair'",
+      "common" : "Horsechestnut, Fort Mcnair",
+      "count" : 112
+   },
+   {
+      "botanical" : "Acer griseum",
+      "common" : "Maple, paperbark",
+      "count" : 110
+   },
+   {
+      "botanical" : "Koelreuteria paniculata",
+      "common" : "Golden rain tree",
+      "count" : 106
+   },
+   {
+      "botanical" : "Populus nigra 'italica'",
+      "common" : "Poplar, black Lombardy",
+      "count" : 104
+   },
+   {
+      "botanical" : "Salix Discolor",
+      "common" : "Willow, pussy",
+      "count" : 104
+   },
+   {
+      "botanical" : "alix × sepulcralis",
+      "common" : "Willow, weeping",
+      "count" : 101
+   },
+   {
+      "botanical" : "Morus rubra",
+      "common" : "Mulberry, red",
+      "count" : 84
+   },
+   {
+      "botanical" : "Acer platanoides 'Summershade'",
+      "common" : "Maple, Norway Summershade",
+      "count" : 83
+   },
+   {
+      "botanical" : "Maackia amurensis",
+      "common" : "Maackia",
+      "count" : 83
+   },
+   {
+      "botanical" : "Picea mariana",
+      "common" : "Spruce, black",
+      "count" : 83
+   },
+   {
+      "botanical" : "Malus coronaria",
+      "common" : "Apple, wild crab",
+      "count" : 82
+   },
+   {
+      "botanical" : "Tilia americana var. heterophylla 'Continental Appeal'",
+      "common" : "Basswood, American Continental",
+      "count" : 81
+   },
+   {
+      "botanical" : "Carya laciniosa",
+      "common" : "Hickory, big shellbark",
+      "count" : 79
+   },
+   {
+      "botanical" : "Cornus mas",
+      "common" : "Dogwood, cornelian cherry",
+      "count" : 79
+   },
+   {
+      "botanical" : "Rhus Typhina",
+      "common" : "Sumac, staghorn",
+      "count" : 78
+   },
+   {
+      "botanical" : "Carya cordiformis",
+      "common" : "Hickory, bitternut",
+      "count" : 72
+   },
+   {
+      "botanical" : "Platanus occidentalis",
+      "common" : "Sycamore",
+      "count" : 72
+   },
+   {
+      "botanical" : "Acer truncatum x platanoides 'Warrenred'",
+      "common" : "Maple, Pacific sunset",
+      "count" : 71
+   },
+   {
+      "botanical" : "Ulmus davidiana 'japonica'",
+      "common" : "Elm, David",
+      "count" : 68
+   },
+   {
+      "botanical" : "Betula nigra Heritage",
+      "common" : "Birch, river Heritage",
+      "count" : 67
+   },
+   {
+      "botanical" : "Populus alba 'pyramidalis'",
+      "common" : "Poplar, white Boleana",
+      "count" : 63
+   },
+   {
+      "botanical" : "Fraxinus americana 'Autumn purple'",
+      "common" : "Ash, white Autumn Purple",
+      "count" : 62
+   },
+   {
+      "botanical" : "Acer rubrum Franksred",
+      "common" : "Maple, red Red Sunset",
+      "count" : 56
+   },
+   {
+      "botanical" : "Betula alleghaniensis",
+      "common" : "Birch, yellow",
+      "count" : 54
+   },
+   {
+      "botanical" : "Betula pendula 'Gracilis'",
+      "common" : "Birch, European cutleaf weeping",
+      "count" : 53
+   },
+   {
+      "botanical" : "Ulmus americana 'American Liberty'",
+      "common" : "Elm, Liberty",
+      "count" : 52
+   },
+   {
+      "botanical" : "Populus balsamifera",
+      "common" : "Poplar, balsam",
+      "count" : 51
+   },
+   {
+      "botanical" : "Fraxinus nigra",
+      "common" : "Ash, black",
+      "count" : 50
+   },
+   {
+      "botanical" : "Carya",
+      "common" : "Hickory",
+      "count" : 49
+   },
+   {
+      "botanical" : "Fraxinus pennsylvanica 'Patmore'",
+      "common" : "Ash, green Patmore",
+      "count" : 49
+   },
+   {
+      "botanical" : "Betula utilis Jacquemonti",
+      "common" : "Birch, Himalayan Jacquemonti",
+      "count" : 46
+   },
+   {
+      "botanical" : "Zelkova serrata 'Halka'",
+      "common" : "Zelkova Halka",
+      "count" : 45
+   },
+   {
+      "botanical" : "Caragana arboresense",
+      "common" : "Peashrub, Siberian",
+      "count" : 43
+   },
+   {
+      "botanical" : "Populus grandidentata",
+      "common" : "Aspen, large tooth",
+      "count" : 43
+   },
+   {
+      "botanical" : "Tilia tomentosa",
+      "common" : "Linden, silver",
+      "count" : 43
+   },
+   {
+      "botanical" : "Carya ovata",
+      "common" : "Hickory, shagbark",
+      "count" : 41
+   },
+   {
+      "botanical" : "Larix decidua",
+      "common" : "Larch, European",
+      "count" : 41
+   },
+   {
+      "botanical" : "Sorbus decora",
+      "common" : "Mountain ash, showy",
+      "count" : 40
+   },
+   {
+      "botanical" : "Alnus",
+      "common" : "Alder",
+      "count" : 39
+   },
+   {
+      "botanical" : "Prunus subhirtella 'pendula 'Pink Cloud'",
+      "common" : "Cherry, weeping Higan",
+      "count" : 38
+   },
+   {
+      "botanical" : "Pinus banksiana",
+      "common" : "Pine, jack",
+      "count" : 35
+   },
+   {
+      "botanical" : "Juglans cinerea x",
+      "common" : "Butternut hybrid",
+      "count" : 34
+   },
+   {
+      "botanical" : "Prunus sargentii",
+      "common" : "Cherry, sargent",
+      "count" : 34
+   },
+   {
+      "botanical" : "Prunus x yedoensis 'unknown hybrid'",
+      "common" : "Cherry, Japanese Yoshino",
+      "count" : 31
+   },
+   {
+      "botanical" : "Corylus",
+      "common" : "Hazel",
+      "count" : 30
+   },
+   {
+      "botanical" : "Crataegus laevigata x succulenta 'Mordon'",
+      "common" : "Hawthorn, Morden",
+      "count" : 30
+   },
+   {
+      "botanical" : "Populus alba 'nivea'",
+      "common" : "Poplar, silver",
+      "count" : 30
+   },
+   {
+      "botanical" : "Xanthocyparis nootkatensis 'Pendula'",
+      "common" : "Cypress Nootka",
+      "count" : 27
+   },
+   {
+      "botanical" : "Sassafras albidum",
+      "common" : "Sassafras",
+      "count" : 26
+   },
+   {
+      "botanical" : "Castanea dentata",
+      "common" : "Chestnut, American",
+      "count" : 24
+   },
+   {
+      "botanical" : "Prunus pensylvanica",
+      "common" : "Cherry, pin",
+      "count" : 23
+   },
+   {
+      "botanical" : "Fraxinus americana 'Autumn Applause'",
+      "common" : "Ash, white Autumn Applause",
+      "count" : 22
+   },
+   {
+      "botanical" : "Fraxinus quadrangulata",
+      "common" : "Ash, blue",
+      "count" : 22
+   },
+   {
+      "botanical" : "Prunus triloba",
+      "common" : "Almond, flowering",
+      "count" : 22
+   },
+   {
+      "botanical" : "Ulmus pumila x (pumila x minor) 'Homestead'",
+      "common" : "Elm, Homestead",
+      "count" : 20
+   },
+   {
+      "botanical" : "Hamamelis virginiana",
+      "common" : "Witch-hazel",
+      "count" : 17
+   },
+   {
+      "botanical" : "Amelanchier x grandiflora (A. arborea x laevis) 'Robin Hill'",
+      "common" : "Serviceberry, Robin Hill",
+      "count" : 15
+   },
+   {
+      "botanical" : "Ulmus minor 'Atinia'",
+      "common" : "Elm, English",
+      "count" : 15
+   },
+   {
+      "botanical" : "Liriodendron tulipifera 'fastigiate'",
+      "common" : "Tulip tree Columnar",
+      "count" : 14
+   },
+   {
+      "botanical" : "Acer saccharum Bailsta",
+      "common" : "Maple, sugar Fall Fiesta",
+      "count" : 13
+   },
+   {
+      "botanical" : "Salix pentandra",
+      "common" : "Willow, laurel",
+      "count" : 13
+   },
+   {
+      "botanical" : "Malus sylvestris",
+      "common" : "Apple, common",
+      "count" : 12
+   },
+   {
+      "botanical" : "euonymus altus",
+      "common" : "Spindletree, winged",
+      "count" : 12
+   },
+   {
+      "botanical" : "Acer spicatum",
+      "common" : "Maple, mountain",
+      "count" : 11
+   },
+   {
+      "botanical" : "Celtis occidentalis 'Magnifica'",
+      "common" : "Hackberry, Magnifica",
+      "count" : 11
+   },
+   {
+      "botanical" : "Thuja plicata",
+      "common" : "Cedar, western red",
+      "count" : 10
+   },
+   {
+      "botanical" : "Corylus americana",
+      "common" : "Hazel, American",
+      "count" : 9
+   },
+   {
+      "botanical" : "Acer saccharinum 'Pyramidale'",
+      "common" : "Maple, silver pyramidal",
+      "count" : 8
+   },
+   {
+      "botanical" : "Acer truncatum 'Keithsform'",
+      "common" : "Maple, shantung Keithsform",
+      "count" : 8
+   },
+   {
+      "botanical" : "Larix laricina",
+      "common" : "Tamarack",
+      "count" : 8
+   },
+   {
+      "botanical" : "Magnolia kobus",
+      "common" : "Magnolia, kobus",
+      "count" : 8
+   },
+   {
+      "botanical" : "Celtis occidentalis 'Ultra'",
+      "common" : "Hackberry, Ultra",
+      "count" : 7
+   },
+   {
+      "botanical" : "Prunus avium",
+      "common" : "Cherry, sweet",
+      "count" : 7
+   },
+   {
+      "botanical" : "Acer platanoides",
+      "common" : "Maple, Norway Harlequin",
+      "count" : 6
+   },
+   {
+      "botanical" : "Larix kaempferi",
+      "common" : "Larch, Japanese",
+      "count" : 6
+   },
+   {
+      "botanical" : "Salix fragilis",
+      "common" : "Willow, crack",
+      "count" : 6
+   },
+   {
+      "botanical" : "cornus florida",
+      "common" : "Dogwood, pink flowering",
+      "count" : 6
+   },
+   {
+      "botanical" : "Acer miyabei 'Morton'",
+      "common" : "Maple, State Street",
+      "count" : 5
+   },
+   {
+      "botanical" : "Aralia spinosa",
+      "common" : "Devil's walking stick",
+      "count" : 5
+   },
+   {
+      "botanical" : "Ptelea trifoliata",
+      "common" : "Hop tree",
+      "count" : 5
+   },
+   {
+      "botanical" : "Ulmus",
+      "common" : "Elm, hybrid",
+      "count" : 5
+   },
+   {
+      "botanical" : "Ulmus davidiana japonica 'Morton' x 'Vanguard'",
+      "common" : "Elm, Triumph Morton Glossy",
+      "count" : 5
+   },
+   {
+      "botanical" : "Populus simonii",
+      "common" : "Poplar, Chinese",
+      "count" : 4
+   },
+   {
+      "botanical" : "Sorbus aria",
+      "common" : "Mountain ash, whitebeam",
+      "count" : 4
+   },
+   {
+      "botanical" : "Ulmus americana 'Delaware'",
+      "common" : "Elm, Delaware",
+      "count" : 4
+   },
+   {
+      "botanical" : "Acer pensylvanicum",
+      "common" : "Maple, striped",
+      "count" : 3
+   },
+   {
+      "botanical" : "Castanea sativa",
+      "common" : "Chestnut, sweet",
+      "count" : 3
+   },
+   {
+      "botanical" : "Crataegus laevigata 'Crimison Cloud'",
+      "common" : "Hawthorn, Crimson Cloud",
+      "count" : 3
+   },
+   {
+      "botanical" : "Quercus acutissima",
+      "common" : "Oak, sawtooth",
+      "count" : 3
+   },
+   {
+      "botanical" : "Sambucus canadensis",
+      "common" : "Elder, American",
+      "count" : 3
+   },
+   {
+      "botanical" : "Amelanchier laevis",
+      "common" : "Serviceberry, smooth",
+      "count" : 2
+   },
+   {
+      "botanical" : "Crategus crus galli Cruzam",
+      "common" : "Hawthorn, Crusade",
+      "count" : 2
+   },
+   {
+      "botanical" : "Frangula frangula",
+      "common" : "Buckthorn, glossy",
+      "count" : 2
+   },
+   {
+      "botanical" : "Malus baccata",
+      "common" : "Apple, Siberian",
+      "count" : 2
+   },
+   {
+      "botanical" : "Prunus nigra",
+      "common" : "Plum, Canada",
+      "count" : 2
+   },
+   {
+      "botanical" : "Tilia americana Boulevard",
+      "common" : "Basswood, American Boulevard",
+      "count" : 2
+   },
+   {
+      "botanical" : "Tilia platyphyllos",
+      "common" : "Linden, broad-leaved",
+      "count" : 2
+   },
+   {
+      "botanical" : "Ulmus glabra 'Camperdownii'",
+      "common" : "Elm, Camperdown",
+      "count" : 2
+   },
+   {
+      "botanical" : "Acer rubrum Brandywine",
+      "common" : "Maple, red Brandywine",
+      "count" : 1
+   },
+   {
+      "botanical" : "Acer rubrum Redpointe",
+      "common" : "Maple, red Redpointe",
+      "count" : 1
+   },
+   {
+      "botanical" : "Acer tataricum 'Garann'",
+      "common" : "Maple, tatarian Garann",
+      "count" : 1
+   },
+   {
+      "botanical" : "Asimina triloba",
+      "common" : "Pawpaw",
+      "count" : 1
+   },
+   {
+      "botanical" : "Betula lenta",
+      "common" : "Birch, black",
+      "count" : 1
+   },
+   {
+      "botanical" : "Betula pendula 'Youngii'",
+      "common" : "Birch, European Young's",
+      "count" : 1
+   },
+   {
+      "botanical" : "Carya glabra",
+      "common" : "Hickory, pignut",
+      "count" : 1
+   },
+   {
+      "botanical" : "Catalpa bignonioides",
+      "common" : "Catalpa, southern",
+      "count" : 1
+   },
+   {
+      "botanical" : "Cornus foemina ssp. Racemosa",
+      "common" : "Dogwood, grey",
+      "count" : 1
+   },
+   {
+      "botanical" : "Crataegus laevigata 'Paul's Scarlet'",
+      "common" : "Hawthorn, Paul's Scarlet",
+      "count" : 1
+   },
+   {
+      "botanical" : "Fagus sylvatica 'Asplenifolia'",
+      "common" : "Beech, European fern leaf",
+      "count" : 1
+   },
+   {
+      "botanical" : "Fraxinus nigra 'Gold Fall'",
+      "common" : "Ash, black Gold Fall",
+      "count" : 1
+   },
+   {
+      "botanical" : "Magnolia brooklynensis",
+      "common" : "Magnolia Yellowbird",
+      "count" : 1
+   },
+   {
+      "botanical" : "Prunus cerasus",
+      "common" : "Cherry, sour",
+      "count" : 1
+   },
+   {
+      "botanical" : "Taxodium distichum",
+      "common" : "Bald cypress",
+      "count" : 1
+   }
+]
