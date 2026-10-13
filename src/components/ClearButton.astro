@@ -1,0 +1,81 @@
+---
+// Small × button shared by the search field, street chip, and range resets
+const { label, size = 'sm', variant = 'disc', class: className, hidden = false, ghost = false } = Astro.props;
+---
+
+<button class:list={['clear-btn', size, variant, className, { ghost }]} type="button" aria-label={label} hidden={hidden}>
+  <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+</button>
+
+<style lang="scss">
+  .clear-btn {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(27 31 26 / 0.06);
+    color: var(--battleship);
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  .clear-btn[hidden] {
+    display: none;
+  }
+
+  .ghost {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .clear-btn:hover {
+    background: rgb(27 31 26 / 0.12);
+    color: var(--charred);
+  }
+
+  .clear-btn:focus-visible {
+    outline: 2px solid var(--forest);
+    outline-offset: 1px;
+  }
+
+  .sm {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .md {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .flat {
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 0.35rem;
+    background: none;
+    color: inherit;
+  }
+
+  .flat:hover {
+    background: rgb(47 143 59 / 0.15);
+    color: inherit;
+  }
+
+  svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .md svg {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+</style>

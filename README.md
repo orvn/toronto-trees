@@ -14,6 +14,8 @@ The raw dataset (`data/street-tree-data-4326.geojson`, ~343 MB) is split into 50
 
 ```
 scripts/split.sh data/street-tree-data-4326.geojson   # split → data/chunks/
+scripts/species.sh                                    # chunks → src/content/species.json (search index)
+scripts/streets.sh                                    # chunks → public/data/streets.json (address index)
 scripts/tiles.sh                                      # chunks → public/data/street-trees.pmtiles
 scripts/bucket.sh                                     # pmtiles → R2
 ```
