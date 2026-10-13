@@ -19,6 +19,8 @@
   const LINES = [-240, -120, 0, 120, 240];
   const FLAT = { g: 0, pitch: 1.55 }, GROWN = { g: 1, pitch: 0.42 };
 
+  const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+
   const shades = hex => {
     const n = parseInt(hex.slice(1), 16), rgb = [n >> 16, (n >> 8) & 255, n & 255];
     const f = m => `rgb(${m.map(v => Math.round(v)).join(',')})`;
@@ -68,6 +70,7 @@
       const cs = getComputedStyle(this);
       this.ink = cs.getPropertyValue('--charred').trim() || '#1b1f1a';
       this.muted = cs.getPropertyValue('--battleship').trim() || '#6b7069';
+      this.bg = cs.getPropertyValue('--cararra').trim() || '#f4f4f0';
       this.fontFamily = cs.fontFamily || 'sans-serif';
       this.pal = {}; for (const k in SPECIES) this.pal[k] = shades(cs.getPropertyValue(SPECIES[k][0]).trim() || '#adb5bd');
 
@@ -143,11 +146,28 @@
         let best = 38 * 38;
         for (const tr of trees) { const d = (tr.sx - this.mouse[0]) ** 2 + (tr.sy - this.mouse[1]) ** 2; if (d < best) { best = d; hover = tr; } }
       }
+      
+      // Travelling cloud effect
+      const fade = Math.min(1, dt / .18), glide = 1 - Math.exp(-dt / .07);
+      let c = this.cloud;
+      if (hover) {
+        if (!c) c = this.cloud = { x: hover.sx, y: hover.sy - 8, a: 0, tree: hover, prev: null, cross: 1 };
+        else if (c.tree !== hover) { c.prev = c.tree; c.tree = hover; c.cross = 0; }
+        c.a = Math.min(1, c.a + fade);
+      } else if (c) {
+        c.a -= fade;
+        if (c.a <= 0) c = this.cloud = null;
+      }
+      if (c) {
+        c.x += (c.tree.sx - c.x) * glide; c.y += (c.tree.sy - 8 - c.y) * glide;
+        c.cross = Math.min(1, c.cross + dt / .15);
+        if (c.cross >= 1) c.prev = null;
+      }
       const order = trees.slice().sort((a, b) => b.depth - a.depth);
       const spread = .35 + .65 * gg;
       for (const tr of order) {
         const amp = (1.4 + this.wind) * gg, swx = Math.sin(now * 1.1 + tr.ph) * amp, swz = Math.cos(now * .8 + tr.ph * 1.3) * amp * .6;
-        const big = tr === hover ? 1.5 : 1;
+        const big = c && tr === c.tree ? 1 + .5 * c.a * c.cross : c && tr === c.prev ? 1 + .5 * c.a * (1 - c.cross) : 1;
         if (gg > .02) {
           ctx.fillStyle = 'rgba(27,31,26,.5)';
           for (let i = 0; i <= 6; i++) {
@@ -167,14 +187,34 @@
           i0 = tr.ends[b];
         }
       }
-      if (hover) {
-        const x = hover.sx, y = hover.sy - 8;
-        ctx.strokeStyle = this.ink; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 26); ctx.stroke();
-        ctx.font = `700 13px ${this.fontFamily}`; ctx.fillStyle = this.ink; ctx.textAlign = 'center';
-        ctx.fillText(hover.name, x, y - 46);
-        ctx.font = `400 12px ${this.fontFamily}`; ctx.fillStyle = this.muted;
-        ctx.fillText(`trunk ${hover.dbh} cm · ${hover.hm} m tall`, x, y - 31);
-      }
+      if (c) this.drawCloud(c);
+    }
+
+    drawCloud(c) {
+      const ctx = this.ctx, e = c.a * c.a * (3 - 2 * c.a), y = c.y + (1 - e) * 6, x = c.x;
+      const nameFont = `700 13px ${this.fontFamily}`, subFont = `400 12px ${this.fontFamily}`;
+      const lines = tr => [tr.name, `trunk ${tr.dbh} cm · ${tr.hm} m tall`];
+      const width = tr => { const [n, sub] = lines(tr); ctx.font = nameFont; const w1 = ctx.measureText(n).width; ctx.font = subFont; return Math.max(w1, ctx.measureText(sub).width); };
+      const w = (c.prev ? width(c.prev) * (1 - c.cross) + width(c.tree) * c.cross : width(c.tree)) + 56, h = 64;
+      ctx.save();
+      ctx.globalAlpha = e;
+      ctx.translate(x, y - 36); ctx.scale(w / h, 1);
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, h / 2);
+      grad.addColorStop(0, rgba(this.bg, .78)); grad.addColorStop(.5, rgba(this.bg, .6)); grad.addColorStop(1, rgba(this.bg, 0));
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0, 0, h / 2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = e;
+      ctx.strokeStyle = this.ink; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(c.tree.sx, c.tree.sy - 8); ctx.lineTo(x, y - 26 * e); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = rgba(this.bg, .7);
+      const text = (tr, alpha) => {
+        const [n, sub] = lines(tr); ctx.globalAlpha = e * alpha;
+        ctx.font = nameFont; ctx.strokeText(n, x, y - 46); ctx.fillStyle = this.ink; ctx.fillText(n, x, y - 46);
+        ctx.font = subFont; ctx.strokeText(sub, x, y - 31); ctx.fillStyle = this.muted; ctx.fillText(sub, x, y - 31);
+      };
+      if (c.prev) text(c.prev, 1 - c.cross);
+      text(c.tree, c.prev ? c.cross : 1);
+      ctx.restore();
     }
   }
   if (!customElements.get('tree-scene')) customElements.define('tree-scene', TreeScene);
