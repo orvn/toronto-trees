@@ -16,7 +16,7 @@ const hasIcon = Astro.slots.has('icon');
 </span>
 
 <script>
-  // A quick click would barely show the depression, so it is held for a minimum beat before releasing
+  // Hold button depression
   const HOLD = 260;
   const timers = new WeakMap<HTMLElement, { at: number; release?: number }>();
   const target = (e: Event) => (e.target as Element).closest<HTMLElement>('.hatch-btn');

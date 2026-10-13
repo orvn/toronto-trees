@@ -1,7 +1,4 @@
-/* Procedural canvas scene of a street grid planted with pointillist trees
-   Grows from a flat dot map into a 3D view, drag to orbit, hover for a tree label (fine pointers only)
-   Tree colours come from the genus variables in variables.css
-   e.g. <tree-scene auto-rotate style="width:800px;height:600px"></tree-scene> */
+/* Procedural canvas scene of a street grid planted with pointillist trees  */
 
 (function () {
   const SPECIES = {
@@ -82,9 +79,6 @@
       this.g = 0; this.gTarget = 0; this.yaw = -0.7; this.pitch = FLAT.pitch; this.pitchTarget = FLAT.pitch; this.wind = 0; this.mouse = null;
       this.trees = this.trees || build();
 
-      if (this.reducedMotion) { this.g = GROWN.g; this.pitch = GROWN.pitch; this.setView('trees'); }
-      else this.intro = setTimeout(() => this.setView('trees'), 900);
-
       c.addEventListener('pointerdown', e => { this.drag = true; this.lx = e.clientX; this.ly = e.clientY; c.setPointerCapture(e.pointerId); c.style.cursor = 'grabbing'; });
       c.addEventListener('pointermove', e => {
         if (this.canHover) { const r = c.getBoundingClientRect(); this.mouse = [e.clientX - r.left, e.clientY - r.top]; }
@@ -100,15 +94,15 @@
       this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(this); this.resize();
       const loop = t => { this.frame(t); this.raf = requestAnimationFrame(loop); };
       this.raf = requestAnimationFrame(loop);
+      requestAnimationFrame(() => this.setAttribute('ready', ''));
     }
 
     disconnectedCallback() {
-      cancelAnimationFrame(this.raf); clearTimeout(this.intro);
+      cancelAnimationFrame(this.raf); this.removeAttribute('ready');
       this.ro && this.ro.disconnect(); this.cv && this.cv.remove();
     }
 
     setView(view) {
-      clearTimeout(this.intro);
       const to = view === 'trees' ? GROWN : FLAT;
       this.gTarget = to.g; this.pitchTarget = to.pitch;
       if (this.reducedMotion) { this.g = to.g; this.pitch = to.pitch; }
