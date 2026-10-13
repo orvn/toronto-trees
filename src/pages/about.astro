@@ -5,6 +5,7 @@ import { loadPage } from '../lib/content';
 const { meta, content } = loadPage('about');
 const c = content as {
   heading: string;
+  scene: { hint_drag: string; hint_hover: string; flatten: string; grow: string };
   paragraphs: string[];
 };
 ---
@@ -22,9 +23,18 @@ const c = content as {
           {c.paragraphs.map((p) => <p set:html={p}></p>)}
         </div>
       </div>
-      <div class="about-rings-slot" aria-hidden="true">
-        <div class="about-rings">
-          <tree-rings seed="7" years="60" color="#2f8f3b" rotate></tree-rings>
+      <div class="about-scene-slot">
+        <tree-scene auto-rotate aria-hidden="true"></tree-scene>
+        <div class="about-scene-controls">
+          <span class="about-scene-hint">
+            {c.scene.hint_drag}<span class="about-scene-hint-hover"> · {c.scene.hint_hover}</span>
+          </span>
+          <button
+            type="button"
+            class="about-scene-toggle"
+            data-label-flatten={c.scene.flatten}
+            data-label-grow={c.scene.grow}
+          >{c.scene.flatten}</button>
         </div>
       </div>
     </div>
@@ -32,7 +42,22 @@ const c = content as {
 </BaseLayout>
 
 <script>
-  import '../scripts/tree-rings.js';
+  import '../scripts/tree-scene.js';
+
+  function initScene() {
+    const slot = document.querySelector<HTMLElement>('.about-scene-slot');
+    if (!slot) return;
+    const scene = slot.querySelector<HTMLElement & { toggle(): void }>('tree-scene');
+    const button = slot.querySelector<HTMLButtonElement>('.about-scene-toggle');
+    if (!scene || !button) return;
+    button.addEventListener('click', () => scene.toggle());
+    scene.addEventListener('tt:scene-view', (e) => {
+      const { view } = (e as CustomEvent<{ view: string }>).detail;
+      button.textContent = view === 'trees' ? button.dataset.labelFlatten! : button.dataset.labelGrow!;
+    });
+  }
+
+  document.addEventListener('astro:page-load', initScene);
 </script>
 
 <style lang="scss">
@@ -64,35 +89,57 @@ const c = content as {
     max-width: 26rem;
   }
 
-  .about-rings-slot {
+  .about-scene-slot {
     position: relative;
     height: 100%;
-    min-height: 30rem;
+    min-height: 32rem;
+    margin-right: calc(-1 * (var(--gutter) + 2rem));
   }
 
-  .about-rings {
+  :global(tree-scene) {
     position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    width: 150%;
-    aspect-ratio: 1 / 1;
-    pointer-events: none;
+    inset: 0;
+    display: block;
   }
 
-  :global(tree-rings) {
-    display: block;
-    width: 100%;
-    height: 100%;
+  .about-scene-controls {
+    position: absolute;
+    right: calc(var(--gutter) + 2rem);
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    font-size: var(--text-xs);
+    color: var(--battleship);
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .about-scene-hint-hover {
+      display: none;
+    }
+  }
+
+  .about-scene-toggle {
+    font: inherit;
+    font-weight: 500;
+    color: var(--forest);
+    background: transparent;
+    border: 1px solid var(--forest);
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--forest);
+      color: var(--cararra);
+    }
   }
 
   @include xl {
     .about-grid {
       grid-template-columns: minmax(0, 24rem) 1fr;
       gap: 2rem;
-    }
-    .about-rings {
-      width: 140%;
     }
   }
 
@@ -111,13 +158,14 @@ const c = content as {
     .markdown {
       max-width: 100%;
     }
-    .about-rings-slot {
-      min-height: 22rem;
+    .about-scene-slot {
+      min-height: 26rem;
+      margin-inline: calc(-1 * var(--gutter));
     }
-    .about-rings {
-      left: -25%;
-      width: 130%;
-      opacity: 0.7;
+    .about-scene-controls {
+      right: var(--gutter);
+      left: var(--gutter);
+      justify-content: space-between;
     }
   }
 
@@ -125,12 +173,11 @@ const c = content as {
     .page-section {
       padding-block: 2rem;
     }
-    .about-rings-slot {
-      min-height: 16rem;
+    .about-scene-slot {
+      min-height: 20rem;
     }
-    .about-rings {
-      left: -20%;
-      width: 120%;
+    .about-scene-hint {
+      display: none;
     }
   }
 </style>
