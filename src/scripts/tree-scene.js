@@ -5,19 +5,19 @@
 
 (function () {
   const SPECIES = {
-    maple: ['--celery', ['Norway maple', 'silver maple', 'sugar maple', 'red maple']],
-    elm: ['--asparagus', ['American elm', 'Siberian elm']],
+    maple: ['--celery', ['norway maple', 'silver maple', 'sugar maple', 'red maple']],
+    elm: ['--asparagus', ['american elm', 'siberian elm']],
     oak: ['--killarney', ['red oak', 'bur oak', 'white oak']],
     linden: ['--golden', ['littleleaf linden']],
     ash: ['--terracotta', ['green ash']],
     locust: ['--golden', ['honey locust']],
-    spruce: ['--casal', ['Colorado spruce']],
+    spruce: ['--casal', ['colorado spruce']],
     apple: ['--punch', ['crab apple']],
-    cherry: ['--blush', ['Japanese cherry']],
+    cherry: ['--blush', ['japanese cherry']],
     birch: ['--geyser', ['white birch']],
     ginkgo: ['--raj', ['ginkgo']],
     catalpa: ['--lavender', ['northern catalpa']],
-    other: ['--bombay', ['hackberry', 'Kentucky coffeetree', 'serviceberry']],
+    other: ['--bombay', ['hackberry', 'kentucky coffeetree', 'serviceberry']],
   };
   const LINES = [-240, -120, 0, 120, 240];
   const FLAT = { g: 0, pitch: 1.55 }, GROWN = { g: 1, pitch: 0.42 };

@@ -1,0 +1,114 @@
+---
+/* default button, w hatched drop
+   <Button class="pos" data-x="y">label</Button>
+   <Button><svg slot="icon" ... />label</Button> */
+
+const { class: className, ...rest } = Astro.props;
+const scope = Object.fromEntries(Object.entries(rest).filter(([k]) => k.startsWith('data-astro-cid-')));
+const hasIcon = Astro.slots.has('icon');
+---
+
+<span class:list={['hatch-wrap', className]} {...scope}>
+  <button class:list={['hatch-btn', { 'has-icon': hasIcon }]} type="button" {...rest}>
+    {hasIcon && <span class="hatch-icon"><slot name="icon" /></span>}
+    <slot />
+  </button>
+</span>
+
+<script>
+  // A quick click would barely show the depression, so it is held for a minimum beat before releasing
+  const HOLD = 260;
+  const timers = new WeakMap<HTMLElement, { at: number; release?: number }>();
+  const target = (e: Event) => (e.target as Element).closest<HTMLElement>('.hatch-btn');
+
+  const press = (btn: HTMLElement) => {
+    const t = timers.get(btn) ?? { at: 0 };
+    clearTimeout(t.release);
+    t.at = performance.now();
+    timers.set(btn, t);
+    btn.classList.add('is-pressed');
+  };
+  const unpress = (btn: HTMLElement) => {
+    const t = timers.get(btn);
+    if (!t) return;
+    clearTimeout(t.release);
+    const wait = Math.max(0, HOLD - (performance.now() - t.at));
+    t.release = window.setTimeout(() => btn.classList.remove('is-pressed'), wait);
+  };
+
+  document.addEventListener('pointerdown', e => { const b = target(e); if (b) press(b); });
+  for (const type of ['pointerup', 'pointercancel']) {
+    document.addEventListener(type, e => { const b = target(e); if (b) unpress(b); });
+  }
+  document.addEventListener('pointerleave', e => { const b = target(e); if (b) unpress(b); }, true);
+  document.addEventListener('click', e => {
+    const b = target(e);
+    if (b && !b.classList.contains('is-pressed')) { press(b); unpress(b); }
+  });
+</script>
+
+<style lang="scss">
+  // The hatch lives on the wrapper so the button can move on press without lifting it above its own background
+  .hatch-wrap {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    border-radius: 0.5rem;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--forest), var(--charred));
+      mask-image: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px 4px);
+      transform: translate(0.3rem, 0.3rem);
+    }
+  }
+
+  .hatch-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .hatch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.3rem 0.75rem;
+    font: inherit;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--charred);
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background:
+      linear-gradient(var(--cararra), var(--cararra)) padding-box,
+      linear-gradient(90deg, var(--forest), var(--charred)) border-box;
+    cursor: pointer;
+    transition: color 200ms ease, transform 320ms ease-out;
+
+    &.has-icon {
+      padding-left: 0.6rem;
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: var(--forest);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--forest);
+      outline-offset: 2px;
+    }
+
+    // Presses in quickly, releases on the slower base transition
+    &.is-pressed {
+      transform: translate(0.2rem, 0.2rem);
+      transition-duration: 200ms, 140ms;
+    }
+  }
+</style>
