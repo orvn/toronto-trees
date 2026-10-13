@@ -8,6 +8,6 @@ options: null
 content:
   heading: About
   paragraphs[3]:
-    - "Toronto Trees is an interactive map of every documented street tree in the city, well over a half-million of them, visualized from open data. Each point represents one tree, coloured by genus and sized by trunk diameter. This project was created because there wasn't a clear place to find this information in the most intuitive medium for it: a map."
-    - "The data comes from the city's urban forestry data, updated every quarter. Only trees on public road allowances are included; private, park, and ravine trees are limited this dataset. If you happen to know how to access all city park trees, please reach out."
-    - "Send feedback on this site via <a href=\"https://github.com/orvn/toronto-trees\" target=\"_blank\" rel=\"noopener\">GitHub</a>."
+    - "Toronto Trees is an interactive map of every documented street tree in the city, well over a half-million of them, visualized from open data. Each point represents one tree, coloured by genus and sized by trunk diameter. This project was created because there wasn't a frictionless place to find this information in the most intuitive medium for it: a map."
+    - "Data comes from the city's urban forestry initiative, which is updated every quarter with new information. The diameters of some trees (and subsequently their age) may be outdated. Only trees on public road allowances are included; private, park, and ravine trees are limited this dataset. More datasets from private institutions will be added soon. If you happen to know how to access additional tree data, please reach out."
+    - "Send feedback on this site via <a href=\"https://github.com/orvn/toronto-trees/issues/new\" target=\"_blank\" rel=\"noopener\">GitHub</a>."
