@@ -8,6 +8,10 @@
 
 An interactive map of every street tree in Toronto (~688k points), rendered with MapLibre GL + PMTiles from the City of Toronto Open Data. Built on [Astro](https://astro.build) and [Alpine.js](https://alpinejs.dev), optimised for minimal Javascript footprint, performance, a11y, and SEO.
 
+### Report bugs or request features
+
+You can report a bug or suggest a feautre [via issues](https://github.com/orvn/toronto-trees/issues/new/choose)
+
 ## Data pipeline
 
 The raw dataset (`data/street-tree-data-4326.geojson`, ~343 MB) is split into 50k-feature chunks and baked into a single vector-tile file:
