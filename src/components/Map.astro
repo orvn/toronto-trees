@@ -428,21 +428,6 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
       let currentPopup: maplibregl.Popup | null = null;
 
-      // height mark icon
-      const heightMark = () => {
-        const ns = 'http://www.w3.org/2000/svg';
-        const svg = document.createElementNS(ns, 'svg');
-        svg.setAttribute('class', 'tp-height-mark');
-        svg.setAttribute('viewBox', '0 0 8 12');
-        svg.setAttribute('aria-hidden', 'true');
-        for (const d of ['M1 1h6', 'M4 1v10', 'M1 11h6']) {
-          const path = document.createElementNS(ns, 'path');
-          path.setAttribute('d', d);
-          svg.appendChild(path);
-        }
-        return svg;
-      };
-
       const openTreePopup = (p: Record<string, any>, lngLat: maplibregl.LngLatLike) => {
         currentPopup?.remove();
 
@@ -488,7 +473,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         if (p.DBH_TRUNK != null) {
           const d = document.createElement('p');
           d.className = 'tp-meta';
-          d.textContent = `Trunk Ø ${p.DBH_TRUNK} cm`;
+          d.textContent = `${p.DBH_TRUNK}cm Ø trunk`;
           wrap.appendChild(d);
 
           const botanical = botanicalName.toLowerCase();
@@ -500,6 +485,18 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
             GROWTH_FACTOR[genusKey] ??
             GROWTH_FACTOR._default;
 
+          const model = findHeightModel(botanical, genusKey);
+          const metres = model && p.DBH_TRUNK > 0 ? estimateHeight(Number(p.DBH_TRUNK), model) : null;
+          if (metres) {
+            const h = document.createElement('p');
+            h.className = 'tp-meta tp-height';
+            h.textContent = `~${Math.round(metres)}m ↨ in height`;
+            h.title = model.src === 'oakville'
+              ? 'Rough estimate from trunk diameter, Oakville ON ash allometry (Peper et al. 2014)'
+              : `Rough estimate from trunk diameter, Urban Tree Database allometry${model.proxy ? ` for ${model.proxy}` : ''}`;
+            wrap.appendChild(h);
+          }
+
           if (factor && p.DBH_TRUNK > 0) {
             const years = Math.max(1, Math.round((Number(p.DBH_TRUNK) / 2.54) * factor));
             const age = document.createElement('p');
@@ -507,18 +504,6 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
             age.textContent = `~${years} years old`;
             age.title = 'Rough estimate from trunk diameter × ISA growth factor for this species';
             wrap.appendChild(age);
-          }
-
-          const model = findHeightModel(botanical, genusKey);
-          const metres = model && p.DBH_TRUNK > 0 ? estimateHeight(Number(p.DBH_TRUNK), model) : null;
-          if (metres) {
-            const h = document.createElement('p');
-            h.className = 'tp-meta tp-height';
-            h.append('Height ', heightMark(), ` ~${Math.round(metres)} m`);
-            h.title = model.src === 'oakville'
-              ? 'Rough estimate from trunk diameter, Oakville ON ash allometry (Peper et al. 2014)'
-              : `Rough estimate from trunk diameter, Urban Tree Database allometry${model.proxy ? ` for ${model.proxy}` : ''}`;
-            wrap.appendChild(h);
           }
         }
 
@@ -780,16 +765,6 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   :global(.tp.maplibregl-popup-anchor-right .maplibregl-popup-tip) { border-left-color:  var(--cararra); }
 
   :global(.tree-popup p) { margin: 0; }
-  :global(.tp-height-mark) {
-    display: inline-block;
-    width: 0.5em;
-    height: 0.72em;
-    vertical-align: baseline;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.2;
-    stroke-linecap: round;
-  }
 
   :global(.tp-common) {
     display: flex;
