@@ -1,6 +1,6 @@
 import models from '../content/height-models.json';
 
-// Equation forms per the Urban Tree Database TS4 table (see height-models.json)
+// Equation forms per the Urban Tree Database TS4 table, plus pow (see height-models.json)
 export interface HeightModel {
   form: string;
   a: number;
@@ -9,7 +9,7 @@ export interface HeightModel {
   d?: number;
   dbh_min: number;
   dbh_max: number;
-  r2: number;
+  r2?: number;
   src: string;
   proxy?: string;
 }
@@ -35,6 +35,7 @@ export function estimateHeight(dbhCm: number, m: HeightModel) {
   if (m.form === 'lin') h = a + b * x;
   else if (m.form === 'quad') h = a + b * x + c * x * x;
   else if (m.form === 'cub') h = a + b * x + c * x * x + d * x ** 3;
+  else if (m.form === 'pow') h = a * x ** b;
   else if (m.form.startsWith('loglog')) h = Math.exp(a + b * Math.log(Math.log(x + 1)) + (weight(m.form.slice(-1), x) * c) / 2);
   else if (m.form.startsWith('expow')) h = Math.exp(a + b * x + (weight(m.form.slice(-1), x) * c) / 2);
   else return null;

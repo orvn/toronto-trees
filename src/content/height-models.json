@@ -1,5 +1,5 @@
 {
-  "_note": "Tree height (m) from DBH (cm), forms follow the Urban Tree Database TS4 table: lin a+bx, quad +cx^2, cub +dx^3, loglogwN exp(a+b*ln(ln(x+1))+w*c/2), expowN exp(a+bx+w*c/2) with w = 1, sqrt x, x, x^2 for N = 1..4. DBH is clamped to [dbh_min, dbh_max], the range the species was measured over; lookup order: full botanical name, genus + species, genus (a proxy species noted in `proxy`); sources: Peper et al. 2014, Oakville ON ash study (src oakville) and McPherson, van Doorn, Peper 2016 Urban Tree Database (src utd:<region>). UTD regions in priority order: MidWst Minneapolis, LoMidW Indianapolis, NoEast Queens, NMtnPr Fort Collins, PacfNW Longview, TpIntW Boise, InterW Albuquerque; four species with no fit in those regions (tulip tree, black locust, eastern red cedar, flowering dogwood) use the largest warmer-region sample for the same species and are flagged with `note`. Genera with no urban equation anywhere (lilac, serviceberry, Thuja cedar, rowan, katsura, fir, ironwood, hazel, yellowwood, willow, tree of heaven, yew, cork tree, hemlock) get no estimate",
+  "_note": "Tree height (m) from DBH (cm), forms follow the Urban Tree Database TS4 table: lin a+bx, quad +cx^2, cub +dx^3, loglogwN exp(a+b*ln(ln(x+1))+w*c/2), expowN exp(a+bx+w*c/2) with w = 1, sqrt x, x, x^2 for N = 1..4, plus pow a*x^b. DBH is clamped to [dbh_min, dbh_max], the range the species was measured over; lookup order: full botanical name, genus + species, genus (a proxy species noted in `proxy`); sources: Peper et al. 2014, Oakville ON ash study (src oakville) and McPherson, van Doorn, Peper 2016 Urban Tree Database (src utd:<region>). UTD regions in priority order: MidWst Minneapolis, LoMidW Indianapolis, NoEast Queens, NMtnPr Fort Collins, PacfNW Longview, TpIntW Boise, InterW Albuquerque; four species with no fit in those regions (tulip tree, black locust, eastern red cedar, flowering dogwood) use the largest warmer-region sample for the same species and are flagged with `note`. Tree of heaven (src qingdao+fia) is a power law through the Qingdao street-tree sample mean, 27.4 cm and 11.7 m (Forests 2023, 14(3):472, n = 73; the paper publishes only a 95% quantile fit, in log10 despite its ln notation), with slope 0.321 ± 0.122 pooled by inverse variance from the Qingdao fit (0.328 ± 0.265) and a log-log fit to USFS FIA open-grown and dominant trees in MD, PA, NJ, DE, WV, OH, NY (0.319 ± 0.138, n = 21; all crown classes give 0.50, steepened by forest competition); dbh_max extends to the FIA maximum. Genera with no urban equation anywhere (lilac, serviceberry, Thuja cedar, rowan, katsura, fir, ironwood, hazel, yellowwood, willow, yew, cork tree, hemlock) get no estimate",
   "acer": {
     "form": "loglogw1",
     "a": 0.22989,
@@ -102,6 +102,27 @@
     "r2": 0.894,
     "n": 33,
     "src": "utd:NoEast"
+  },
+  "ailanthus": {
+    "form": "pow",
+    "a": 4.0427,
+    "b": 0.321,
+    "dbh_min": 5.0,
+    "dbh_max": 56.4,
+    "n": 73,
+    "src": "qingdao+fia",
+    "note": "level from Qingdao street-tree sample mean, slope pooled from Qingdao and FIA open-grown/dominant trees",
+    "proxy": "ailanthus altissima"
+  },
+  "ailanthus altissima": {
+    "form": "pow",
+    "a": 4.0427,
+    "b": 0.321,
+    "dbh_min": 5.0,
+    "dbh_max": 56.4,
+    "n": 73,
+    "src": "qingdao+fia",
+    "note": "level from Qingdao street-tree sample mean, slope pooled from Qingdao and FIA open-grown/dominant trees"
   },
   "betula": {
     "form": "quad",

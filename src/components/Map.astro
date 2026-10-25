@@ -493,6 +493,8 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
             h.textContent = `~${Math.round(metres)}m ↨ in height`;
             h.title = model.src === 'oakville'
               ? 'Rough estimate from trunk diameter, Oakville ON ash allometry (Peper et al. 2014)'
+              : model.src === 'qingdao+fia'
+              ? 'Rough estimate from trunk diameter, Qingdao street-tree allometry with USFS forest inventory slope'
               : `Rough estimate from trunk diameter, Urban Tree Database allometry${model.proxy ? ` for ${model.proxy}` : ''}`;
             wrap.appendChild(h);
           }
