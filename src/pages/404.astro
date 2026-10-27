@@ -11,7 +11,6 @@ const c = content as {
   message: string;
   cta: string;
   cta_href: string;
-  replay: string;
 };
 ---
 
@@ -21,16 +20,12 @@ const c = content as {
   noindex={options?.noindex ?? false}
 >
   <section class="error-page">
-    <LeafScatter text={c.code}>
-      <div class="container">
-        <h1>{c.heading}</h1>
-        <p class="error-message">{c.message}</p>
-        <div class="error-actions">
-          <a href={c.cta_href} class="btn btn-primary magnify-onhover">{c.cta}</a>
-          <Button x-on:click="replay">{c.replay}</Button>
-        </div>
-      </div>
-    </LeafScatter>
+    <LeafScatter text={c.code} />
+    <div class="container">
+      <h1>{c.heading}</h1>
+      <p class="error-message">{c.message}</p>
+      <Button href={c.cta_href} size="large">{c.cta}</Button>
+    </div>
   </section>
 </BaseLayout>
 
@@ -49,22 +44,16 @@ const c = content as {
   }
 
   h1 {
+    font-size: var(--text-2xl);
     max-width: 30ch;
     text-wrap: balance;
   }
 
   .error-message {
+    margin-top: -0.6rem;
     color: var(--battleship);
     max-width: 40ch;
     text-wrap: pretty;
-  }
-
-  .error-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
   }
 
   @include small {

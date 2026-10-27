@@ -1,18 +1,21 @@
 ---
-/* default button, w hatched drop
+/* default button, w hatched drop, renders a link when given href
    <Button class="pos" data-x="y">label</Button>
+   <Button href="/" size="large">label</Button>
    <Button><svg slot="icon" ... />label</Button> */
 
-const { class: className, ...rest } = Astro.props;
+const { class: className, size, ...rest } = Astro.props;
 const scope = Object.fromEntries(Object.entries(rest).filter(([k]) => k.startsWith('data-astro-cid-')));
 const hasIcon = Astro.slots.has('icon');
+const Tag = rest.href ? 'a' : 'button';
+const type = rest.href ? undefined : 'button';
 ---
 
 <span class:list={['hatch-wrap', className]} {...scope}>
-  <button class:list={['hatch-btn', { 'has-icon': hasIcon }]} type="button" {...rest}>
+  <Tag class:list={['hatch-btn', { 'has-icon': hasIcon, 'is-large': size === 'large' }]} type={type} {...rest}>
     {hasIcon && <span class="hatch-icon"><slot name="icon" /></span>}
     <slot />
-  </button>
+  </Tag>
 </span>
 
 <script>
@@ -83,6 +86,7 @@ const hasIcon = Astro.slots.has('icon');
     font-weight: 500;
     line-height: 1.2;
     color: var(--charred);
+    text-decoration: none;
     border: 1px solid transparent;
     border-radius: 0.5rem;
     background:
@@ -93,6 +97,11 @@ const hasIcon = Astro.slots.has('icon');
 
     &.has-icon {
       padding-left: 0.6rem;
+    }
+
+    &.is-large {
+      padding: 0.6rem 1.4rem;
+      font-size: var(--text-base);
     }
 
     &:hover,

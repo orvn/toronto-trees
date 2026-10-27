@@ -28,7 +28,7 @@ export default (Alpine: Alpine) => {
 
   // 404 leaves, config is declared in LeafScatter.astro; the canvas code is only loaded where it's used
   Alpine.data('leafScatter', (cfg) => {
-    let field: { replay(): void; stop(): void } | undefined;
+    let field: { stop(): void } | undefined;
     let gone = false;
     return {
       ready: false,
@@ -38,7 +38,6 @@ export default (Alpine: Alpine) => {
         field = start(this.$refs.host, this.$refs.canvas, cfg);
         this.ready = true;
       },
-      replay() { field?.replay(); },
       destroy() { gone = true; field?.stop(); },
     };
   });

@@ -151,7 +151,6 @@ export function start(host, canvas, { text, leaves: species, physics: P }) {
   document.fonts.ready.then(() => { ro.observe(host); raf = requestAnimationFrame(frame); });
 
   return {
-    replay: () => placed && scatter(),
     stop: () => { cancelAnimationFrame(raf); ro.disconnect(); },
   };
 }

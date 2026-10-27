@@ -1,7 +1,6 @@
 ---
 /* Leaves blow in to spell `text`; grab a handful and fling them, the wind brings them back
-   Slot content shares the Alpine scope, so a replay control can live inside it
-   <LeafScatter text="404"><Button x-on:click="replay">again</Button></LeafScatter> */
+   <LeafScatter text="404" /> */
 
 
 const PHYSICS = {
@@ -68,12 +67,9 @@ const LEAVES = [
 const { text = '404' } = Astro.props;
 ---
 
-<div class="leaf-scatter" x-data={`leafScatter(${JSON.stringify({ text, leaves: LEAVES, physics: PHYSICS })})`}>
-  <div class="leaf-field" x-ref="host" aria-hidden="true">
-    <p class="leaf-fallback" x-show="!ready">{text}</p>
-    <canvas x-ref="canvas"></canvas>
-  </div>
-  <slot />
+<div class="leaf-field" x-ref="host" aria-hidden="true" x-data={`leafScatter(${JSON.stringify({ text, leaves: LEAVES, physics: PHYSICS })})`}>
+  <p class="leaf-fallback" x-show="!ready">{text}</p>
+  <canvas x-ref="canvas"></canvas>
 </div>
 
 <style lang="scss">
