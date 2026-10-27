@@ -1,0 +1,120 @@
+---
+/* Leaves blow in to spell `text`; grab a handful and fling them, the wind brings them back
+   Slot content shares the Alpine scope, so a replay control can live inside it
+   <LeafScatter text="404"><Button x-on:click="replay">again</Button></LeafScatter> */
+
+
+const PHYSICS = {
+  count: 404,
+  sizeMin: 16,          // leaf size px
+  sizeRange: 14,
+
+  grabRadius: 70,
+  holdSpread: 22,
+  holdPull: 0.35,
+  holdSpin: 0.3,
+
+  throwCarry: 0.7,
+  throwJitter: 4,
+  throwSpin: 0.2,
+  skidWind: 0.06,
+  skidDrift: 0.03,
+  skidDrag: 0.955,
+  skidSpinDrag: 0.95,
+  skidStop: 0.05,
+  restMin: 2.4,
+  restRange: 1.8,
+
+  windPull: 0.006,
+  windCurl: 0.0025,
+  windLift: 0.0012,
+  windGust: 0.25,
+  windRise: 0.08,
+  flutterDist: 140,
+  flightDamp: 0.93,
+  settleDist: 24,
+  settleDamp: 0.8,
+  alignDist: 40,        // leaves rotate to their resting angle within
+  alignPull: 0.03,
+  spinDrag: 0.9,
+  wobble: 0.01,
+  tiltRange: 1.6,       // spread of resting angles in radians
+
+  scatterSpread: 0.5,   // how far off-screen leaves start
+  scatterDelay: 0.3,    // seconds
+  scatterStagger: 1.2,
+  scatterJitter: 0.8,
+
+  // tumbling flip while moving
+  flipSpeed: 2.6,
+  flipSquash: 0.6,
+
+  // word sampling
+  textWidth: 0.78,      // share of width the word may fill
+  textHeight: 0.95,
+  sampleStep: 3,
+  scaleRef: 420,        // font px at which leaves are drawn at 1×
+  scaleMin: 0.7,
+  scaleMax: 1.3,
+};
+
+const LEAVES = [
+  ['maple', 27, '--celery'], ['locust', 9, '--golden'], ['oak', 8, '--killarney'], ['linden', 7, '--golden'],
+  ['spruce', 6, '--casal'], ['elm', 4, '--asparagus'], ['kentucky-coffeetree', 3, '--spectra'], ['apple', 3, '--punch'],
+  ['ginkgo', 3, '--raj'], ['hackberry', 2, '--killarney'], ['birch', 2, '--geyser'], ['cherry', 2, '--blush'],
+  ['ash', 2, '--terracotta'], ['catalpa', 1, '--lavender'], ['walnut', 1, '--kabul'], ['beech', 1, '--rope'],
+];
+
+const { text = '404' } = Astro.props;
+---
+
+<div class="leaf-scatter" x-data={`leafScatter(${JSON.stringify({ text, leaves: LEAVES, physics: PHYSICS })})`}>
+  <div class="leaf-field" x-ref="host" aria-hidden="true">
+    <p class="leaf-fallback" x-show="!ready">{text}</p>
+    <canvas x-ref="canvas"></canvas>
+  </div>
+  <slot />
+</div>
+
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+
+  .leaf-field {
+    position: relative;
+    height: max(24rem, 58vh);
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+
+      &.is-grabbing {
+        cursor: grabbing;
+      }
+    }
+  }
+
+  .leaf-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+    font-size: clamp(5rem, 20vw, 10rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--battleship);
+    letter-spacing: -0.04em;
+    user-select: none;
+  }
+
+  @include small {
+    .leaf-field {
+      height: max(16rem, 45vh);
+    }
+  }
+</style>
