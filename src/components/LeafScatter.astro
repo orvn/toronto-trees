@@ -9,6 +9,8 @@ const PHYSICS = {
   sizeRange: 14,
 
   grabRadius: 70,
+  touchReach: 1.5,      // grab radius multiplier for fingers and pens
+  flingWindow: 80,      // in ms, a pointer still for longer than this drops instead of throws
   holdSpread: 22,
   holdPull: 0.35,
   holdSpin: 0.3,
@@ -80,7 +82,8 @@ const { text = '404' } = Astro.props;
 
   .leaf-field {
     position: relative;
-    height: max(24rem, 58vh);
+    // svh, so the mobile URL bar showing and hiding doesn't resize the field
+    height: max(24rem, 58svh);
 
     canvas {
       position: absolute;
@@ -90,6 +93,10 @@ const { text = '404' } = Astro.props;
       height: 100%;
       cursor: grab;
       touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
 
       &.is-grabbing {
         cursor: grabbing;
@@ -106,14 +113,14 @@ const { text = '404' } = Astro.props;
     font-size: clamp(5rem, 20vw, 10rem);
     font-weight: 700;
     line-height: 1;
-    color: var(--battleship);
+    color: var(--bombay);
     letter-spacing: -0.04em;
     user-select: none;
   }
 
   @include small {
     .leaf-field {
-      height: max(16rem, 45vh);
+      height: max(16rem, 45svh);
     }
   }
 </style>

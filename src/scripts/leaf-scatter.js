@@ -23,12 +23,15 @@ export function start(host, canvas, { text, leaves: species, physics: P }) {
 
   const pos = e => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
 
+  // ensure one pointer at a time
   canvas.addEventListener('pointerdown', e => {
+    if (ptr) return;
     canvas.setPointerCapture(e.pointerId);
     canvas.classList.add('is-grabbing');
     const [x, y] = pos(e);
-    ptr = { x, y, vx: 0, vy: 0 };
-    held = leaves.filter(l => Math.hypot(l.x - x, l.y - y) < P.grabRadius * scale);
+    ptr = { id: e.pointerId, x, y, vx: 0, vy: 0, t: e.timeStamp };
+    const reach = P.grabRadius * scale * (e.pointerType === 'mouse' ? 1 : P.touchReach);
+    held = leaves.filter(l => Math.hypot(l.x - x, l.y - y) < reach);
     for (const l of held) {
       const ang = Math.random() * TAU, rr = Math.random() * P.holdSpread * scale;
       l.held = [Math.cos(ang) * rr, Math.sin(ang) * rr];
@@ -36,15 +39,19 @@ export function start(host, canvas, { text, leaves: species, physics: P }) {
     }
   });
 
+  // velocity is per 60fps frame, satisfies 120Hz touch screens
   canvas.addEventListener('pointermove', e => {
-    if (!ptr) return;
-    const [x, y] = pos(e);
-    ptr.vx = x - ptr.x; ptr.vy = y - ptr.y; ptr.x = x; ptr.y = y;
+    if (!ptr || e.pointerId !== ptr.id) return;
+    const [x, y] = pos(e), frames = Math.max(1, (e.timeStamp - ptr.t) / 16.67);
+    ptr.vx = ptr.vx * .4 + (x - ptr.x) / frames * .6; ptr.vy = ptr.vy * .4 + (y - ptr.y) / frames * .6;
+    ptr.x = x; ptr.y = y; ptr.t = e.timeStamp;
   });
 
-  const release = () => {
-    if (!ptr) return;
+  const release = e => {
+    if (!ptr || e.pointerId !== ptr.id) return;
     canvas.classList.remove('is-grabbing');
+    // A pointer that stopped before lifting drops its leaves instead of flinging them
+    if (e.timeStamp - ptr.t > P.flingWindow) ptr.vx = ptr.vy = 0;
     const now = performance.now() / 1000;
     for (const l of held) {
       l.held = null; l.ground = false;
@@ -57,11 +64,13 @@ export function start(host, canvas, { text, leaves: species, physics: P }) {
   };
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('lostpointercapture', release);
 
-  // Sample glyphs into target points for each leaf
+  // sample glyphs into target points for each leaf
   function resize() {
     const r = host.getBoundingClientRect();
     if (r.width < 40 || r.height < 40) return;
+    if (Math.abs(r.width - w) < 1 && Math.abs(r.height - h) < 1) return;
     w = r.width; h = r.height; dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
 
@@ -85,7 +94,7 @@ export function start(host, canvas, { text, leaves: species, physics: P }) {
     if (!placed) { placed = true; calm ? settle() : scatter(); }
   }
 
-  // Aerial view: leaves are strewn just off the left edge, a gust carries them in
+  // aerial view: leaves just off viewport, gust carries them in
   function scatter() {
     const now = performance.now() / 1000;
     for (const l of leaves) {
@@ -124,7 +133,7 @@ export function start(host, canvas, { text, leaves: species, physics: P }) {
           if (sp < P.skidStop) { l.ground = true; l.vx = l.vy = 0; }
         }
       } else {
-        // Wind carries leaves in arcs
+        // wind carries leaves in arcs
         l.ground = false;
         const dx = l.tx - l.x, dy = l.ty - l.y, dist = Math.hypot(dx, dy);
         const flutter = Math.min(1, dist / P.flutterDist);
