@@ -118,9 +118,10 @@ const { text = '404' } = Astro.props;
     user-select: none;
   }
 
-  @include small {
+  // On narrow screens the word is limited by width, so the field follows width to avoid empty bands
+  @include medium {
     .leaf-field {
-      height: max(16rem, 45svh);
+      height: clamp(10rem, 52vw, 24rem);
     }
   }
 </style>
