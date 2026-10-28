@@ -1,0 +1,127 @@
+---
+/* Leaves blow in to spell `text`; grab a handful and fling them, the wind brings them back
+   <LeafScatter text="404" /> */
+
+
+const PHYSICS = {
+  count: 404,
+  sizeMin: 16,          // leaf size px
+  sizeRange: 14,
+
+  grabRadius: 70,
+  touchReach: 1.5,      // grab radius multiplier for fingers and pens
+  flingWindow: 80,      // in ms, a pointer still for longer than this drops instead of throws
+  holdSpread: 22,
+  holdPull: 0.35,
+  holdSpin: 0.3,
+
+  throwCarry: 0.7,
+  throwJitter: 4,
+  throwSpin: 0.2,
+  skidWind: 0.06,
+  skidDrift: 0.03,
+  skidDrag: 0.955,
+  skidSpinDrag: 0.95,
+  skidStop: 0.05,
+  restMin: 2.4,
+  restRange: 1.8,
+
+  windPull: 0.006,
+  windCurl: 0.0025,
+  windLift: 0.0012,
+  windGust: 0.25,
+  windRise: 0.08,
+  flutterDist: 140,
+  flightDamp: 0.93,
+  settleDist: 24,
+  settleDamp: 0.8,
+  alignDist: 40,        // leaves rotate to their resting angle within
+  alignPull: 0.03,
+  spinDrag: 0.9,
+  wobble: 0.01,
+  tiltRange: 1.6,       // spread of resting angles in radians
+
+  scatterSpread: 0.5,   // how far off-screen leaves start
+  scatterDelay: 0.3,    // seconds
+  scatterStagger: 1.2,
+  scatterJitter: 0.8,
+
+  // tumbling flip while moving
+  flipSpeed: 2.6,
+  flipSquash: 0.6,
+
+  // word sampling
+  textWidth: 0.78,      // share of width the word may fill
+  textHeight: 0.95,
+  sampleStep: 3,
+  scaleRef: 420,        // font px at which leaves are drawn at 1×
+  scaleMin: 0.7,
+  scaleMax: 1.3,
+};
+
+// [icon, relative weight, colour shown until the icon loads]
+const LEAVES = [
+  ['maple', 8, '--celery'], ['oak', 9, '--killarney'], ['elm', 4, '--asparagus'], ['apple', 3, '--punch'],
+  ['pine', 3, '--asparagus'], ['ginkgo', 3, '--raj'], ['ash', 1, '--terracotta'], ['cedar', 1, '--killarney'],
+  ['tulip-tree', 3, '--asparagus'], ['catalpa', 1, '--lavender'], ['beech', 1, '--rope'], ['black-locust', 3, '--celery'],
+  ['hawthorn', 1, '--punch'], ['katsura', 1, '--casablanca'], ['fir', 1, '--killarney'], ['zelkova', 3, '--terracotta'],
+  ['ironwood', 1, '--celery'], ['yellowwood', 1, '--raj'], ['willow', 3, '--mantle'], ['poplar', 3, '--regent'],
+  ['hornbeam', 1, '--barley'], ['sweetgum', 3, '--terracotta'], ['falsecypress', 3, '--mantle'], ['other', 1, '--bombay'],
+];
+
+const { text = '404' } = Astro.props;
+---
+
+<div class="leaf-field" x-ref="host" aria-hidden="true" x-data={`leafScatter(${JSON.stringify({ text, leaves: LEAVES, physics: PHYSICS })})`}>
+  <p class="leaf-fallback" x-show="!ready">{text}</p>
+  <canvas x-ref="canvas"></canvas>
+</div>
+
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+
+  .leaf-field {
+    position: relative;
+    // svh, so the mobile URL bar showing and hiding doesn't resize the field
+    height: max(24rem, 58svh);
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+
+      &.is-grabbing {
+        cursor: grabbing;
+      }
+    }
+  }
+
+  .leaf-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+    font-size: clamp(5rem, 20vw, 10rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--bombay);
+    letter-spacing: -0.04em;
+    user-select: none;
+  }
+
+  // On narrow screens the word is limited by width, so the field follows width to avoid empty bands
+  @include medium {
+    .leaf-field {
+      height: clamp(10rem, 52vw, 24rem);
+    }
+  }
+</style>

@@ -8,7 +8,7 @@ options:
 
 content:
   code: "404"
-  heading: Page not found
-  message: "Sorry, we couldn't find what you were looking for."
-  cta: Go home
+  heading: This page could not be found.
+  message: Let's go look at some more trees?
+  cta: Back to map
   cta_href: /
