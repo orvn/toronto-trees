@@ -24,62 +24,12 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   import 'maplibre-gl/dist/maplibre-gl.css';
   import cfg from '../content/map-style.json';
   import growthFactors from '../content/growth-factors.json';
+  import { GENUS_COLOR_VAR, GENUS_ICON, GENUS_FIX, readBotanical, readCommon } from '../lib/botanical';
   import { readViewParams, writeViewParams, readSpotlightParam, writeSpotlightParam } from '../lib/params';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
   (cfg.sources as any).trees.url = `pmtiles://${pmtilesHref}`;
 
-  // Keys are lowercase; readBotanical() normalises the inventory's casing and misspellings
-  const GENUS_COLOR_VAR: Record<string, string> = {
-    acer: '--celery',
-    gleditsia: '--golden',
-    picea: '--casal',
-    pinus: '--asparagus',
-    quercus: '--killarney',
-    tilia: '--golden',
-    ulmus: '--asparagus',
-    gymnocladus: '--spectra',
-    malus: '--punch',
-    syringa: '--lavender',
-    ginkgo: '--raj',
-    celtis: '--killarney',
-    betula: '--geyser',
-    amelanchier: '--casablanca',
-    aesculus: '--killarney',
-    pyrus: '--raj',
-    prunus: '--blush',
-    fraxinus: '--terracotta',
-    platanus: '--gumleaf',
-    thuja: '--killarney',
-    liriodendron: '--asparagus',
-    catalpa: '--lavender',
-    morus: '--lavender',
-    fagus: '--rope',
-    sorbus: '--pomegranate',
-    magnolia: '--zinnwaldite',
-    juglans: '--kabul',
-    ailanthus: '--pomegranate',
-    juniperus: '--casal',
-    robinia: '--celery',
-    cercis: '--blush',
-    crataegus: '--punch',
-    cercidiphyllum: '--casablanca',
-    abies: '--killarney',
-    zelkova: '--terracotta',
-    corylus: '--rope',
-    ostrya: '--celery',
-    cladrastis: '--raj',
-    salix: '--mantle',
-    taxus: '--pomegranate',
-    phellodendron: '--donkey',
-    populus: '--regent',
-    pseudotsuga: '--kabul',
-    cornus: '--zinnwaldite',
-    carpinus: '--barley',
-    tsuga: '--golden',
-    liquidambar: '--terracotta',
-    chamaecyparis: '--mantle',
-  };
   const cssVarValue = (name: string) =>
     getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
@@ -87,22 +37,25 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     Object.entries(growthFactors as Record<string, number>).map(([k, v]) => [k.toLowerCase(), v])
   );
 
-  // The City's inventory misspells three genera and stores 'None' where a name is missing
-  const GENUS_FIX: Record<string, string> = {
-    alix: 'salix',           // 101 weeping willows
-    allianthus: 'ailanthus', // tree of heaven
-    crategus: 'crataegus',   // 2 Crusade hawthorns
+  // Lookup order: exact botanical name, genus + species, genus, then the default
+  const growthFactorFor = (botanicalDisplay: string, genus: string) => {
+    const botanical = botanicalDisplay.toLowerCase();
+    const parts = botanical.split(/\s+/).filter(w => w !== 'x' && w !== '×');
+    const speciesKey = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : '';
+    return (
+      GROWTH_FACTOR[botanical] ??
+      (speciesKey ? GROWTH_FACTOR[speciesKey] : undefined) ??
+      GROWTH_FACTOR[genus] ??
+      GROWTH_FACTOR._default
+    );
   };
 
-  // Genus is capitalised, species epithet left lowercase, per botanical convention
-  function readBotanical(raw: unknown) {
-    const name = String(raw ?? '').trim();
-    if (!name || name === 'None') return { display: '', genus: '' };
-    const [first, ...rest] = name.split(/\s+/);
-    const genus = GENUS_FIX[first.toLowerCase()] ?? first.toLowerCase();
-    const display = [genus.charAt(0).toUpperCase() + genus.slice(1), ...rest].join(' ');
-    return { display, genus };
-  }
+  const estimateAge = (p: Record<string, any>) => {
+    const dbh = Number(p.DBH_TRUNK);
+    if (!(dbh > 0)) return 0;
+    const { display, genus } = readBotanical(p.BOTANICAL_NAME);
+    return Math.max(1, Math.round((dbh / 2.54) * growthFactorFor(display, genus)));
+  };
 
   // Storage is unavailable in some private-browsing modes, so never let it throw
   const GEOLOCATE_USED_KEY = 'tt:geolocate-used';
@@ -115,62 +68,6 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     try { localStorage.setItem(key, '1'); } catch { /* ignore */ }
   };
 
-  const readCommon = (raw: unknown) => {
-    const name = String(raw ?? '').trim();
-    return !name || name === 'None' ? 'Tree' : name;
-  };
-
-  const GENUS_ICON: Record<string, string> = {
-    acer: 'maple',
-    gleditsia: 'locust',
-    picea: 'spruce',
-    pinus: 'pine',
-    quercus: 'oak',
-    tilia: 'linden',
-    ulmus: 'elm',
-    gymnocladus: 'kentucky-coffeetree',
-    malus: 'apple',
-    syringa: 'lilac',
-    ginkgo: 'ginkgo',
-    celtis: 'hackberry',
-    betula: 'birch',
-    amelanchier: 'serviceberry',
-    aesculus: 'horse-chestnut',
-    pyrus: 'ornamental-pear',
-    prunus: 'cherry',
-    fraxinus: 'ash',
-    platanus: 'sycamore',
-    thuja: 'cedar',
-    liriodendron: 'tulip-tree',
-    catalpa: 'catalpa',
-    morus: 'mulberry',
-    fagus: 'beech',
-    sorbus: 'rowan',
-    magnolia: 'magnolia',
-    juglans: 'walnut',
-    ailanthus: 'tree-of-heaven',
-    juniperus: 'juniper',
-    robinia: 'black-locust',
-    cercis: 'redbud',
-    crataegus: 'hawthorn',
-    cercidiphyllum: 'katsura',
-    abies: 'fir',
-    zelkova: 'zelkova',
-    corylus: 'hazel',
-    ostrya: 'ironwood',
-    cladrastis: 'yellowwood',
-    salix: 'willow',
-    taxus: 'yew',
-    phellodendron: 'cork',
-    populus: 'poplar',
-    pseudotsuga: 'douglas-fir',
-    cornus: 'dogwood',
-    carpinus: 'hornbeam',
-    tsuga: 'hemlock',
-    liquidambar: 'sweetgum',
-    chamaecyparis: 'falsecypress',
-  };
-
   // Worker and shared module copied to /vendor/maplibre so client resolves the worker `./maplibre-gl-shared.mjs` import
   maplibregl.setWorkerUrl('/vendor/maplibre/maplibre-gl-worker.mjs');
 
@@ -181,6 +78,8 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
   let currentMap: maplibregl.Map | null = null;
   let filterHandler: ((e: Event) => void) | null = null;
+  let locateHandler: ((e: Event) => void) | null = null;
+  let rangeHandler: ((e: Event) => void) | null = null;
 
   function initMap() {
     const container = document.getElementById('map');
@@ -328,6 +227,22 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       const namedGenera = Object.keys(GENUS_ICON).flatMap(spellings);
 
       const nameExpr = ['downcase', ['coalesce', ['get', 'BOTANICAL_NAME'], '']];
+      const dbhExpr = ['to-number', ['get', 'DBH_TRUNK']];
+
+      // estimateAge() for the GPU: most specific growth-factor key first, each matched as a name prefix.
+      // The inventory's misspelt genera get their own keys so they pick up the right factor
+      const factorEntries = Object.entries(GROWTH_FACTOR).filter(([k, v]) => k !== '_default' && typeof v === 'number');
+      for (const [raw, fixed] of Object.entries(GENUS_FIX)) {
+        for (const [k, v] of [...factorEntries]) {
+          if (k.startsWith(fixed)) factorEntries.push([raw + k.slice(fixed.length), v]);
+        }
+      }
+      factorEntries.sort((a, b) => b[0].split(' ').length - a[0].split(' ').length || b[0].length - a[0].length);
+      const ageExpr = [
+        'round',
+        ['*', ['/', dbhExpr, 2.54],
+          ['case', ...factorEntries.flatMap(([k, v]) => [['==', ['index-of', k, nameExpr], 0], v]), GROWTH_FACTOR._default]],
+      ];
       const isGenus = (g: string) => ['==', ['index-of', g, nameExpr], 0];
       const matchFor = (icon: string) =>
         icon === 'other'
@@ -373,14 +288,18 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         'trees-heatmap'
       );
 
-      let activeIcon: string | null = null;
+      // Species comes from the legend or the search bar; ranges come from the sliders. Both dim what they exclude
+      let speciesMatch: any[] | null = null;
+      let rangeMatch: any[] | null = null;
+      let speciesTest: ((raw: unknown) => boolean) | null = null;
+      let rangeTest: ((p: Record<string, any>) => boolean) | null = null;
+      let tintVar = '--bombay';
       const iconOf = (raw: unknown) => GENUS_ICON[readBotanical(raw).genus] || 'other';
-      const isSelectable = (raw: unknown) => activeIcon === null || iconOf(raw) === activeIcon;
+      const isSelectable = (p: Record<string, any>) =>
+        (speciesTest === null || speciesTest(p.BOTANICAL_NAME)) && (rangeTest === null || rangeTest(p));
 
-      filterHandler = (e: Event) => {
-        const icon = (e as CustomEvent).detail?.icon ?? null;
-        const match = icon ? matchFor(icon) : null;
-        activeIcon = icon;
+      const applyFilters = () => {
+        const match = speciesMatch && rangeMatch ? ['all', speciesMatch, rangeMatch] : speciesMatch ?? rangeMatch;
 
         map.setPaintProperty(
           'trees-circles',
@@ -406,15 +325,61 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           match ? cfg.filterStrokeColor : baseStrokeColor
         );
 
-        // The heatmap covers every species, so it would drown out a single-genus selection
-        map.setPaintProperty('trees-heatmap', 'heatmap-opacity', icon ? 0 : baseHeat);
+        // The heatmap covers every tree, so it would drown out a selection
+        map.setPaintProperty('trees-heatmap', 'heatmap-opacity', match ? 0 : baseHeat);
 
-        if (icon) {
-          map.setPaintProperty('genus-tint', 'background-color', cssVarValue(iconColorVar[icon]));
+        if (speciesMatch) {
+          map.setPaintProperty('genus-tint', 'background-color', cssVarValue(tintVar));
         }
-        map.setPaintProperty('genus-tint', 'background-opacity', icon ? cfg.tintOpacity : 0);
+        map.setPaintProperty('genus-tint', 'background-opacity', speciesMatch ? cfg.tintOpacity : 0);
+      };
+
+      filterHandler = (e: Event) => {
+        const { icon = null, genus = null, botanical = null } = (e as CustomEvent).detail ?? {};
+        if (botanical) {
+          const wanted = String(botanical).trim().toLowerCase();
+          speciesMatch = ['==', nameExpr, wanted];
+          tintVar = GENUS_COLOR_VAR[readBotanical(botanical).genus] || '--bombay';
+          speciesTest = raw => String(raw ?? '').trim().toLowerCase() === wanted;
+        } else if (genus) {
+          speciesMatch = ['any', ...spellings(genus).map(isGenus)];
+          tintVar = GENUS_COLOR_VAR[genus] || '--bombay';
+          speciesTest = raw => readBotanical(raw).genus === genus;
+        } else if (icon) {
+          speciesMatch = matchFor(icon);
+          tintVar = iconColorVar[icon];
+          speciesTest = raw => iconOf(raw) === icon;
+        } else {
+          speciesMatch = null;
+          speciesTest = null;
+        }
+        applyFilters();
       };
       document.addEventListener('tt:genus-filter', filterHandler);
+
+      rangeHandler = (e: Event) => {
+        const { ageMin = null, ageMax = null, dbhMin = null, dbhMax = null } = (e as CustomEvent).detail ?? {};
+        const parts: any[] = [];
+        if (ageMin !== null) parts.push(['>=', ageExpr, ageMin]);
+        if (ageMax !== null) parts.push(['<=', ageExpr, ageMax]);
+        if (dbhMin !== null) parts.push(['>=', dbhExpr, dbhMin]);
+        if (dbhMax !== null) parts.push(['<=', dbhExpr, dbhMax]);
+        rangeMatch = parts.length ? ['all', ...parts] : null;
+        rangeTest = parts.length
+          ? p => {
+              const age = estimateAge(p);
+              const dbh = Number(p.DBH_TRUNK) || 0;
+              return (
+                (ageMin === null || age >= ageMin) &&
+                (ageMax === null || age <= ageMax) &&
+                (dbhMin === null || dbh >= dbhMin) &&
+                (dbhMax === null || dbh <= dbhMax)
+              );
+            }
+          : null;
+        applyFilters();
+      };
+      document.addEventListener('tt:range-filter', rangeHandler);
 
       // Which tile source and id property each key prefix resolves to
       const TREE_SOURCES: Record<string, { source: string; sourceLayer: string; idProp: string }> = {
@@ -427,7 +392,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
       let currentPopup: maplibregl.Popup | null = null;
 
-      const openTreePopup = (p: Record<string, any>, lngLat: maplibregl.LngLatLike) => {
+      const openTreePopup = (p: Record<string, any>, lngLat: [number, number]) => {
         currentPopup?.remove();
 
         const wrap = document.createElement('div');
@@ -475,17 +440,8 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           d.textContent = `Trunk Ø ${p.DBH_TRUNK} cm`;
           wrap.appendChild(d);
 
-          const botanical = botanicalName.toLowerCase();
-          const parts = botanical.split(/\s+/).filter(w => w !== 'x' && w !== '×');
-          const speciesKey = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : '';
-          const factor =
-            GROWTH_FACTOR[botanical] ??
-            (speciesKey ? GROWTH_FACTOR[speciesKey] : undefined) ??
-            GROWTH_FACTOR[genusKey] ??
-            GROWTH_FACTOR._default;
-
-          if (factor && p.DBH_TRUNK > 0) {
-            const years = Math.max(1, Math.round((Number(p.DBH_TRUNK) / 2.54) * factor));
+          const years = estimateAge(p);
+          if (years) {
             const age = document.createElement('p');
             age.className = 'tp-meta tp-age';
             age.textContent = `~${years} years old`;
@@ -515,10 +471,44 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       };
 
       map.on('click', 'trees-circles', (e) => {
-        const f = e.features?.find(x => isSelectable(x.properties?.BOTANICAL_NAME));
-        if (!f) return;
-        openTreePopup(f.properties ?? {}, e.lngLat);
+        const f = e.features?.find(x => isSelectable(x.properties ?? {}));
+        if (f) openTreePopup(f.properties ?? {}, [e.lngLat.lng, e.lngLat.lat]);
       });
+
+      // Address search: fit a whole street, or land near an interpolated house number and
+      // then snap to the loaded tree whose number is closest
+      locateHandler = (e: Event) => {
+        const d = (e as CustomEvent).detail ?? {};
+        const done = (found: boolean) =>
+          document.dispatchEvent(new CustomEvent('tt:locate-done', { detail: { found } }));
+        if (d.bounds) {
+          map.fitBounds(d.bounds, { padding: 48, maxZoom: 16, duration: 900 });
+          map.once('moveend', () => done(true));
+          return;
+        }
+        map.flyTo({ center: [d.lng, d.lat], zoom: 15.5, duration: 1200 });
+        map.once('idle', () => {
+          const feats = map.querySourceFeatures('trees', {
+            sourceLayer: 'trees',
+            filter: ['==', ['get', 'STREETNAME'], d.street],
+          });
+          let best: (typeof feats)[number] | null = null;
+          let bestGap = Infinity;
+          for (const f of feats) {
+            const gap = Math.abs(Number(f.properties?.ADDRESS) - d.address);
+            if (gap < bestGap) { bestGap = gap; best = f; }
+          }
+          if (!best) return done(false);
+          const g = best.geometry as any;
+          const [lng, lat] = g.type === 'Point' ? g.coordinates : g.coordinates[0];
+          map.easeTo({ center: [lng, lat], zoom: 17, duration: 700 });
+          map.once('moveend', () => {
+            openTreePopup(best!.properties ?? {}, [lng, lat]);
+            done(true);
+          });
+        });
+      };
+      document.addEventListener('tt:locate', locateHandler);
 
       // Deep link: the tree is only findable once its tile has loaded, so wait for the first idle
       const spotlight = readSpotlightParam();
@@ -539,7 +529,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
       // mousemove rather than mouseenter, so the cursor tracks selectability within the layer
       map.on('mousemove', 'trees-circles', (e) => {
-        const hit = e.features?.some(x => isSelectable(x.properties?.BOTANICAL_NAME));
+        const hit = e.features?.some(x => isSelectable(x.properties ?? {}));
         map.getCanvas().style.cursor = hit ? 'pointer' : '';
       });
       map.on('mouseleave', 'trees-circles', () => { map.getCanvas().style.cursor = ''; });
@@ -550,6 +540,14 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     if (filterHandler) {
       document.removeEventListener('tt:genus-filter', filterHandler);
       filterHandler = null;
+    }
+    if (locateHandler) {
+      document.removeEventListener('tt:locate', locateHandler);
+      locateHandler = null;
+    }
+    if (rangeHandler) {
+      document.removeEventListener('tt:range-filter', rangeHandler);
+      rangeHandler = null;
     }
     if (currentMap) {
       currentMap.remove();
