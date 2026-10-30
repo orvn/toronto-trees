@@ -67,6 +67,8 @@ Trees can take one of 6 forms:
     - where $`w_1 = 1,\ w_2 = \sqrt{x},\ w_3 = x,\ w_4 = x^2`$ and `c` is the fit's MSE (mean squared error)
     - The correction term $`w_N c/2`$ is needed because a fit in log values gives estimates that are too low
       - $`w_N`$ is a weight from the source material, and lets the error grow with tree size
+3. Power law calculates height directly, with a fractional exponent, so it rises steeply for small trees and then flattens without ever turning down
+    - `pow`: $`H = a\,x^b`$, where $`0 < b < 1`$
 
 Each study measured trees only within a diameter range, and an equation isn't reliable outside it, so we clamp diameter to the fitted range: $`x = \min\left(x_{\max},\ \max\left(x_{\min},\ \mathrm{DBH}\right)\right)`$
 
@@ -75,7 +77,7 @@ Each study measured trees only within a diameter range, and an equation isn't re
 - Lookup goes from most to least specific: full botanical name, genus & species, then genus
 - One species can have equations from more than one city, the city nearest to Toronto's climate is used
 - Four species have no equation in nearby cities, so they use the largest sample from a warmer city (tulip tree, black locust, eastern red cedar, flowering dogwood)
-- Tree of heaven is the only tree to use the power law, $`H = a\,x^b`$, through the Qingdao sample mean, with its slope pooled from the Qingdao fit and open-grown trees in the US Forest Service [FIA](https://research.fs.usda.gov/programs/fia) inventory for nearby states
+- Tree of heaven is the only tree to use the power law (`pow`), through the Qingdao sample mean, with its slope pooled from the Qingdao fit and open-grown trees in the US Forest Service [FIA](https://research.fs.usda.gov/programs/fia) inventory for nearby states
 - Some genera don't match any urban equation, so are missing height estimates (fir, willow, yew, lilac, rowan, serviceberry, thuja cedar, katsura, ironwood, hazel, yellowwood, cork tree, hemlock)
 
 **Potential error**
