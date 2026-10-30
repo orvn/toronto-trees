@@ -1,4 +1,6 @@
 ---
+import GithubIcon from './GithubIcon.astro';
+
 const navLinks = [
   { label: 'Home',  href: '/'      },
   { label: 'About', href: '/about' },
@@ -58,6 +60,20 @@ function isActive(href: string): boolean {
         </a>
       </li>
     ))}
+
+    <li>
+      <a
+        href="https://github.com/orvn/toronto-trees"
+        class="nav-link nav-gh"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+        @mouseenter="move($el)"
+        @focus="move($el)"
+      >
+        <GithubIcon />
+      </a>
+    </li>
 
     <span
       class="nav-indicator"
@@ -142,6 +158,11 @@ function isActive(href: string): boolean {
   .nav-link:hover,
   .nav-link[aria-current='page'] {
     color: var(--forest);
+  }
+
+  .nav-gh {
+    display: inline-flex;
+    align-items: center;
   }
 
   /* Floating indicator — single element that slides between links */
