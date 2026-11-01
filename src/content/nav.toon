@@ -1,0 +1,4 @@
+links[3]{label,href,icon}:
+  map,/,null
+  about,/about,null
+  GitHub,"https://github.com/orvn/toronto-trees",github

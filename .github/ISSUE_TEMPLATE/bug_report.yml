@@ -1,0 +1,35 @@
+name: 🐛 Report a bug
+description: Something seems wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you're seeing, and what you expect to see instead
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See ...
+    validations:
+      required: false
+  - type: input
+    id: browser
+    attributes:
+      label: Browser or device
+      placeholder: e.g. Firefox 131 on Windows 11, Safari on iPhone 18
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images or short videos here if they help show the problem
+    validations:
+      required: false

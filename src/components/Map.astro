@@ -25,6 +25,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
   import cfg from '../content/map-style.json';
   import growthFactors from '../content/growth-factors.json';
   import { GENUS_COLOR_VAR, GENUS_ICON, GENUS_FIX, readBotanical, readCommon } from '../lib/botanical';
+  import { findHeightModel, estimateHeight } from '../lib/height';
   import { readViewParams, writeViewParams, readSpotlightParam, writeSpotlightParam } from '../lib/params';
 
   const pmtilesHref = import.meta.env.PUBLIC_PMTILES_URL || '/data/street-trees.pmtiles';
@@ -437,8 +438,22 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         if (p.DBH_TRUNK != null) {
           const d = document.createElement('p');
           d.className = 'tp-meta';
-          d.textContent = `Trunk Ø ${p.DBH_TRUNK} cm`;
+          d.textContent = `${p.DBH_TRUNK}cm Ø trunk`;
           wrap.appendChild(d);
+
+          const model = findHeightModel(botanicalName, genusKey);
+          const metres = model && p.DBH_TRUNK > 0 ? estimateHeight(Number(p.DBH_TRUNK), model) : null;
+          if (metres) {
+            const h = document.createElement('p');
+            h.className = 'tp-meta tp-height';
+            h.textContent = `~${Math.round(metres)}m ↨ in height`;
+            h.title = model.src === 'oakville'
+              ? 'Rough estimate from trunk diameter, Oakville ON ash allometry (Peper et al. 2014)'
+              : model.src === 'qingdao+fia'
+              ? 'Rough estimate from trunk diameter, Qingdao street-tree allometry with USFS forest inventory slope'
+              : `Rough estimate from trunk diameter, Urban Tree Database allometry${model.proxy ? ` for ${model.proxy}` : ''}`;
+            wrap.appendChild(h);
+          }
 
           const years = estimateAge(p);
           if (years) {

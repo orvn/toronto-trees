@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import LeafScatter from '../components/LeafScatter.astro';
 import { loadPage } from '../lib/content';
 
 const { meta, options, content } = loadPage('404');
@@ -18,11 +20,11 @@ const c = content as {
   noindex={options?.noindex ?? false}
 >
   <section class="error-page">
+    <LeafScatter text={c.code} />
     <div class="container">
-      <p class="error-code" aria-hidden="true">{c.code}</p>
       <h1>{c.heading}</h1>
       <p class="error-message">{c.message}</p>
-      <a href={c.cta_href} class="btn btn-primary magnify-onhover">{c.cta}</a>
+      <Button href={c.cta_href} size="large">{c.cta}</Button>
     </div>
   </section>
 </BaseLayout>
@@ -30,10 +32,7 @@ const c = content as {
 <style lang="scss">
   @use '../styles/breakpoints' as *;
   .error-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-block: 6rem;
+    padding-block: 2rem 6rem;
     text-align: center;
   }
 
@@ -44,28 +43,22 @@ const c = content as {
     gap: 1rem;
   }
 
-  .error-code {
-    font-size: clamp(5rem, 20vw, 10rem);
-    font-weight: 700;
-    line-height: 1;
-    color: var(--battleship);
-    letter-spacing: -0.04em;
-    -webkit-user-select: none;
-    user-select: none;
+  h1 {
+    font-size: var(--text-2xl);
+    max-width: 30ch;
+    text-wrap: balance;
   }
 
   .error-message {
+    margin-top: -0.6rem;
     color: var(--battleship);
     max-width: 40ch;
+    text-wrap: pretty;
   }
 
   @include small {
     .error-page {
-      padding-block: 3rem;
-    }
-
-    .error-code {
-      font-size: clamp(4rem, 15vw, 6rem);
+      padding-block: 1rem 3rem;
     }
   }
 </style>

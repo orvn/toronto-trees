@@ -1,17 +1,8 @@
 ---
 import { loadGlobal } from '../lib/content';
+import Nav from './Nav.astro';
 
 const { name } = loadGlobal();
-const { pathname } = Astro.url;
-
-const navLinks = [
-  { label: 'map',   href: '/' },
-  { label: 'about', href: '/about' },
-];
-
-function isActive(href: string): boolean {
-  return href === '/' ? pathname === '/' : pathname.startsWith(href);
-}
 ---
 
 <header class="masthead" role="banner">
@@ -19,19 +10,7 @@ function isActive(href: string): boolean {
     {name.toLowerCase()}
   </a>
 
-  <nav class="nav" aria-label="Main navigation">
-    <ul role="list">
-      {navLinks.map(({ label, href }) => (
-        <li>
-          <a
-            href={href}
-            class="nav-link"
-            aria-current={isActive(href) ? 'page' : undefined}
-          >{label}</a>
-        </li>
-      ))}
-    </ul>
-  </nav>
+  <Nav />
 </header>
 
 <style lang="scss">
@@ -67,40 +46,11 @@ function isActive(href: string): boolean {
     display: block;
   }
 
-  .nav {
-    padding-bottom: 0.3rem;
-  }
-
-  .nav ul {
-    display: flex;
-    gap: 1.75rem;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .nav-link {
-    font-size: var(--text-base);
-    font-weight: 500;
-    color: var(--charred);
-    text-decoration: none;
-    transition: color 200ms ease;
-  }
-
-  .nav-link:hover,
-  .nav-link[aria-current='page'] {
-    color: var(--forest);
-  }
-
   @include small {
     .masthead {
       grid-template-columns: 1fr;
       gap: 0.5rem;
       padding-block: 1.5rem 0.5rem;
-    }
-
-    .nav {
-      padding-top: 0;
     }
   }
 </style>
