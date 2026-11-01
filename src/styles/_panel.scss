@@ -1,0 +1,55 @@
+// Map filter panel
+// @include panel; @include well; @include key;
+@mixin panel($drop: 0.5rem) {
+  position: relative;
+  isolation: isolate;
+  border: 2px solid transparent;
+  border-radius: 0.625rem;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+  }
+
+  &::before {
+    z-index: -1;
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--bianca), var(--bianca)) padding-box,
+      linear-gradient(90deg, var(--forest), var(--charred)) border-box;
+    box-shadow: inset 0 -2px 0 var(--porcelain);
+  }
+
+  // Lighten keeps whichever edge fade is brighter, so the right and bottom edges both go pale green
+  &::after {
+    $ink: color-mix(in srgb, var(--charred) 85%, #fff);
+    $edge: color-mix(in srgb, var(--forest) 45%, #fff);
+    z-index: -2;
+    background:
+      linear-gradient(90deg, $ink calc(100% - 0.6rem), $edge),
+      linear-gradient(180deg, $ink calc(100% - 0.6rem), $edge);
+    background-blend-mode: lighten;
+    mask-image: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px 4px);
+    transform: translate($drop, $drop);
+  }
+}
+
+@mixin well {
+  border-radius: 0.45rem;
+  background: var(--porcelain);
+  box-shadow:
+    inset 0 1px 4px rgb(27 31 26 / 0.09),
+    inset 0 0 0 1px rgb(27 31 26 / 0.04);
+}
+
+// Raised cap that sits on a panel or in a well
+@mixin key {
+  background: var(--bianca);
+  box-shadow:
+    0 0 0 1px rgb(27 31 26 / 0.08),
+    0 1.5px 0 rgb(56 102 65 / 0.5),
+    0 3px 6px rgb(27 31 26 / 0.07);
+}

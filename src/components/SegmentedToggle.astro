@@ -36,27 +36,26 @@ const index = Math.max(0, options.findIndex((o: { value: string }) => o.value ==
 </script>
 
 <style lang="scss">
+  @use '../styles/panel' as *;
+
   .segmented {
+    @include well;
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--count), 1fr);
     flex-shrink: 0;
-    height: 100%;
-    padding: 0.2rem;
-    background: rgb(27 31 26 / 0.06);
-    border-radius: 0.6rem;
+    padding: 0.25rem;
   }
 
   // Cells share one width, so the thumb slides by whole multiples of its own width
   .thumb {
+    @include key;
     position: absolute;
-    top: 0.2rem;
-    bottom: 0.2rem;
-    left: 0.2rem;
-    width: calc((100% - 0.4rem) / var(--count));
-    background: var(--forest);
-    border-radius: 0.45rem;
-    box-shadow: 0 1px 3px rgb(27 31 26 / 0.18);
+    top: 0.25rem;
+    bottom: 0.25rem;
+    left: 0.25rem;
+    width: calc((100% - 0.5rem) / var(--count));
+    border-radius: 0.3rem;
     transform: translateX(calc(var(--index) * 100%));
     transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -68,22 +67,46 @@ const index = Math.max(0, options.findIndex((o: { value: string }) => o.value ==
   .option {
     position: relative;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 2.25rem;
     margin: 0;
-    padding: 0 0.85rem;
+    padding: 0 1rem;
     border: 0;
-    border-radius: 0.45rem;
+    border-radius: 0.3rem;
     background: none;
     font: inherit;
-    font-size: var(--text-xs);
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    font-size: var(--text-sm);
+    white-space: nowrap;
     color: var(--battleship);
     cursor: pointer;
     transition: color 200ms ease;
+
+    // Space for the dot is always held so labels don't shift as it appears
+    &::before {
+      content: '';
+      flex-shrink: 0;
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--forest), var(--charred));
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+
+    &:hover {
+      color: var(--charred);
+    }
   }
 
   .option[aria-pressed='true'] {
-    color: #fff;
+    color: var(--charred);
+
+    &::before {
+      opacity: 1;
+    }
   }
 
   .option:focus-visible {
