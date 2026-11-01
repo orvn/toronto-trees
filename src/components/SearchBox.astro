@@ -515,7 +515,7 @@ const { copy } = Astro.props;
   }
 
   .results :global(li[aria-selected='true']) {
-    background: linear-gradient(90deg, rgb(47 143 59 / 0.14), rgb(47 143 59 / 0) 85%);
+    background: var(--gradient-fade);
   }
 
   .results :global(.leaf) {

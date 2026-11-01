@@ -64,8 +64,8 @@ const type = rest.href ? undefined : 'button';
       inset: 0;
       z-index: -1;
       border-radius: inherit;
-      background: linear-gradient(90deg, var(--forest), var(--charred));
-      mask-image: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px 4px);
+      background: var(--gradient-forest);
+      mask-image: var(--hatch);
       transform: translate(0.3rem, 0.3rem);
     }
   }
@@ -91,7 +91,7 @@ const type = rest.href ? undefined : 'button';
     border-radius: 0.5rem;
     background:
       linear-gradient(var(--cararra), var(--cararra)) padding-box,
-      linear-gradient(90deg, var(--forest), var(--charred)) border-box;
+      var(--gradient-forest) border-box;
     cursor: pointer;
     transition: color 200ms ease, transform 320ms ease-out;
 

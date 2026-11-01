@@ -181,7 +181,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     top: 0;
     bottom: 0;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--forest), var(--killarney));
+    background: var(--gradient-leaf);
   }
 
   input[type='range'] {
@@ -211,7 +211,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     background:
       linear-gradient(var(--battleship), var(--battleship)) calc(50% - 2px) 50% / 1.5px 0.5625rem no-repeat,
       linear-gradient(var(--battleship), var(--battleship)) calc(50% + 2px) 50% / 1.5px 0.5625rem no-repeat,
-      linear-gradient(180deg, #fff, var(--bianca));
+      var(--gradient-key);
     cursor: grab;
     pointer-events: auto;
     transition: transform 120ms ease, box-shadow 120ms ease;
@@ -271,7 +271,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     z-index: 3;
     padding: 0.25rem 0.45rem;
     border-radius: 0.25rem;
-    background: linear-gradient(90deg, var(--forest), var(--charred));
+    background: var(--gradient-forest);
     color: var(--cararra);
     font-size: 0.6875rem;
     font-variant-numeric: tabular-nums;

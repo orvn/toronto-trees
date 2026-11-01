@@ -19,26 +19,21 @@
     border: 2px solid transparent;
     background:
       linear-gradient(var(--bianca), var(--bianca)) padding-box,
-      linear-gradient(90deg, var(--forest), var(--charred)) border-box;
+      var(--gradient-forest) border-box;
     box-shadow: inset 0 -2px 0 var(--porcelain);
   }
 
   &::after {
     z-index: -2;
-    background: linear-gradient(90deg, var(--forest), var(--charred));
-    mask-image: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px 4px);
+    background: var(--gradient-forest);
+    mask-image: var(--hatch);
     transform: translate($drop, $drop);
   }
 }
 
 @mixin well {
   border-radius: 0.5rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--porcelain), var(--charred) 4%),
-    var(--porcelain) 45%,
-    color-mix(in srgb, var(--porcelain), #fff 35%)
-  );
+  background: var(--gradient-well);
   box-shadow:
     inset 0 1px 2px rgb(27 31 26 / 0.12),
     inset 0 0 0 0.5px rgb(27 31 26 / 0.08),
@@ -54,7 +49,7 @@
 
 // Raised cap that sits on a panel or in a well, lit from above
 @mixin key {
-  background: linear-gradient(180deg, #fff, var(--bianca));
+  background: var(--gradient-key);
   box-shadow:
     0 0 0 0.5px rgb(27 31 26 / 0.14),
     0 1px 2px rgb(27 31 26 / 0.1),
