@@ -8,6 +8,8 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false, 
 </button>
 
 <style lang="scss">
+  @use '../styles/panel' as *;
+
   .clear-btn {
     display: flex;
     flex-shrink: 0;
@@ -63,6 +65,28 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false, 
   .flat:hover {
     background: rgb(47 143 59 / 0.15);
     color: inherit;
+  }
+
+  .lg {
+    width: 2.125rem;
+    height: 2.125rem;
+  }
+
+  .key {
+    @include key;
+    border-radius: 0.375rem;
+    color: var(--charred);
+    transition: transform 120ms ease, box-shadow 120ms ease, color 150ms ease;
+  }
+
+  .key:hover {
+    @include key;
+    color: var(--forest);
+  }
+
+  .key:active {
+    transform: translateY(2px);
+    box-shadow: none;
   }
 
   svg {

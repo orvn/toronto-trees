@@ -1,9 +1,12 @@
 ---
 import ClearButton from './ClearButton.astro';
 
-// Dual-thumb range; dispatches a bubbling tt:range with { name, min, max }, null meaning unbounded.
-// Readout templates take {min} and {max}: anyText, underText (only a max), overText (only a min), betweenText
-const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel, hidden = false } = Astro.props;
+// Dual-thumb range (bubbling tt:range with { name, min, max })
+const { name, label, labelHidden = false, min = 0, max = 100, step = 1, tick = 5, unit = '', minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel, hidden = false } = Astro.props;
+const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) => {
+  const n = i * tick;
+  return { left: `${(n / (max - min)) * 100}%`, size: n % (tick * 10) === 0 ? 'major' : n % (tick * 5) === 0 ? 'mid' : '' };
+});
 ---
 
 <div
@@ -15,16 +18,24 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
   data-under={underText}
   data-over={overText}
   data-between={betweenText}
+  data-unit={unit}
   hidden={hidden}
 >
   {!labelHidden && <span class="control-name">{label}</span>}
-  <div class="dual">
-    <span class="rail" aria-hidden="true"><span class="rail-fill"></span></span>
-    <input class="lo" type="range" min={min} max={max} step={step} value={min} aria-label={minLabel} />
-    <input class="hi" type="range" min={min} max={max} step={step} value={max} aria-label={maxLabel} />
+  <div class="scale">
+    <div class="dual">
+      <span class="rail" aria-hidden="true"><span class="rail-fill"></span></span>
+      <input class="lo" type="range" min={min} max={max} step={step} value={min} aria-label={minLabel} />
+      <input class="hi" type="range" min={min} max={max} step={step} value={max} aria-label={maxLabel} />
+      <span class="tag tag-lo" aria-hidden="true"></span>
+      <span class="tag tag-hi" aria-hidden="true"></span>
+    </div>
+    <div class="ticks" aria-hidden="true">
+      {ticks.map(t => <span class={t.size} style={`left: ${t.left}`}></span>)}
+    </div>
   </div>
   <output class="value" aria-live="polite">{anyText}</output>
-  <ClearButton label={resetLabel} class="reset" ghost />
+  <ClearButton label={resetLabel} class="reset" variant="key" ghost />
 </div>
 
 <script>
@@ -34,6 +45,9 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
     const fill = root.querySelector<HTMLElement>('.rail-fill')!;
     const value = root.querySelector<HTMLOutputElement>('.value')!;
     const reset = root.querySelector<HTMLButtonElement>('.reset')!;
+    const tagLo = root.querySelector<HTMLElement>('.tag-lo')!;
+    const tagHi = root.querySelector<HTMLElement>('.tag-hi')!;
+    const unit = root.dataset.unit ? ` ${root.dataset.unit}` : '';
     const floor = Number(lo.min);
     const ceil = Number(lo.max);
 
@@ -43,6 +57,10 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
       const span = ceil - floor;
       fill.style.left = `${((a - floor) / span) * 100}%`;
       fill.style.right = `${100 - ((b - floor) / span) * 100}%`;
+      tagLo.style.setProperty('--p', String((a - floor) / span));
+      tagHi.style.setProperty('--p', String((b - floor) / span));
+      tagLo.textContent = `${a}${unit}`;
+      tagHi.textContent = `${b}${unit}`;
       const any = a === floor && b === ceil;
       const fill_ = (t: string) => t.replace('{min}', String(a)).replace('{max}', String(b));
       value.textContent = any
@@ -78,6 +96,8 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
 
     lo.addEventListener('input', onInput);
     hi.addEventListener('input', onInput);
+    lo.addEventListener('pointerdown', () => root.classList.add('is-dragging-lo'));
+    hi.addEventListener('pointerdown', () => root.classList.add('is-dragging-hi'));
     reset.addEventListener('click', () => {
       lo.value = String(floor);
       hi.value = String(ceil);
@@ -86,6 +106,12 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
     paint();
   }
 
+  // The pointer can be released anywhere on the page once a thumb is grabbed
+  const drop = () =>
+    document.querySelectorAll('.range-slider').forEach(r => r.classList.remove('is-dragging-lo', 'is-dragging-hi'));
+  document.addEventListener('pointerup', drop);
+  document.addEventListener('pointercancel', drop);
+
   document.addEventListener('astro:page-load', () => {
     document.querySelectorAll<HTMLElement>('.range-slider').forEach(initRangeSlider);
   });
@@ -93,12 +119,14 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
 
 <style lang="scss">
   @use '../styles/breakpoints' as *;
+  @use '../styles/panel' as *;
 
+  // Thumb centres run from half a thumb in at each end, so the rail, ticks and tags are inset to match
   .range-slider {
+    --thumb: 1.125rem;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    height: 2.5rem;
+    gap: 0.75rem;
   }
 
   .range-slider[hidden] {
@@ -117,32 +145,39 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
     color: var(--forest);
   }
 
+  .scale {
+    display: flex;
+    flex: 0 1 15rem;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 8rem;
+    padding-top: 0.25rem;
+  }
+
   // Two native ranges stacked; only their thumbs take the pointer, so either can be grabbed
   .dual {
     position: relative;
-    flex: 1;
-    width: 7rem;
-    min-width: 6rem;
-    height: 1.5rem;
+    height: 1.75rem;
   }
 
   .rail {
     position: absolute;
     top: 50%;
-    left: 0;
-    right: 0;
-    height: 0.25rem;
+    left: calc(var(--thumb) / 2);
+    right: calc(var(--thumb) / 2);
+    height: 0.5rem;
     transform: translateY(-50%);
-    background: rgb(27 31 26 / 0.1);
-    border-radius: 999px;
+    border-radius: 0.25rem;
+    background: rgb(27 31 26 / 0.08);
+    box-shadow: inset 0 1px 3px rgb(27 31 26 / 0.12);
   }
 
   .rail-fill {
     position: absolute;
     top: 0;
     bottom: 0;
-    background: var(--forest);
-    border-radius: 999px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--forest), var(--killarney));
   }
 
   input[type='range'] {
@@ -162,16 +197,36 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
     z-index: 2;
   }
 
+  // Keycap with two grip lines
   @mixin thumb {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid var(--forest);
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 2px rgb(27 31 26 / 0.2);
+    @include key;
+    width: var(--thumb);
+    height: 1.625rem;
+    border: 0;
+    border-radius: 0.3rem;
+    background:
+      linear-gradient(var(--battleship), var(--battleship)) calc(50% - 2px) 50% / 1.5px 0.5625rem no-repeat,
+      linear-gradient(var(--battleship), var(--battleship)) calc(50% + 2px) 50% / 1.5px 0.5625rem no-repeat,
+      var(--bianca);
     cursor: grab;
     pointer-events: auto;
-    transition: transform 120ms ease;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+
+  @mixin thumb-lifted {
+    cursor: grabbing;
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 1px rgb(27 31 26 / 0.1),
+      0 4px 0 rgb(56 102 65 / 0.5),
+      0 10px 14px rgb(27 31 26 / 0.12);
+  }
+
+  @mixin thumb-focus {
+    box-shadow:
+      0 0 0 1px rgb(27 31 26 / 0.08),
+      0 1.5px 0 rgb(56 102 65 / 0.5),
+      0 0 0 0.25rem rgb(47 143 59 / 0.25);
   }
 
   input[type='range']::-webkit-slider-thumb {
@@ -188,42 +243,87 @@ const { name, label, labelHidden = false, min = 0, max = 100, step = 1, minLabel
     background: none;
   }
 
-  input[type='range']:active::-webkit-slider-thumb {
-    cursor: grabbing;
-    transform: scale(1.15);
-  }
-
-  input[type='range']:active::-moz-range-thumb {
-    cursor: grabbing;
-    transform: scale(1.15);
-  }
-
   input[type='range']:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 0.25rem rgb(47 143 59 / 0.25);
+    @include thumb-focus;
   }
 
   input[type='range']:focus-visible::-moz-range-thumb {
-    box-shadow: 0 0 0 0.25rem rgb(47 143 59 / 0.25);
+    @include thumb-focus;
+  }
+
+  input[type='range']:active::-webkit-slider-thumb {
+    @include thumb-lifted;
+  }
+
+  input[type='range']:active::-moz-range-thumb {
+    @include thumb-lifted;
+  }
+
+  .tag {
+    position: absolute;
+    bottom: calc(100% + 0.4rem);
+    left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0));
+    z-index: 3;
+    padding: 0.25rem 0.45rem;
+    border-radius: 0.25rem;
+    background: linear-gradient(90deg, var(--forest), var(--charred));
+    color: var(--cararra);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-50%);
+    transition: opacity 120ms ease;
+  }
+
+  .is-dragging-lo .tag-lo,
+  .is-dragging-hi .tag-hi,
+  .lo:focus-visible ~ .tag-lo,
+  .hi:focus-visible ~ .tag-hi {
+    opacity: 1;
+  }
+
+  .ticks {
+    position: relative;
+    height: 0.5rem;
+    margin-inline: calc(var(--thumb) / 2);
+
+    span {
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 0.1875rem;
+      background: var(--charred);
+      opacity: 0.35;
+    }
+
+    .mid {
+      height: 0.3125rem;
+      opacity: 0.7;
+    }
+
+    .major {
+      height: 0.5rem;
+      opacity: 0.7;
+    }
   }
 
   .value {
-    min-width: 5.5rem;
-    font-size: var(--text-xs);
-    color: var(--battleship);
+    min-width: 6rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--charred);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-  }
-
-  .is-active .value {
-    color: var(--charred);
   }
 
   @include medium {
     .range-slider {
       gap: 0.5rem;
     }
-    .dual {
-      min-width: 4rem;
+    .scale {
+      flex: 1;
     }
     .value {
       min-width: 4.5rem;

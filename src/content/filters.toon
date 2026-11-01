@@ -17,6 +17,7 @@ age_under: "under {max} yrs"
 age_over: "over {min} yrs"
 age_between: "{min} to {max} yrs"
 reset_age: Reset age
+age_unit: yrs
 trunk_label: "Trunk Ø"
 trunk_min_label: Minimum trunk diameter
 trunk_max_label: Maximum trunk diameter
@@ -25,6 +26,7 @@ trunk_under: "under {max} cm"
 trunk_over: "over {min} cm"
 trunk_between: "{min} to {max} cm"
 reset_trunk: Reset trunk diameter
+trunk_unit: cm
 range_mode_label: Filter by
 range_mode_age: Est. tree age
 range_mode_trunk: "Trunk Ø"

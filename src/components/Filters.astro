@@ -25,6 +25,7 @@ const copy = loadFragment<Record<string, string>>('filters');
         labelHidden
         min={0}
         max={200}
+        unit={copy.age_unit}
         minLabel={copy.age_min_label}
         maxLabel={copy.age_max_label}
         anyText={copy.age_any}
@@ -40,6 +41,7 @@ const copy = loadFragment<Record<string, string>>('filters');
         hidden
         min={0}
         max={150}
+        unit={copy.trunk_unit}
         minLabel={copy.trunk_min_label}
         maxLabel={copy.trunk_max_label}
         anyText={copy.trunk_any}
