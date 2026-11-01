@@ -19,37 +19,39 @@ const copy = loadFragment<Record<string, string>>('filters');
           { value: 'dbh', label: copy.range_mode_trunk },
         ]}
       />
-      <RangeSlider
-        name="age"
-        label={copy.age_label}
-        labelHidden
-        min={0}
-        max={200}
-        unit={copy.age_unit}
-        minLabel={copy.age_min_label}
-        maxLabel={copy.age_max_label}
-        anyText={copy.age_any}
-        underText={copy.age_under}
-        overText={copy.age_over}
-        betweenText={copy.age_between}
-        resetLabel={copy.reset_age}
-      />
-      <RangeSlider
-        name="dbh"
-        label={copy.trunk_label}
-        labelHidden
-        hidden
-        min={0}
-        max={150}
-        unit={copy.trunk_unit}
-        minLabel={copy.trunk_min_label}
-        maxLabel={copy.trunk_max_label}
-        anyText={copy.trunk_any}
-        underText={copy.trunk_under}
-        overText={copy.trunk_over}
-        betweenText={copy.trunk_between}
-        resetLabel={copy.reset_trunk}
-      />
+      <div class="slider-stack">
+        <RangeSlider
+          name="age"
+          label={copy.age_label}
+          labelHidden
+          min={0}
+          max={200}
+          unit={copy.age_unit}
+          minLabel={copy.age_min_label}
+          maxLabel={copy.age_max_label}
+          anyText={copy.age_any}
+          underText={copy.age_under}
+          overText={copy.age_over}
+          betweenText={copy.age_between}
+          resetLabel={copy.reset_age}
+        />
+        <RangeSlider
+          name="dbh"
+          label={copy.trunk_label}
+          labelHidden
+          hidden
+          min={0}
+          max={150}
+          unit={copy.trunk_unit}
+          minLabel={copy.trunk_min_label}
+          maxLabel={copy.trunk_max_label}
+          anyText={copy.trunk_any}
+          underText={copy.trunk_under}
+          overText={copy.trunk_over}
+          betweenText={copy.trunk_between}
+          resetLabel={copy.reset_trunk}
+        />
+      </div>
     </div>
     <div class="bar search-bar">
       <SearchBox copy={copy} />
@@ -120,15 +122,42 @@ const copy = loadFragment<Record<string, string>>('filters');
     padding-right: 1.125rem;
   }
 
+  .slider-stack {
+    display: grid;
+
+    > :global(*) {
+      grid-area: 1 / 1;
+    }
+
+    > :global(.range-slider[hidden]) {
+      display: flex;
+      visibility: hidden;
+    }
+  }
+
   .search-bar {
     flex: 1 1 22rem;
     min-width: 0;
   }
 
-  // The search form fills its bar so the dropdown spans the same width
   .search-bar > :global(*) {
     flex: 1;
     min-width: 0;
+  }
+
+  .bar :global(.option),
+  .bar :global(.value),
+  .bar :global(.results li) {
+    font-size: var(--text-xs);
+  }
+
+  .bar :global(.query) {
+    font-size: var(--text-sm);
+  }
+
+  .bar :global(.results .sub),
+  .bar :global(.results .count) {
+    font-size: 0.75rem;
   }
 
   @include xl {

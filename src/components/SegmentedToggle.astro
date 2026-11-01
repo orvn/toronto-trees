@@ -70,8 +70,7 @@ const index = Math.max(0, options.findIndex((o: { value: string }) => o.value ==
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    height: 2.25rem;
+    height: 2rem;
     margin: 0;
     padding: 0 1rem;
     border: 0;
@@ -79,22 +78,11 @@ const index = Math.max(0, options.findIndex((o: { value: string }) => o.value ==
     background: none;
     font: inherit;
     font-size: var(--text-sm);
+    font-weight: 500;
     white-space: nowrap;
     color: var(--battleship);
     cursor: pointer;
     transition: color 200ms ease;
-
-    // Space for the dot is always held so labels don't shift as it appears
-    &::before {
-      content: '';
-      flex-shrink: 0;
-      width: 0.45rem;
-      height: 0.45rem;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--forest), var(--charred));
-      opacity: 0;
-      transition: opacity 200ms ease;
-    }
 
     &:hover {
       color: var(--charred);
@@ -103,10 +91,6 @@ const index = Math.max(0, options.findIndex((o: { value: string }) => o.value ==
 
   .option[aria-pressed='true'] {
     color: var(--charred);
-
-    &::before {
-      opacity: 1;
-    }
   }
 
   .option:focus-visible {

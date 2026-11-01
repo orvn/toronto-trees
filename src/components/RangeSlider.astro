@@ -7,6 +7,9 @@ const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) 
   const n = i * tick;
   return { left: `${(n / (max - min)) * 100}%`, size: n % (tick * 10) === 0 ? 'major' : n % (tick * 5) === 0 ? 'mid' : '' };
 });
+
+const fillWide = (t = '') => t.replaceAll('{min}', String(max)).replaceAll('{max}', String(max));
+const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map(t => fillWide(t).length));
 ---
 
 <div
@@ -19,6 +22,7 @@ const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) 
   data-over={overText}
   data-between={betweenText}
   data-unit={unit}
+  style={`--readout: ${readoutChars}ch`}
   hidden={hidden}
 >
   {!labelHidden && <span class="control-name">{label}</span>}
@@ -207,7 +211,7 @@ const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) 
     background:
       linear-gradient(var(--battleship), var(--battleship)) calc(50% - 2px) 50% / 1.5px 0.5625rem no-repeat,
       linear-gradient(var(--battleship), var(--battleship)) calc(50% + 2px) 50% / 1.5px 0.5625rem no-repeat,
-      var(--bianca);
+      linear-gradient(180deg, #fff, var(--bianca));
     cursor: grab;
     pointer-events: auto;
     transition: transform 120ms ease, box-shadow 120ms ease;
@@ -217,16 +221,17 @@ const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) 
     cursor: grabbing;
     transform: translateY(-3px);
     box-shadow:
-      0 0 0 1px rgb(27 31 26 / 0.1),
-      0 4px 0 rgb(56 102 65 / 0.5),
-      0 10px 14px rgb(27 31 26 / 0.12);
+      0 0 0 0.5px rgb(27 31 26 / 0.14),
+      0 4px 8px rgb(27 31 26 / 0.14),
+      0 8px 16px rgb(27 31 26 / 0.08),
+      inset 0 1px 0 #fff;
   }
 
   @mixin thumb-focus {
     box-shadow:
-      0 0 0 1px rgb(27 31 26 / 0.08),
-      0 1.5px 0 rgb(56 102 65 / 0.5),
-      0 0 0 0.25rem rgb(47 143 59 / 0.25);
+      0 0 0 0.5px rgb(27 31 26 / 0.14),
+      0 1px 2px rgb(27 31 26 / 0.1),
+      0 0 0 0.25rem rgb(47 143 59 / 0.2);
   }
 
   input[type='range']::-webkit-slider-thumb {
@@ -310,7 +315,8 @@ const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) 
   }
 
   .value {
-    min-width: 6rem;
+    flex-shrink: 0;
+    width: var(--readout);
     font-size: var(--text-sm);
     font-weight: 500;
     color: var(--charred);
@@ -324,9 +330,6 @@ const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) 
     }
     .scale {
       flex: 1;
-    }
-    .value {
-      min-width: 4.5rem;
     }
   }
 </style>

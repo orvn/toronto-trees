@@ -23,33 +23,41 @@
     box-shadow: inset 0 -2px 0 var(--porcelain);
   }
 
-  // Lighten keeps whichever edge fade is brighter, so the right and bottom edges both go pale green
   &::after {
-    $ink: color-mix(in srgb, var(--charred) 85%, #fff);
-    $edge: color-mix(in srgb, var(--forest) 45%, #fff);
     z-index: -2;
-    background:
-      linear-gradient(90deg, $ink calc(100% - 0.6rem), $edge),
-      linear-gradient(180deg, $ink calc(100% - 0.6rem), $edge);
-    background-blend-mode: lighten;
+    background: linear-gradient(90deg, var(--forest), var(--charred));
     mask-image: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px 4px);
     transform: translate($drop, $drop);
   }
 }
 
 @mixin well {
-  border-radius: 0.45rem;
-  background: var(--porcelain);
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--porcelain), var(--charred) 4%),
+    var(--porcelain) 45%,
+    color-mix(in srgb, var(--porcelain), #fff 35%)
+  );
   box-shadow:
-    inset 0 1px 4px rgb(27 31 26 / 0.09),
-    inset 0 0 0 1px rgb(27 31 26 / 0.04);
+    inset 0 1px 2px rgb(27 31 26 / 0.12),
+    inset 0 0 0 0.5px rgb(27 31 26 / 0.08),
+    0 1px 0 rgb(255 255 255 / 0.9);
 }
 
-// Raised cap that sits on a panel or in a well
-@mixin key {
-  background: var(--bianca);
+@mixin well-focus {
   box-shadow:
-    0 0 0 1px rgb(27 31 26 / 0.08),
-    0 1.5px 0 rgb(56 102 65 / 0.5),
-    0 3px 6px rgb(27 31 26 / 0.07);
+    inset 0 1px 2px rgb(27 31 26 / 0.12),
+    inset 0 0 0 1px rgb(47 143 59 / 0.4),
+    0 0 0 3px rgb(47 143 59 / 0.12);
+}
+
+// Raised cap that sits on a panel or in a well, lit from above
+@mixin key {
+  background: linear-gradient(180deg, #fff, var(--bianca));
+  box-shadow:
+    0 0 0 0.5px rgb(27 31 26 / 0.14),
+    0 1px 2px rgb(27 31 26 / 0.1),
+    0 2px 6px rgb(27 31 26 / 0.06),
+    inset 0 1px 0 #fff;
 }
