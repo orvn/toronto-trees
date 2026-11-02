@@ -1,8 +1,9 @@
 ---
 import ClearButton from './ClearButton.astro';
+import Throbber from './Throbber.astro';
 
 // Dual-thumb range (bubbling tt:range with { name, min, max })
-const { name, label, labelHidden = false, min = 0, max = 100, step = 1, tick = 5, unit = '', minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel, hidden = false } = Astro.props;
+const { name, label, labelHidden = false, min = 0, max = 100, step = 1, tick = 5, unit = '', minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel, updatingLabel, hidden = false } = Astro.props;
 const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) => {
   const n = i * tick;
   return { left: `${(n / (max - min)) * 100}%`, size: n % (tick * 10) === 0 ? 'major' : n % (tick * 5) === 0 ? 'mid' : '' };
@@ -39,7 +40,10 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     </div>
   </div>
   <output class="value" aria-live="polite">{anyText}</output>
-  <ClearButton label={resetLabel} class="reset" variant="key" ghost />
+  <span class="end">
+    <ClearButton label={resetLabel} class="reset" variant="key" ghost />
+    <Throbber label={updatingLabel} />
+  </span>
 </div>
 
 <script>
@@ -109,6 +113,12 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     });
     paint();
   }
+
+  // While redraw show throbber/throbber instead of reset
+  document.addEventListener('tt:map-busy', e => {
+    const { busy, source } = (e as CustomEvent).detail;
+    document.querySelectorAll('.range-slider').forEach(r => r.classList.toggle('is-updating', busy && source === 'range'));
+  });
 
   // The pointer can be released anywhere on the page once a thumb is grabbed
   const drop = () =>
@@ -336,6 +346,20 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     color: var(--charred);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+
+  .end {
+    display: grid;
+    place-items: center;
+
+    > :global(*) {
+      grid-area: 1 / 1;
+    }
+  }
+
+  .range-slider:not(.is-updating) .end :global(.throbber),
+  .is-updating .end :global(.reset) {
+    visibility: hidden;
   }
 
   @include medium {

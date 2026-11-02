@@ -1,6 +1,7 @@
 ---
 import SegmentedToggle from './SegmentedToggle.astro';
 import ClearButton from './ClearButton.astro';
+import Throbber from './Throbber.astro';
 
 // Combobox with two modes: trees (genus, species, common name) and address (street, then house number)
 const { copy } = Astro.props;
@@ -32,7 +33,7 @@ const { copy } = Astro.props;
         <circle cx="11" cy="11" r="7" />
         <path d="m20 20-3.5-3.5" />
       </svg>
-      <span class="spinner" role="status" aria-live="polite" aria-label="Loading" hidden></span>
+      <Throbber label={copy.loading_label} hidden />
       <span class="chip" hidden>
         <span class="chip-text"></span>
         <ClearButton label={copy.drop_street} class="chip-drop" variant="flat" />
@@ -69,6 +70,7 @@ const { copy } = Astro.props;
   const FILTER_EVENT = 'tt:genus-filter';
   const LOCATE_EVENT = 'tt:locate';
   const LOCATE_DONE_EVENT = 'tt:locate-done';
+  const MAP_BUSY_EVENT = 'tt:map-busy';
   const STREETS_URL = '/data/streets.json';
 
   let teardown: (() => void) | null = null;
@@ -84,7 +86,7 @@ const { copy } = Astro.props;
     const clearBtn = q<HTMLButtonElement>('.clear');
     const list = q<HTMLUListElement>('.results');
     const glass = q<SVGElement>('.glass');
-    const spinner = q<HTMLElement>('.spinner');
+    const throbber = q<HTMLElement>('.throbber');
     const chip = q<HTMLElement>('.chip');
     const chipText = q<HTMLElement>('.chip-text');
     const chipDrop = q<HTMLButtonElement>('.chip-drop');
@@ -98,6 +100,7 @@ const { copy } = Astro.props;
     let chosen: TreeEntry | null = null;
     let street: Street | null = null;
     let busy = false;
+    let mapBusy = false;
 
     const el = (tag: string, cls: string, text: string) => {
       const n = document.createElement(tag);
@@ -106,10 +109,21 @@ const { copy } = Astro.props;
       return n;
     };
 
+    const paintThrobber = () => {
+      const on = busy || mapBusy;
+      throbber.hidden = !on;
+      glass.style.display = on ? 'none' : '';
+    };
+
     const setBusy = (on: boolean) => {
       busy = on;
-      spinner.hidden = !on;
-      glass.style.display = on ? 'none' : '';
+      paintThrobber();
+    };
+
+    const onMapBusy = (e: Event) => {
+      const { busy: on, source } = (e as CustomEvent).detail;
+      mapBusy = on && source === 'species';
+      paintThrobber();
     };
 
     const setOpen = (open: boolean) => {
@@ -184,7 +198,7 @@ const { copy } = Astro.props;
     const dispatchFilter = (detail: Record<string, unknown>) =>
       document.dispatchEvent(new CustomEvent(FILTER_EVENT, { detail: { source: 'search', ...detail } }));
 
-    // The map answers when it settles; if it never does (still loading), give the spinner up
+    // The map answers when it settles; if it never does (still loading), give the throbber up
     let locateTimer = 0;
     const locate = (detail: Record<string, unknown>) => {
       setBusy(true);
@@ -349,9 +363,11 @@ const { copy } = Astro.props;
     form.addEventListener('submit', ev => ev.preventDefault());
     document.addEventListener(FILTER_EVENT, onFilter);
     document.addEventListener(LOCATE_DONE_EVENT, onLocateDone);
+    document.addEventListener(MAP_BUSY_EVENT, onMapBusy);
     teardown = () => {
       document.removeEventListener(FILTER_EVENT, onFilter);
       document.removeEventListener(LOCATE_DONE_EVENT, onLocateDone);
+      document.removeEventListener(MAP_BUSY_EVENT, onMapBusy);
     };
     paintChrome();
   }
@@ -407,20 +423,6 @@ const { copy } = Astro.props;
     stroke: var(--battleship);
     stroke-width: 1.75;
     stroke-linecap: round;
-  }
-
-  .spinner {
-    flex-shrink: 0;
-    width: 1.1rem;
-    height: 1.1rem;
-    border: 1.5px solid rgb(27 31 26 / 0.12);
-    border-top-color: var(--forest);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
   }
 
   .chip {

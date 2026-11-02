@@ -34,6 +34,7 @@ const copy = loadFragment<Record<string, string>>('filters');
           overText={copy.age_over}
           betweenText={copy.age_between}
           resetLabel={copy.reset_age}
+          updatingLabel={copy.updating_label}
         />
         <RangeSlider
           name="dbh"
@@ -50,6 +51,7 @@ const copy = loadFragment<Record<string, string>>('filters');
           overText={copy.trunk_over}
           betweenText={copy.trunk_between}
           resetLabel={copy.reset_trunk}
+          updatingLabel={copy.updating_label}
         />
       </div>
     </div>
