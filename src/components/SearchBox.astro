@@ -216,7 +216,8 @@ const { copy } = Astro.props;
 
     const goToNumber = (s: Street, n: number) => {
       const [lng, lat] = interpolate(s, n);
-      input.value = String(n);
+      street = null;
+      input.value = `${n} ${s.display}`;
       paintChrome();
       locate({ lng, lat, street: s.name, address: n });
     };
@@ -306,7 +307,11 @@ const { copy } = Astro.props;
         render();
         return;
       }
-      if (street) { setOpen(false); return; }
+      if (street) {
+        if (/^\d*$/.test(text)) { setOpen(false); return; }
+        street = null;
+        paintChrome();
+      }
       if (!text) { results = []; setOpen(false); return; }
       const index = streetIndex ?? (streetIndex = await loadStreets(STREETS_URL));
       if (input.value.trim() !== text) return;
