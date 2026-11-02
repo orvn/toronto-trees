@@ -51,7 +51,6 @@ export const buildTreeIndex = (rows: Row[]): TreeEntry[] => {
   return entries;
 };
 
-// The inventory shouts street names; single letters are directionals and stay upper
 export const titleCase = (s: string) =>
   s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()).replace(/\b([a-z])\b/gi, c => c.toUpperCase());
 

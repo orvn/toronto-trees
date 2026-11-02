@@ -265,21 +265,34 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
   }
 
   .tag {
+    @include key;
     position: absolute;
-    bottom: calc(100% + 0.4rem);
+    bottom: calc(100% + 0.55rem);
     left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0));
     z-index: 3;
-    padding: 0.25rem 0.45rem;
-    border-radius: 0.25rem;
-    background: var(--gradient-forest);
-    color: var(--cararra);
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.3rem;
+    color: var(--charred);
     font-size: 0.6875rem;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
-    transform: translateX(-50%);
-    transition: opacity 120ms ease;
+    transform: translate(-50%, 0.2rem);
+    transition: opacity 120ms ease, transform 160ms ease-out;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 0.4rem;
+      height: 0.4rem;
+      background: var(--bianca);
+      box-shadow: 0.5px 0.5px 0 rgb(27 31 26 / 0.14);
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
   }
 
   .is-dragging-lo .tag-lo,
@@ -287,6 +300,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
   .lo:focus-visible ~ .tag-lo,
   .hi:focus-visible ~ .tag-hi {
     opacity: 1;
+    transform: translate(-50%, 0);
   }
 
   .ticks {
