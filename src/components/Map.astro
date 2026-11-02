@@ -185,7 +185,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
     map.once('idle', () => container.classList.add('is-loaded'));
 
-    // Filter changes make the workers rerun every loaded tile, while loading we show a throbber/throbber
+    // Filter changes make the workers rerun every loaded tile, while loading we show a spinner/throbber
     let busyTimer = 0;
     let busySource: string | null = null;
     const setBusy = (source: string | null) => {
@@ -193,14 +193,6 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       busySource = source;
       document.dispatchEvent(new CustomEvent('tt:map-busy', { detail: { busy: source !== null, source } }));
     };
-    const markBusy = (source: 'species' | 'range') => {
-      clearTimeout(busyTimer);
-      busyTimer = window.setTimeout(() => setBusy(source), 150);
-    };
-    map.on('idle', () => {
-      clearTimeout(busyTimer);
-      setBusy(null);
-    });
 
     map.on('load', () => {
       for (const [id, src] of Object.entries(cfg.sources)) {
@@ -316,7 +308,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
       const isSelectable = (p: Record<string, any>) =>
         (speciesTest === null || speciesTest(p.BOTANICAL_NAME)) && (rangeTest === null || rangeTest(p));
 
-      const applyFilters = (source: 'species' | 'range') => {
+      const applyFilters = () => {
         const match = speciesMatch && rangeMatch ? ['all', speciesMatch, rangeMatch] : speciesMatch ?? rangeMatch;
 
         map.setPaintProperty(
@@ -350,7 +342,33 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           map.setPaintProperty('genus-tint', 'background-color', cssVarValue(tintVar));
         }
         map.setPaintProperty('genus-tint', 'background-opacity', speciesMatch ? cfg.tintOpacity : 0);
-        markBusy(source);
+      };
+
+      // Tile queueing on filter update
+      let drawing = false;
+      let queued: 'species' | 'range' | null = null;
+      const requestFilters = (source: 'species' | 'range') => {
+        clearTimeout(busyTimer);
+        busyTimer = window.setTimeout(() => setBusy(source), 150);
+        if (drawing) {
+          queued = source;
+          return;
+        }
+        drawing = true;
+        applyFilters();
+
+        map.triggerRepaint();
+        map.once('idle', () => {
+          drawing = false;
+          if (queued) {
+            const next = queued;
+            queued = null;
+            requestFilters(next);
+            return;
+          }
+          clearTimeout(busyTimer);
+          setBusy(null);
+        });
       };
 
       filterHandler = (e: Event) => {
@@ -372,7 +390,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           speciesMatch = null;
           speciesTest = null;
         }
-        applyFilters('species');
+        requestFilters('species');
       };
       document.addEventListener('tt:genus-filter', filterHandler);
 
@@ -396,7 +414,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
               );
             }
           : null;
-        applyFilters('range');
+        requestFilters('range');
       };
       document.addEventListener('tt:range-filter', rangeHandler);
 
