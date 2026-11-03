@@ -33,6 +33,8 @@ function isActive(href: string): boolean {
 </nav>
 
 <style lang="scss">
+  @use '../styles/breakpoints' as *;
+
   .nav {
     padding-bottom: 0.3rem;
   }
@@ -67,6 +69,12 @@ function isActive(href: string): boolean {
 
     :global(svg) {
       pointer-events: none;
+    }
+  }
+
+  @include small {
+    .nav li:has(.has-icon) {
+      margin-left: auto;
     }
   }
 </style>
