@@ -643,9 +643,17 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 </script>
 
 <style lang="scss">
+  @use '../styles/breakpoints' as *;
+
   .map-wrap {
     padding-inline: var(--gutter);
     padding-top: 1.5rem;
+  }
+
+  @include small {
+    .map-wrap {
+      padding-top: 1rem;
+    }
   }
 
   .map {

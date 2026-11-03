@@ -143,4 +143,22 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false, 
       height: 2.75rem;
     }
   }
+
+  @include small {
+    .sm,
+    .flat {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+
+    .md {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .lg {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+  }
 </style>

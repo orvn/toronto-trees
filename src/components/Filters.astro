@@ -3,12 +3,29 @@ import { loadFragment } from '../lib/content';
 import SearchBox from './SearchBox.astro';
 import RangeSlider from './RangeSlider.astro';
 import SegmentedToggle from './SegmentedToggle.astro';
+import Dropdown from './Dropdown.astro';
 
 const copy = loadFragment<Record<string, string>>('filters');
 ---
 
 <div class="filters-wrap">
-  <div class="filters">
+  <div class="filters" data-mode="trees" data-group="search">
+    <Dropdown
+      name="filter-mode"
+      label={copy.mode_select_label}
+      class="mode"
+      value="trees"
+      options={[
+        { value: 'trees', label: copy.mode_trees },
+        { value: 'address', label: copy.mode_address },
+        { value: 'age', label: copy.range_mode_age },
+        { value: 'dbh', label: copy.range_mode_trunk },
+      ]}
+    >
+      <span class="filter-icon" slot="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16l-6 7.5V19l-4-2v-4.5z" /></svg>
+      </span>
+    </Dropdown>
     <div class="bar ranges">
       <SegmentedToggle
         name="range"
@@ -64,10 +81,26 @@ const copy = loadFragment<Record<string, string>>('filters');
   const RANGE_EVENT = 'tt:range-filter';
   // Wait for range control to settle before passing to map
   const RANGE_SETTLE_MS = 120;
+  const RANGE_MODES = new Set(['age', 'dbh']);
+
+  let rangeOn = false;
+  let speciesOn = false;
+  const paintActive = () =>
+    document.querySelector('.filters')?.classList.toggle('has-filters', rangeOn || speciesOn);
+  document.addEventListener(RANGE_EVENT, e => {
+    rangeOn = Object.values((e as CustomEvent).detail ?? {}).some(v => v !== null);
+    paintActive();
+  });
+  document.addEventListener('tt:genus-filter', e => {
+    const { icon = null, picks = [] } = (e as CustomEvent).detail ?? {};
+    speciesOn = Boolean(icon || picks.length);
+    paintActive();
+  });
 
   document.addEventListener('astro:page-load', () => {
     const bar = document.querySelector<HTMLElement>('.filters');
     if (!bar) return;
+    rangeOn = speciesOn = false;
 
     // One range at a time: the toggle swaps which slider shows and clears the one going away
     bar.addEventListener('tt:toggle', e => {
@@ -79,6 +112,30 @@ const copy = loadFragment<Record<string, string>>('filters');
         slider.hidden = !show;
       }
     });
+
+    // Mobile shows one control at a time (dropdown)
+    const modeSelect = bar.querySelector<HTMLSelectElement>('.mode select');
+    const groupOf = (mode: string) => (RANGE_MODES.has(mode) ? 'range' : 'search');
+    const setMode = (mode: string) => {
+      bar.dataset.mode = mode;
+      bar.dataset.group = groupOf(mode);
+      if (modeSelect && modeSelect.value !== mode) {
+        modeSelect.value = mode;
+        modeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    };
+    modeSelect?.addEventListener('change', () => {
+      const mode = modeSelect.value;
+      if (mode === bar.dataset.mode) return;
+      const host = groupOf(mode) === 'range' ? '.ranges' : '.search-bar';
+      bar.querySelector<HTMLButtonElement>(`${host} .segmented .option[data-value="${mode}"]`)?.click();
+      setMode(mode);
+    });
+    bar.addEventListener('tt:toggle', e => {
+      const { value } = (e as CustomEvent).detail;
+      if (groupOf(value) === bar.dataset.group) setMode(value);
+    });
+
     const state: Record<string, number | null> = { ageMin: null, ageMax: null, dbhMin: null, dbhMax: null };
     let timer = 0;
     bar.addEventListener('tt:range', e => {
@@ -192,6 +249,93 @@ const copy = loadFragment<Record<string, string>>('filters');
     .bar :global(.query),
     .bar :global(.query:focus) {
       font-size: 1rem;
+    }
+  }
+
+  .filters > :global(.mode) {
+    display: none;
+  }
+
+  .filter-icon {
+    position: relative;
+    display: flex;
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      fill: none;
+      stroke: var(--charred);
+      stroke-width: 2;
+      stroke-linejoin: round;
+    }
+  }
+
+  .has-filters .filter-icon::after {
+    content: '';
+    position: absolute;
+    top: -0.125rem;
+    right: -0.1875rem;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border: 1.5px solid var(--bianca);
+    border-radius: 50%;
+    background: var(--forest);
+  }
+
+  // Mobile dropdown filters
+  @include small {
+    .filters-wrap {
+      padding-top: 1rem;
+    }
+    .filters {
+      @include panel;
+      flex-wrap: nowrap;
+      gap: 0.5rem;
+      padding: 0.375rem;
+    }
+    .filters > :global(.mode) {
+      display: inline-flex;
+    }
+    .bar {
+      position: static;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+
+      &::before,
+      &::after {
+        display: none;
+      }
+    }
+    [data-group='search'] .ranges,
+    [data-group='range'] .search-bar {
+      display: none;
+    }
+    .ranges > :global(.segmented),
+    .search-bar :global(.field > .segmented) {
+      display: none;
+    }
+    .slider-stack {
+      flex: 1;
+      min-width: 0;
+    }
+    .ranges :global(.scale) {
+      min-width: 4rem;
+    }
+    .bar :global(.query) {
+      text-overflow: ellipsis;
+    }
+    .bar :global(.query::placeholder) {
+      font-size: var(--text-xs);
+    }
+    .search-bar :global(.search) {
+      position: static;
+    }
+    .search-bar :global(.results-panel) {
+      top: calc(100% + 1rem);
+      left: -2px;
+      right: -2px;
     }
   }
 </style>
