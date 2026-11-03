@@ -8,6 +8,7 @@ clear_label: Clear search
 loading_label: Loading
 updating_label: Updating map
 drop_street: Change street
+drop_tree: "Remove {name}"
 no_results: No trees match that
 no_street: No street by that name
 no_tree: No tree found near that number

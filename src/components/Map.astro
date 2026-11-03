@@ -371,17 +371,31 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         });
       };
 
-      filterHandler = (e: Event) => {
-        const { icon = null, genus = null, botanical = null } = (e as CustomEvent).detail ?? {};
+      const pickFilter = ({ genus = null, botanical = null }: { genus?: string | null; botanical?: string | null }) => {
         if (botanical) {
           const wanted = String(botanical).trim().toLowerCase();
-          speciesMatch = ['==', nameExpr, wanted];
-          tintVar = GENUS_COLOR_VAR[readBotanical(botanical).genus] || '--bombay';
-          speciesTest = raw => String(raw ?? '').trim().toLowerCase() === wanted;
-        } else if (genus) {
-          speciesMatch = ['any', ...spellings(genus).map(isGenus)];
-          tintVar = GENUS_COLOR_VAR[genus] || '--bombay';
-          speciesTest = raw => readBotanical(raw).genus === genus;
+          return {
+            match: ['==', nameExpr, wanted],
+            test: (raw: unknown) => String(raw ?? '').trim().toLowerCase() === wanted,
+            tint: GENUS_COLOR_VAR[readBotanical(botanical).genus] || '--bombay',
+          };
+        }
+        return {
+          match: ['any', ...spellings(String(genus)).map(isGenus)],
+          test: (raw: unknown) => readBotanical(raw).genus === genus,
+          tint: GENUS_COLOR_VAR[String(genus)] || '--bombay',
+        };
+      };
+
+      filterHandler = (e: Event) => {
+        const { icon = null, picks = [] } = (e as CustomEvent).detail ?? {};
+        if (picks.length) {
+          const parts = picks.map(pickFilter);
+          speciesMatch = parts.length === 1 ? parts[0].match : ['any', ...parts.map((p: any) => p.match)];
+          speciesTest = raw => parts.some((p: any) => p.test(raw));
+          // One genus washes the map in its colour, but a mix of genera is neutral
+          const tints = new Set(parts.map((p: any) => p.tint));
+          tintVar = tints.size === 1 ? [...tints][0] as string : '--bombay';
         } else if (icon) {
           speciesMatch = matchFor(icon);
           tintVar = iconColorVar[icon];
