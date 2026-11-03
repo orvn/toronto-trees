@@ -39,6 +39,7 @@ const { copy } = Astro.props;
       <span class="chips"></span>
       <template class="chip-tpl">
         <span class="chip">
+          <img class="chip-leaf" alt="" width="18" height="18" />
           <span class="chip-text"></span>
           <ClearButton label="" class="chip-drop" variant="flat" />
         </span>
@@ -66,7 +67,7 @@ const { copy } = Astro.props;
 
 <script>
   import species from '../content/species.json';
-  import { GENUS_ICON } from '../lib/botanical';
+  import { GENUS_COLOR_VAR, GENUS_ICON } from '../lib/botanical';
   import {
     buildTreeIndex, loadStreets, searchTrees, searchStreets, parseAddress, interpolate, boundsOf,
     type TreeEntry, type Street,
@@ -165,14 +166,24 @@ const { copy } = Astro.props;
     let chipsKey = '';
     const paintChips = () => {
       const picks = mode === 'trees'
-        ? chosen.map(e => ({ text: e.name, label: (copy.dropTree ?? '').replace('{name}', e.name), drop: () => dropTree(e) }))
+        ? chosen.map(e => ({
+            text: e.name,
+            label: (copy.dropTree ?? '').replace('{name}', e.name),
+            drop: () => dropTree(e),
+            icon: GENUS_ICON[e.genus] || 'other',
+            color: GENUS_COLOR_VAR[e.genus] || '--bombay',
+          }))
         : street ? [{ text: street.display, label: copy.dropStreet ?? '', drop: () => dropStreet() }] : [];
       const key = `${mode}|${picks.map(p => p.text).join('|')}`;
       if (key === chipsKey) return;
       chipsKey = key;
       chips.replaceChildren(
-        ...picks.map(p => {
+        ...picks.map((p: { text: string; label: string; drop: () => void; icon?: string; color?: string }) => {
           const chip = (chipTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+          const leaf = chip.querySelector<HTMLImageElement>('.chip-leaf')!;
+          if (p.icon) leaf.src = `/icons/leaves/${p.icon}.png`;
+          else leaf.remove();
+          if (p.color) chip.style.setProperty('--chip-color', `var(${p.color})`);
           chip.querySelector('.chip-text')!.textContent = p.text;
           const drop = chip.querySelector<HTMLButtonElement>('.chip-drop')!;
           drop.setAttribute('aria-label', p.label);
@@ -469,12 +480,31 @@ const { copy } = Astro.props;
     gap: 0.25rem;
     max-width: 100%;
     min-width: 0;
-    padding: 0.25rem 0.25rem 0.25rem 0.65rem;
-    background: rgb(47 143 59 / 0.12);
+    padding: 0.2rem 0.2rem 0.2rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--chip-color) 55%, transparent);
     border-radius: 0.3rem;
+    background: color-mix(in srgb, var(--chip-color) 18%, transparent);
     font-size: var(--text-sm);
     font-weight: 500;
-    color: var(--forest);
+    color: color-mix(in srgb, var(--chip-color) 55%, black);
+
+    // Tinted the same as the popup's botanical chip; the street chip keeps the forest default
+    --chip-color: var(--forest);
+
+    &:has(.chip-leaf) {
+      padding-left: 0.3rem;
+    }
+
+    :global(.chip-drop:hover) {
+      background: color-mix(in srgb, var(--chip-color) 25%, transparent);
+    }
+  }
+
+  .chip-leaf {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    object-fit: contain;
   }
 
   .chip-text {
