@@ -244,14 +244,6 @@ const copy = loadFragment<Record<string, string>>('filters');
     }
   }
 
-  // stabilize ios zoom on input
-  @include touch {
-    .bar :global(.query),
-    .bar :global(.query:focus) {
-      font-size: 1rem;
-    }
-  }
-
   .filters > :global(.mode) {
     display: none;
   }
@@ -323,11 +315,9 @@ const copy = loadFragment<Record<string, string>>('filters');
     .ranges :global(.scale) {
       min-width: 4rem;
     }
-    .bar :global(.query) {
-      text-overflow: ellipsis;
-    }
-    .bar :global(.query::placeholder) {
+    .bar :global(.query),
       font-size: var(--text-xs);
+      text-overflow: ellipsis;
     }
     .search-bar :global(.search) {
       position: static;

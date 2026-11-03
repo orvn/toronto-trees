@@ -13,11 +13,9 @@ const { copy } = Astro.props;
   autocomplete="off"
   data-placeholder={copy.placeholder}
   data-placeholder-address={copy.placeholder_address}
-  data-placeholder-number={copy.placeholder_number}
   data-no-results={copy.no_results}
   data-no-street={copy.no_street}
   data-no-tree={copy.no_tree}
-  data-drop-street={copy.drop_street}
   data-drop-tree={copy.drop_tree}
 >
   <div class="field">
@@ -151,18 +149,15 @@ const { copy } = Astro.props;
 
     const placeholder = () => {
       if (mode === 'trees') return chosen.length ? '' : copy.placeholder ?? '';
-      if (street) return (copy.placeholderNumber ?? '').replace('{min}', String(street.min)).replace('{max}', String(street.max));
       return copy.placeholderAddress ?? '';
     };
 
     const paintChrome = () => {
       input.placeholder = placeholder();
-      input.inputMode = mode === 'address' && street ? 'numeric' : 'text';
       paintChips();
       clearBtn.classList.toggle('ghost', input.value === '');
     };
 
-    // Trees mode can stack chips, address mode does not
     let chipsKey = '';
     const paintChips = () => {
       const picks = mode === 'trees'
@@ -173,24 +168,40 @@ const { copy } = Astro.props;
             icon: GENUS_ICON[e.genus] || 'other',
             color: GENUS_COLOR_VAR[e.genus] || '--bombay',
           }))
-        : street ? [{ text: street.display, label: copy.dropStreet ?? '', drop: () => dropStreet() }] : [];
+        : [];
       const key = `${mode}|${picks.map(p => p.text).join('|')}`;
       if (key === chipsKey) return;
       chipsKey = key;
-      chips.replaceChildren(
-        ...picks.map((p: { text: string; label: string; drop: () => void; icon?: string; color?: string }) => {
-          const chip = (chipTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
-          const leaf = chip.querySelector<HTMLImageElement>('.chip-leaf')!;
-          if (p.icon) leaf.src = `/icons/leaves/${p.icon}.png`;
-          else leaf.remove();
-          if (p.color) chip.style.setProperty('--chip-color', `var(${p.color})`);
-          chip.querySelector('.chip-text')!.textContent = p.text;
-          const drop = chip.querySelector<HTMLButtonElement>('.chip-drop')!;
-          drop.setAttribute('aria-label', p.label);
-          drop.addEventListener('click', p.drop);
-          return chip;
-        })
+      const shown = new Map(
+        [...chips.querySelectorAll<HTMLElement>('.chip:not(.is-leaving)')].map(c => [c.dataset.key!, c])
       );
+      const wanted = new Set(picks.map(p => p.text));
+      for (const [k, c] of shown) if (!wanted.has(k)) animateChip(c, 'is-leaving');
+      for (const p of picks as { text: string; label: string; drop: () => void; icon?: string; color?: string }[]) {
+        if (shown.has(p.text)) continue;
+        const chip = (chipTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+        chip.dataset.key = p.text;
+        const leaf = chip.querySelector<HTMLImageElement>('.chip-leaf')!;
+        if (p.icon) leaf.src = `/icons/leaves/${p.icon}.png`;
+        else leaf.remove();
+        if (p.color) chip.style.setProperty('--chip-color', `var(${p.color})`);
+        chip.querySelector('.chip-text')!.textContent = p.text;
+        const drop = chip.querySelector<HTMLButtonElement>('.chip-drop')!;
+        drop.setAttribute('aria-label', p.label);
+        drop.addEventListener('click', p.drop);
+        chips.append(chip);
+        animateChip(chip, 'is-entering');
+      }
+    };
+
+    const animateChip = (chip: HTMLElement, phase: 'is-entering' | 'is-leaving') => {
+      chip.style.setProperty('--w', `${chip.offsetWidth}px`);
+      chip.classList.add(phase);
+      chip.addEventListener('animationend', () => {
+        if (phase === 'is-leaving') return chip.remove();
+        chip.classList.remove(phase);
+        chip.style.removeProperty('--w');
+      }, { once: true });
     };
 
     const row = (i: number, name: string, sub: string, count: number, leafIcon?: string) => {
@@ -275,12 +286,13 @@ const { copy } = Astro.props;
         return;
       }
       const { number } = parseAddress(input.value);
-      street = e;
       if (number !== null) return goToNumber(e, number);
-      input.value = '';
+      street = e;
+      input.value = e.display;
       paintChrome();
       locate({ bounds: boundsOf(e) });
       input.focus();
+      input.setSelectionRange(0, 0);
     };
 
     const resetTrees = () => {
@@ -291,15 +303,8 @@ const { copy } = Astro.props;
       paintChrome();
     };
 
-    const resetAddress = () => {
-      street = null;
-      results = [];
-      input.value = '';
-      setOpen(false);
-      paintChrome();
-    };
-
     const clear = () => {
+      street = null;
       input.value = '';
       results = [];
       setOpen(false);
@@ -314,14 +319,10 @@ const { copy } = Astro.props;
       input.focus();
     };
 
-    const dropStreet = () => {
-      resetAddress();
-      input.focus();
-    };
-
     const setMode = (next: 'trees' | 'address') => {
       if (next === mode) return;
       mode = next;
+      street = null;
       results = [];
       setOpen(false);
       input.value = '';
@@ -344,9 +345,9 @@ const { copy } = Astro.props;
         return;
       }
       if (street) {
-        if (/^\d*$/.test(text)) { setOpen(false); return; }
+        const typed = parseAddress(text).street.trim().toLowerCase();
+        if (typed === street.display.toLowerCase()) { results = []; setOpen(false); return; }
         street = null;
-        paintChrome();
       }
       if (!text) { results = []; setOpen(false); return; }
       const index = streetIndex ?? (streetIndex = await loadStreets(STREETS_URL));
@@ -369,15 +370,16 @@ const { copy } = Astro.props;
         ev.preventDefault();
         if (busy) return;
         if (open) choose(results[active]);
-        else if (mode === 'address' && street && /^\d+$/.test(input.value.trim())) goToNumber(street, Number(input.value.trim()));
+        else if (mode === 'address' && street) {
+          const { number } = parseAddress(input.value);
+          if (number !== null) goToNumber(street, number);
+        }
       } else if (ev.key === 'Escape') {
         if (!list.hidden) setOpen(false);
         else if (input.value) clear();
-        else if (mode === 'address' && street) dropStreet();
       } else if (ev.key === 'Backspace') {
         if (input.value !== '') return;
         if (mode === 'trees' && chosen.length) dropTree(chosen[chosen.length - 1]);
-        else if (mode === 'address' && street) dropStreet();
       } else if (ev.key === 'Tab') {
         setOpen(false);
       }
@@ -432,9 +434,21 @@ const { copy } = Astro.props;
   }
 
   .field {
+    --gap: 0.875rem;
     display: flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: var(--gap);
+  }
+
+  .field > :global(.clear) {
+    transition: width 220ms ease, margin 220ms ease, opacity 180ms ease, transform 120ms ease, color 150ms ease, visibility 0s;
+  }
+
+  .field > :global(.clear.ghost) {
+    width: 0;
+    margin-left: calc(-1 * var(--gap));
+    opacity: 0;
+    transition: width 220ms ease, margin 220ms ease, opacity 120ms ease, transform 120ms ease, color 150ms ease, visibility 0s linear 220ms;
   }
 
   // Flex children would otherwise override the hidden attribute
@@ -448,7 +462,8 @@ const { copy } = Astro.props;
     flex: 1;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem 0.6rem;
+    --well-gap: 0.6rem;
+    gap: 0.35rem var(--well-gap);
     min-width: 0;
     min-height: 2.5rem;
     padding: 0.3rem 0.75rem;
@@ -500,6 +515,38 @@ const { copy } = Astro.props;
     }
   }
 
+  .chip.is-entering,
+  .chip.is-leaving {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .chip.is-entering {
+    animation: chip-in 220ms ease;
+  }
+
+  .chip.is-leaving {
+    pointer-events: none;
+    animation: chip-out 200ms ease forwards;
+  }
+
+  @keyframes chip-in {
+    from { max-width: 0; margin-right: calc(-1 * var(--well-gap)); padding-inline: 0; border-inline-width: 0; opacity: 0; }
+    to { max-width: var(--w); }
+  }
+
+  @keyframes chip-out {
+    from { max-width: var(--w); }
+    to { max-width: 0; margin-right: calc(-1 * var(--well-gap)); padding-inline: 0; border-inline-width: 0; opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chip.is-entering,
+    .chip.is-leaving {
+      animation-duration: 1ms;
+    }
+  }
+
   .chip-leaf {
     flex-shrink: 0;
     width: 1.125rem;
@@ -527,6 +574,18 @@ const { copy } = Astro.props;
     font: inherit;
     color: var(--charred);
     outline: none;
+  }
+
+  .well:not(:has(.chip)) {
+    flex-wrap: nowrap;
+
+    .query {
+      min-width: 0;
+    }
+  }
+
+  .query {
+    text-overflow: ellipsis;
   }
 
   .query::placeholder {
@@ -651,17 +710,37 @@ const { copy } = Astro.props;
     }
   }
 
+  @include compact {
+    .chip {
+      gap: 0.125rem;
+      padding: 0.125rem 0.125rem 0.125rem 0.375rem;
+      font-size: var(--text-xs);
+
+      &:has(.chip-leaf) {
+        padding-left: 0.25rem;
+      }
+
+      :global(.chip-drop) {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+    }
+
+    .chip-leaf {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+  }
+
   @include small {
     .field {
-      gap: 0.5rem;
+      --gap: 0.5rem;
     }
     .well {
       min-height: 2.25rem;
       padding: 0.25rem 0.5rem;
-      gap: 0.3rem 0.5rem;
-    }
-    .chip {
-      max-width: calc(100% - 4.5rem);
+      --well-gap: 0.5rem;
+      row-gap: 0.3rem;
     }
     .query,
     .query:focus {

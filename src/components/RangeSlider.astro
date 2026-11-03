@@ -169,9 +169,11 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
   .range-slider {
     --thumb: 1.125rem;
     --thumb-height: 1.625rem;
+    --gap: 0.75rem;
+    --reset: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--gap);
   }
 
   .range-slider[hidden] {
@@ -382,6 +384,20 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
   .end {
     display: grid;
     place-items: center;
+    width: var(--reset);
+    transition: width 220ms ease, margin 220ms ease, opacity 180ms ease;
+
+    > :global(.reset) {
+      width: 100%;
+      height: var(--reset);
+    }
+  }
+
+  .range-slider:not(.is-updating) .end:has(> .reset.ghost) {
+    width: 0;
+    margin-left: calc(-1 * var(--gap));
+    opacity: 0;
+    transition: width 220ms ease 300ms, margin 220ms ease 300ms, opacity 120ms ease 300ms;
   }
 
   .end :global(.reset) {
@@ -469,7 +485,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
 
   @include medium {
     .range-slider {
-      gap: 0.5rem;
+      --gap: 0.5rem;
     }
     .scale {
       flex: 1;
@@ -486,6 +502,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     .range-slider {
       --thumb: 1.5rem;
       --thumb-height: 2.25rem;
+      --reset: 2rem;
     }
   }
 
@@ -493,6 +510,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     .range-slider {
       --thumb: 1.25rem;
       --thumb-height: 1.875rem;
+      --reset: 1.75rem;
     }
     .scale {
       gap: 0.15rem;
