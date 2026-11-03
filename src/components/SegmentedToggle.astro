@@ -1,0 +1,107 @@
+---
+// Options are [{ value, label }]; clicking one dispatches a bubbling tt:toggle with { name, value }
+const { name, label, value, options } = Astro.props;
+const index = Math.max(0, options.findIndex((o: { value: string }) => o.value === value));
+---
+
+<div
+  class="segmented"
+  role="group"
+  aria-label={label}
+  data-name={name}
+  data-value={value}
+  style={`--count: ${options.length}; --index: ${index}`}
+>
+  <span class="thumb" aria-hidden="true"></span>
+  {options.map((o: { value: string; label: string }) => (
+    <button class="option" type="button" data-value={o.value} aria-pressed={String(o.value === value)}>
+      {o.label}
+    </button>
+  ))}
+</div>
+
+<script>
+  document.addEventListener('click', e => {
+    const btn = (e.target as Element).closest<HTMLButtonElement>('.segmented .option');
+    const root = btn?.closest<HTMLElement>('.segmented');
+    if (!btn || !root || root.dataset.value === btn.dataset.value) return;
+    const options = [...root.querySelectorAll<HTMLButtonElement>('.option')];
+    root.dataset.value = btn.dataset.value;
+    root.style.setProperty('--index', String(options.indexOf(btn)));
+    for (const o of options) o.setAttribute('aria-pressed', String(o === btn));
+    root.dispatchEvent(
+      new CustomEvent('tt:toggle', { bubbles: true, detail: { name: root.dataset.name, value: btn.dataset.value } })
+    );
+  });
+</script>
+
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+  @use '../styles/panel' as *;
+
+  .segmented {
+    @include well;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--count), 1fr);
+    flex-shrink: 0;
+    padding: 0.25rem;
+  }
+
+  // Cells share one width, so the thumb slides by whole multiples of its own width
+  .thumb {
+    @include key;
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    left: 0.25rem;
+    width: calc((100% - 0.5rem) / var(--count));
+    border-radius: 0.3rem;
+    transform: translateX(calc(var(--index) * 100%));
+    transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .thumb { transition: none; }
+  }
+
+  .option {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    margin: 0;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 0.3rem;
+    background: none;
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--battleship);
+    cursor: pointer;
+    transition: color 200ms ease;
+
+    &:hover {
+      color: var(--charred);
+    }
+  }
+
+  .option[aria-pressed='true'] {
+    color: var(--charred);
+  }
+
+  .option:focus-visible {
+    outline: 2px solid var(--forest);
+    outline-offset: 2px;
+  }
+
+  @include touch {
+    .option {
+      height: 2.5rem;
+    }
+  }
+</style>

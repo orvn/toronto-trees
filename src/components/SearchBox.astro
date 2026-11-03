@@ -1,0 +1,663 @@
+---
+import SegmentedToggle from './SegmentedToggle.astro';
+import ClearButton from './ClearButton.astro';
+import Throbber from './Throbber.astro';
+
+// Combobox with two modes: trees (genus, species, common name) and address (street, then house number)
+const { copy } = Astro.props;
+---
+
+<form
+  class="search"
+  role="search"
+  autocomplete="off"
+  data-placeholder={copy.placeholder}
+  data-placeholder-address={copy.placeholder_address}
+  data-placeholder-number={copy.placeholder_number}
+  data-no-results={copy.no_results}
+  data-no-street={copy.no_street}
+  data-no-tree={copy.no_tree}
+  data-drop-street={copy.drop_street}
+  data-drop-tree={copy.drop_tree}
+>
+  <div class="field">
+    <SegmentedToggle
+      name="mode"
+      label={copy.mode_label}
+      value="trees"
+      options={[
+        { value: 'trees', label: copy.mode_trees },
+        { value: 'address', label: copy.mode_address },
+      ]}
+    />
+    <div class="well">
+      <svg class="glass" aria-hidden="true" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-3.5-3.5" />
+      </svg>
+      <Throbber label={copy.loading_label} hidden />
+      <span class="chips"></span>
+      <template class="chip-tpl">
+        <span class="chip">
+          <img class="chip-leaf" alt="" width="18" height="18" />
+          <span class="chip-text"></span>
+          <ClearButton label="" class="chip-drop" variant="flat" />
+        </span>
+      </template>
+      <input
+        class="query"
+        type="text"
+        role="combobox"
+        aria-label={copy.placeholder}
+        aria-expanded="false"
+        aria-controls="search-results"
+        aria-autocomplete="list"
+        placeholder={copy.placeholder}
+        autocomplete="off"
+        spellcheck="false"
+        enterkeyhint="search"
+      />
+    </div>
+    <ClearButton label={copy.clear_label} class="clear" size="lg" variant="key" ghost />
+  </div>
+  <div class="results-panel">
+    <ul id="search-results" class="results" role="listbox" hidden></ul>
+  </div>
+</form>
+
+<script>
+  import species from '../content/species.json';
+  import { GENUS_COLOR_VAR, GENUS_ICON } from '../lib/botanical';
+  import {
+    buildTreeIndex, loadStreets, searchTrees, searchStreets, parseAddress, interpolate, boundsOf,
+    type TreeEntry, type Street,
+  } from '../lib/search';
+
+  const FILTER_EVENT = 'tt:genus-filter';
+  const LOCATE_EVENT = 'tt:locate';
+  const LOCATE_DONE_EVENT = 'tt:locate-done';
+  const MAP_BUSY_EVENT = 'tt:map-busy';
+  const STREETS_URL = '/data/streets.json';
+
+  let teardown: (() => void) | null = null;
+
+  function initSearch() {
+    teardown?.();
+    teardown = null;
+
+    const form = document.querySelector<HTMLFormElement>('.search');
+    if (!form) return;
+    const q = <T extends Element>(sel: string) => form.querySelector<T>(sel)!;
+    const input = q<HTMLInputElement>('.query');
+    const clearBtn = q<HTMLButtonElement>('.clear');
+    const list = q<HTMLUListElement>('.results');
+    const glass = q<SVGElement>('.glass');
+    const throbber = q<HTMLElement>('.throbber');
+    const chips = q<HTMLElement>('.chips');
+    const chipTpl = q<HTMLTemplateElement>('.chip-tpl');
+    const copy = form.dataset;
+
+    const treeIndex = buildTreeIndex(species);
+    let streetIndex: Street[] | null = null;
+    let mode: 'trees' | 'address' = 'trees';
+    let results: (TreeEntry | Street)[] = [];
+    let active = 0;
+    let chosen: TreeEntry[] = [];
+    let street: Street | null = null;
+    let busy = false;
+    let mapBusy = false;
+
+    const el = (tag: string, cls: string, text: string) => {
+      const n = document.createElement(tag);
+      n.className = cls;
+      n.textContent = text;
+      return n;
+    };
+
+    const paintThrobber = () => {
+      const on = busy || mapBusy;
+      throbber.hidden = !on;
+      glass.style.display = on ? 'none' : '';
+    };
+
+    const setBusy = (on: boolean) => {
+      busy = on;
+      paintThrobber();
+    };
+
+    const onMapBusy = (e: Event) => {
+      const { busy: on, source } = (e as CustomEvent).detail;
+      mapBusy = on && source === 'species';
+      paintThrobber();
+    };
+
+    const setOpen = (open: boolean) => {
+      list.hidden = !open;
+      input.setAttribute('aria-expanded', String(open));
+      if (!open) input.removeAttribute('aria-activedescendant');
+    };
+
+    const showMessage = (text: string) => {
+      list.replaceChildren(el('li', 'empty', text));
+      setOpen(true);
+    };
+
+    const paintActive = () => {
+      [...list.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === active)));
+      const id = list.children[active]?.id;
+      if (id) input.setAttribute('aria-activedescendant', id);
+      list.children[active]?.scrollIntoView({ block: 'nearest' });
+    };
+
+    const placeholder = () => {
+      if (mode === 'trees') return chosen.length ? '' : copy.placeholder ?? '';
+      if (street) return (copy.placeholderNumber ?? '').replace('{min}', String(street.min)).replace('{max}', String(street.max));
+      return copy.placeholderAddress ?? '';
+    };
+
+    const paintChrome = () => {
+      input.placeholder = placeholder();
+      input.inputMode = mode === 'address' && street ? 'numeric' : 'text';
+      paintChips();
+      clearBtn.classList.toggle('ghost', input.value === '');
+    };
+
+    // Trees mode can stack chips, address mode does not
+    let chipsKey = '';
+    const paintChips = () => {
+      const picks = mode === 'trees'
+        ? chosen.map(e => ({
+            text: e.name,
+            label: (copy.dropTree ?? '').replace('{name}', e.name),
+            drop: () => dropTree(e),
+            icon: GENUS_ICON[e.genus] || 'other',
+            color: GENUS_COLOR_VAR[e.genus] || '--bombay',
+          }))
+        : street ? [{ text: street.display, label: copy.dropStreet ?? '', drop: () => dropStreet() }] : [];
+      const key = `${mode}|${picks.map(p => p.text).join('|')}`;
+      if (key === chipsKey) return;
+      chipsKey = key;
+      chips.replaceChildren(
+        ...picks.map((p: { text: string; label: string; drop: () => void; icon?: string; color?: string }) => {
+          const chip = (chipTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+          const leaf = chip.querySelector<HTMLImageElement>('.chip-leaf')!;
+          if (p.icon) leaf.src = `/icons/leaves/${p.icon}.png`;
+          else leaf.remove();
+          if (p.color) chip.style.setProperty('--chip-color', `var(${p.color})`);
+          chip.querySelector('.chip-text')!.textContent = p.text;
+          const drop = chip.querySelector<HTMLButtonElement>('.chip-drop')!;
+          drop.setAttribute('aria-label', p.label);
+          drop.addEventListener('click', p.drop);
+          return chip;
+        })
+      );
+    };
+
+    const row = (i: number, name: string, sub: string, count: number, leafIcon?: string) => {
+      const li = document.createElement('li');
+      li.id = `search-option-${i}`;
+      li.setAttribute('role', 'option');
+      let lead: HTMLElement;
+      if (leafIcon) {
+        const img = new Image();
+        img.className = 'leaf';
+        img.src = `/icons/leaves/${leafIcon}.png`;
+        img.alt = '';
+        lead = img;
+      } else {
+        lead = el('span', 'pin', '');
+      }
+      li.append(lead, el('span', 'name', name), el('span', 'sub', sub), el('span', 'count', count.toLocaleString('en-CA')));
+      li.addEventListener('mousedown', ev => ev.preventDefault());
+      return li;
+    };
+
+    const render = () => {
+      if (!results.length) {
+        showMessage((mode === 'trees' ? copy.noResults : copy.noStreet) ?? '');
+        return;
+      }
+      list.replaceChildren(
+        ...results.map((e, i) => {
+          const li = 'kind' in e
+            ? row(i, e.name, e.kind === 'genus' ? `${e.common} · all species` : e.common, e.count, GENUS_ICON[e.genus] || 'other')
+            : row(i, e.display, `${e.min} to ${e.max} · ${e.count.toLocaleString('en-CA')} trees`, e.count);
+          li.addEventListener('click', () => choose(e));
+          return li;
+        })
+      );
+      paintActive();
+      setOpen(true);
+    };
+
+    const dispatchFilter = () =>
+      document.dispatchEvent(new CustomEvent(FILTER_EVENT, {
+        detail: {
+          source: 'search',
+          icon: chosen.length === 1 ? GENUS_ICON[chosen[0].genus] || 'other' : null,
+          picks: chosen.map(e => ({ genus: e.kind === 'genus' ? e.genus : undefined, botanical: e.botanical })),
+        },
+      }));
+
+    // The map answers when it settles; if it never does (still loading), give the throbber up
+    let locateTimer = 0;
+    const locate = (detail: Record<string, unknown>) => {
+      setBusy(true);
+      setOpen(false);
+      clearTimeout(locateTimer);
+      locateTimer = window.setTimeout(() => setBusy(false), 10000);
+      document.dispatchEvent(new CustomEvent(LOCATE_EVENT, { detail }));
+    };
+
+    const onLocateDone = (e: Event) => {
+      clearTimeout(locateTimer);
+      setBusy(false);
+      if (!(e as CustomEvent).detail?.found) showMessage(copy.noTree ?? '');
+    };
+
+    const goToNumber = (s: Street, n: number) => {
+      const [lng, lat] = interpolate(s, n);
+      street = null;
+      input.value = `${n} ${s.display}`;
+      paintChrome();
+      locate({ lng, lat, street: s.name, address: n });
+    };
+
+    const choose = (e: TreeEntry | Street) => {
+      if ('kind' in e) {
+        const isNew = !chosen.some(c => c.kind === e.kind && c.name === e.name);
+        if (isNew) chosen = [...chosen, e];
+        results = [];
+        input.value = '';
+        setOpen(false);
+        paintChrome();
+        if (isNew) dispatchFilter();
+        return;
+      }
+      const { number } = parseAddress(input.value);
+      street = e;
+      if (number !== null) return goToNumber(e, number);
+      input.value = '';
+      paintChrome();
+      locate({ bounds: boundsOf(e) });
+      input.focus();
+    };
+
+    const resetTrees = () => {
+      chosen = [];
+      results = [];
+      input.value = '';
+      setOpen(false);
+      paintChrome();
+    };
+
+    const resetAddress = () => {
+      street = null;
+      results = [];
+      input.value = '';
+      setOpen(false);
+      paintChrome();
+    };
+
+    const clear = () => {
+      input.value = '';
+      results = [];
+      setOpen(false);
+      paintChrome();
+      input.focus();
+    };
+
+    const dropTree = (e: TreeEntry) => {
+      chosen = chosen.filter(c => c !== e);
+      paintChrome();
+      dispatchFilter();
+      input.focus();
+    };
+
+    const dropStreet = () => {
+      resetAddress();
+      input.focus();
+    };
+
+    const setMode = (next: 'trees' | 'address') => {
+      if (next === mode) return;
+      mode = next;
+      results = [];
+      setOpen(false);
+      input.value = '';
+      paintChrome();
+      input.focus();
+      if (mode === 'address' && !streetIndex) {
+        setBusy(true);
+        loadStreets(STREETS_URL).then(i => (streetIndex = i)).finally(() => setBusy(false));
+      }
+    };
+
+    const onInput = async () => {
+      const text = input.value.trim();
+      paintChrome();
+      if (mode === 'trees') {
+        if (!text) { results = []; setOpen(false); return; }
+        results = searchTrees(treeIndex, text);
+        active = 0;
+        render();
+        return;
+      }
+      if (street) {
+        if (/^\d*$/.test(text)) { setOpen(false); return; }
+        street = null;
+        paintChrome();
+      }
+      if (!text) { results = []; setOpen(false); return; }
+      const index = streetIndex ?? (streetIndex = await loadStreets(STREETS_URL));
+      if (input.value.trim() !== text) return;
+      const { street: streetQuery } = parseAddress(text);
+      results = streetQuery ? searchStreets(index, streetQuery) : [];
+      active = 0;
+      if (!streetQuery) { setOpen(false); return; }
+      render();
+    };
+
+    const onKeydown = (ev: KeyboardEvent) => {
+      const open = !list.hidden && results.length > 0;
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        if (!open) return;
+        ev.preventDefault();
+        active = (active + (ev.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length;
+        paintActive();
+      } else if (ev.key === 'Enter') {
+        ev.preventDefault();
+        if (busy) return;
+        if (open) choose(results[active]);
+        else if (mode === 'address' && street && /^\d+$/.test(input.value.trim())) goToNumber(street, Number(input.value.trim()));
+      } else if (ev.key === 'Escape') {
+        if (!list.hidden) setOpen(false);
+        else if (input.value) clear();
+        else if (mode === 'address' && street) dropStreet();
+      } else if (ev.key === 'Backspace') {
+        if (input.value !== '') return;
+        if (mode === 'trees' && chosen.length) dropTree(chosen[chosen.length - 1]);
+        else if (mode === 'address' && street) dropStreet();
+      } else if (ev.key === 'Tab') {
+        setOpen(false);
+      }
+    };
+
+    const onFocus = () => {
+      if (mode === 'trees' && input.value.trim() && results.length) setOpen(true);
+      if (mode === 'address' && !street && input.value.trim() && results.length) setOpen(true);
+    };
+
+    // Legend clicks drive the same filter, so a selection there replaces whatever was typed here
+    const onFilter = (e: Event) => {
+      const d = (e as CustomEvent).detail ?? {};
+      if (d.source === 'search') return;
+      chosen = [];
+      if (mode === 'trees') resetTrees();
+      else paintChrome();
+    };
+
+    input.addEventListener('input', onInput);
+    input.addEventListener('keydown', onKeydown);
+    input.addEventListener('focus', onFocus);
+    input.addEventListener('blur', () => setOpen(false));
+    clearBtn.addEventListener('click', clear);
+    form.addEventListener('tt:toggle', e => setMode((e as CustomEvent).detail.value));
+    form.addEventListener('submit', ev => ev.preventDefault());
+    document.addEventListener(FILTER_EVENT, onFilter);
+    document.addEventListener(LOCATE_DONE_EVENT, onLocateDone);
+    document.addEventListener(MAP_BUSY_EVENT, onMapBusy);
+    teardown = () => {
+      document.removeEventListener(FILTER_EVENT, onFilter);
+      document.removeEventListener(LOCATE_DONE_EVENT, onLocateDone);
+      document.removeEventListener(MAP_BUSY_EVENT, onMapBusy);
+    };
+    paintChrome();
+  }
+
+  document.addEventListener('astro:page-load', initSearch);
+  document.addEventListener('astro:before-swap', () => {
+    teardown?.();
+    teardown = null;
+  });
+</script>
+
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+  @use '../styles/panel' as *;
+
+  .search {
+    position: relative;
+    margin: 0;
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+
+  // Flex children would otherwise override the hidden attribute
+  .field [hidden] {
+    display: none;
+  }
+
+  .well {
+    @include well;
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.6rem;
+    min-width: 0;
+    min-height: 2.5rem;
+    padding: 0.3rem 0.75rem;
+    transition: box-shadow 150ms ease;
+  }
+
+  .chips {
+    display: contents;
+  }
+
+  .well:focus-within {
+    @include well-focus;
+  }
+
+  .glass {
+    flex-shrink: 0;
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: var(--battleship);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+  }
+
+  .chip {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0.2rem 0.2rem 0.2rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--chip-color) 55%, transparent);
+    border-radius: 0.3rem;
+    background: color-mix(in srgb, var(--chip-color) 18%, transparent);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: color-mix(in srgb, var(--chip-color) 55%, black);
+
+    // Tinted the same as the popup's botanical chip; the street chip keeps the forest default
+    --chip-color: var(--forest);
+
+    &:has(.chip-leaf) {
+      padding-left: 0.3rem;
+    }
+
+    :global(.chip-drop:hover) {
+      background: color-mix(in srgb, var(--chip-color) 25%, transparent);
+    }
+  }
+
+  .chip-leaf {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    object-fit: contain;
+  }
+
+  .chip-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .query,
+  .query:focus {
+    flex: 1 1 6rem;
+    min-width: 6rem;
+    height: 1.9rem;
+    margin: 0;
+    padding: 0 0.25rem;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font: inherit;
+    color: var(--charred);
+    outline: none;
+  }
+
+  .query::placeholder {
+    color: var(--battleship);
+    opacity: 0.8;
+  }
+
+  // The panel's hatched drop would be clipped by the scrolling list, so it sits on a wrapper
+  .results-panel {
+    @include panel;
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 2rem);
+    left: calc(-0.625rem - 2px);
+    right: calc(-0.625rem - 2px);
+    animation: rise 140ms ease-out;
+  }
+
+  .results-panel:has(> .results[hidden]) {
+    display: none;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(-0.25rem); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .results-panel { animation: none; }
+  }
+
+  .results {
+    max-height: 22rem;
+    margin: 0;
+    padding: 0.375rem;
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  // Rows are built in JS so they carry no scope attribute
+  .results :global(li) {
+    display: grid;
+    grid-template-columns: 1.75rem 1fr auto;
+    column-gap: 1rem;
+    align-items: center;
+    padding: 0.6rem 0.875rem;
+    border-radius: 0.375rem;
+    font-size: var(--text-sm);
+    line-height: 1.3;
+    cursor: pointer;
+    transition: background-color 100ms ease;
+  }
+
+  .results :global(li:hover) {
+    background: var(--porcelain);
+  }
+
+  .results :global(li[aria-selected='true']) {
+    background: var(--gradient-fade);
+  }
+
+  .results :global(.leaf) {
+    grid-area: 1 / 1 / 3 / 2;
+    width: 1.75rem;
+    height: 1.75rem;
+    object-fit: contain;
+  }
+
+  .results :global(.pin) {
+    grid-area: 1 / 1 / 3 / 2;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin: auto;
+    background: var(--forest);
+    border: 2px solid rgb(47 143 59 / 0.25);
+    border-radius: 50%;
+    background-clip: padding-box;
+  }
+
+  .results :global(.name) {
+    grid-area: 1 / 2 / 2 / 3;
+    font-weight: 500;
+    color: var(--charred);
+  }
+
+  .results :global(.sub) {
+    grid-area: 2 / 2 / 3 / 3;
+    font-size: var(--text-xs);
+    color: var(--battleship);
+  }
+
+  .results :global(.count) {
+    grid-area: 1 / 3 / 3 / 4;
+    font-size: var(--text-xs);
+    color: var(--charred);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .results :global(.empty) {
+    display: block;
+    padding: 0.7rem 0.75rem;
+    color: var(--battleship);
+    cursor: default;
+  }
+
+  .results :global(.empty:hover) {
+    background: none;
+  }
+
+  @include medium {
+    .field:has(.chip) .glass {
+      display: none;
+    }
+  }
+
+  @include small {
+    .field {
+      flex-wrap: wrap;
+      row-gap: 0.625rem;
+    }
+    .field > :global(.segmented) {
+      flex-basis: 100%;
+    }
+  }
+
+  @include touch {
+    .well {
+      min-height: 3rem;
+    }
+    // The on-screen keyboard takes about half the screen, so the list stays above it
+    .results {
+      max-height: min(22rem, 40svh);
+    }
+  }
+</style>

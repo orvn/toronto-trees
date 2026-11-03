@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Filters from '../components/Filters.astro';
 import Map from '../components/Map.astro';
 import Legend from '../components/Legend.astro';
 import Superfooter from '../components/Superfooter.astro';
@@ -23,6 +24,7 @@ const jsonLD = {
   ogImage={meta.og_image}
   jsonLD={jsonLD}
 >
+  <Filters />
   <Map />
   <Legend />
   <Superfooter />

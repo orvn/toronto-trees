@@ -8,3 +8,5 @@
 @mixin xl { @media (max-width: 64rem) { @content; } }        // 1024px
 @mixin xxl { @media (max-width: 80rem) { @content; } }       // 1280px
 @mixin xxxl { @media (max-width: 96rem) { @content; } }      // 1536px
+
+@mixin touch { @media (pointer: coarse) { @content; } }

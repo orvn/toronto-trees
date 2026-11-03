@@ -1,0 +1,115 @@
+---
+import ClearButton from './ClearButton.astro';
+
+// Numeric min and max pair; dispatches a bubbling tt:range with { name, min, max }, null meaning unbounded
+const { name, label, unit = '', minLabel, maxLabel, minPlaceholder, maxPlaceholder, toText, resetLabel } = Astro.props;
+---
+
+<div class="min-max" role="group" aria-label={label} data-name={name}>
+  <span class="control-name">{label}</span>
+  <input class="num lo" type="number" min="0" inputmode="numeric" placeholder={minPlaceholder} aria-label={minLabel} />
+  <span class="to">{toText}</span>
+  <input class="num hi" type="number" min="0" inputmode="numeric" placeholder={maxPlaceholder} aria-label={maxLabel} />
+  {unit && <span class="unit">{unit}</span>}
+  <ClearButton label={resetLabel} class="reset" hidden />
+</div>
+
+<script>
+  function initMinMax(root: HTMLElement) {
+    const lo = root.querySelector<HTMLInputElement>('.lo')!;
+    const hi = root.querySelector<HTMLInputElement>('.hi')!;
+    const reset = root.querySelector<HTMLButtonElement>('.reset')!;
+
+    const read = (el: HTMLInputElement) => {
+      if (el.value === '') return null;
+      const n = Number(el.value);
+      return Number.isFinite(n) ? Math.max(0, n) : null;
+    };
+
+    const emit = () => {
+      const min = read(lo);
+      const max = read(hi);
+      const active = min !== null || max !== null;
+      reset.hidden = !active;
+      root.classList.toggle('is-active', active);
+      root.dispatchEvent(new CustomEvent('tt:range', { bubbles: true, detail: { name: root.dataset.name, min, max } }));
+    };
+
+    lo.addEventListener('input', emit);
+    hi.addEventListener('input', emit);
+    reset.addEventListener('click', () => {
+      lo.value = '';
+      hi.value = '';
+      emit();
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.min-max').forEach(initMinMax);
+  });
+</script>
+
+<style lang="scss">
+  .min-max {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: 2.5rem;
+  }
+
+  .control-name {
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--battleship);
+    white-space: nowrap;
+  }
+
+  .is-active .control-name {
+    color: var(--forest);
+  }
+
+  // Foundation styles number inputs with its own border and shadow, so both are reset here and on focus
+  .num,
+  .num:focus {
+    width: 3.5rem;
+    height: 2rem;
+    margin: 0;
+    padding: 0 0.4rem;
+    border: 1px solid rgb(27 31 26 / 0.15);
+    border-radius: 0.45rem;
+    background: #fff;
+    box-shadow: none;
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--charred);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .num::-webkit-outer-spin-button,
+  .num::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  .num:focus {
+    border-color: var(--forest);
+    box-shadow: 0 0 0 0.2rem rgb(47 143 59 / 0.14);
+  }
+
+  .num::placeholder {
+    color: var(--battleship);
+    opacity: 0.7;
+  }
+
+  .to,
+  .unit {
+    font-size: var(--text-xs);
+    color: var(--battleship);
+  }
+</style>

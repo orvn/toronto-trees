@@ -1,0 +1,491 @@
+---
+import ClearButton from './ClearButton.astro';
+
+// Dual-handle range (bubbling tt:range with { name, min, max })
+const { name, label, labelHidden = false, min = 0, max = 100, step = 1, tick = 5, unit = '', minLabel, maxLabel, anyText, underText, overText, betweenText, resetLabel, hidden = false } = Astro.props;
+const ticks = Array.from({ length: Math.floor((max - min) / tick) + 1 }, (_, i) => {
+  const n = i * tick;
+  return { left: `${(n / (max - min)) * 100}%`, size: n % (tick * 10) === 0 ? 'major' : n % (tick * 5) === 0 ? 'mid' : '' };
+});
+
+const fillWide = (t = '') => t.replaceAll('{min}', String(max)).replaceAll('{max}', String(max));
+const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map(t => fillWide(t).length));
+---
+
+<div
+  class="range-slider"
+  role="group"
+  aria-label={label}
+  data-name={name}
+  data-any={anyText}
+  data-under={underText}
+  data-over={overText}
+  data-between={betweenText}
+  data-unit={unit}
+  style={`--readout: ${readoutChars}ch`}
+  hidden={hidden}
+>
+  {!labelHidden && <span class="control-name">{label}</span>}
+  <div class="scale">
+    <div class="dual">
+      <span class="rail" aria-hidden="true"><span class="rail-fill"></span></span>
+      <input class="lo" type="range" min={min} max={max} step={step} value={min} aria-label={minLabel} />
+      <input class="hi" type="range" min={min} max={max} step={step} value={max} aria-label={maxLabel} />
+      <span class="tag tag-lo" aria-hidden="true"></span>
+      <span class="tag tag-hi" aria-hidden="true"></span>
+    </div>
+    <div class="ticks" aria-hidden="true">
+      {ticks.map(t => <span class={t.size} style={`left: ${t.left}`}></span>)}
+    </div>
+  </div>
+  <output class="value" aria-live="polite">{anyText}</output>
+  <span class="end">
+    <ClearButton label={resetLabel} class="reset" variant="key" ghost />
+  </span>
+</div>
+
+<script>
+  function initRangeSlider(root: HTMLElement) {
+    const lo = root.querySelector<HTMLInputElement>('.lo')!;
+    const hi = root.querySelector<HTMLInputElement>('.hi')!;
+    const fill = root.querySelector<HTMLElement>('.rail-fill')!;
+    const value = root.querySelector<HTMLOutputElement>('.value')!;
+    const reset = root.querySelector<HTMLButtonElement>('.reset')!;
+    const tagLo = root.querySelector<HTMLElement>('.tag-lo')!;
+    const tagHi = root.querySelector<HTMLElement>('.tag-hi')!;
+    const unit = root.dataset.unit ? ` ${root.dataset.unit}` : '';
+    const floor = Number(lo.min);
+    const ceil = Number(lo.max);
+
+    const paint = () => {
+      const a = Number(lo.value);
+      const b = Number(hi.value);
+      const span = ceil - floor;
+      fill.style.left = `${((a - floor) / span) * 100}%`;
+      fill.style.right = `${100 - ((b - floor) / span) * 100}%`;
+      tagLo.style.setProperty('--p', String((a - floor) / span));
+      tagHi.style.setProperty('--p', String((b - floor) / span));
+      tagLo.textContent = `${a}${unit}`;
+      tagHi.textContent = `${b}${unit}`;
+      const any = a === floor && b === ceil;
+      const fill_ = (t: string) => t.replace('{min}', String(a)).replace('{max}', String(b));
+      value.textContent = any
+        ? root.dataset.any ?? ''
+        : a === floor ? fill_(root.dataset.under ?? '')
+        : b === ceil ? fill_(root.dataset.over ?? '')
+        : fill_(root.dataset.between ?? '');
+      reset.classList.toggle('ghost', any);
+      root.classList.toggle('is-active', !any);
+      // Thumbs overlap at the top end, so the lower one rises to stay grabbable there
+      lo.classList.toggle('is-on-top', a >= ceil - span * 0.05);
+      return { any, a, b };
+    };
+
+    const emit = () => {
+      const { any, a, b } = paint();
+      root.dispatchEvent(
+        new CustomEvent('tt:range', {
+          bubbles: true,
+          detail: { name: root.dataset.name, min: !any && a > floor ? a : null, max: !any && b < ceil ? b : null },
+        })
+      );
+    };
+
+    // The thumbs may not cross; the one being dragged pushes the other along
+    const onInput = (ev: Event) => {
+      if (Number(lo.value) > Number(hi.value)) {
+        if (ev.target === lo) hi.value = lo.value;
+        else lo.value = hi.value;
+      }
+      emit();
+    };
+
+    lo.addEventListener('input', onInput);
+    hi.addEventListener('input', onInput);
+    lo.addEventListener('pointerdown', () => root.classList.add('is-dragging-lo'));
+    hi.addEventListener('pointerdown', () => root.classList.add('is-dragging-hi'));
+    reset.addEventListener('click', () => {
+      lo.value = String(floor);
+      hi.value = String(ceil);
+      emit();
+    });
+    paint();
+  }
+
+  // Throbber from clear button
+  const MORPH_MS = 350;
+  const CYCLE_MS = 1600;
+  const startedAt = new WeakMap<Element, number>();
+  const pendingStop = new WeakMap<Element, () => void>();
+  document.addEventListener('tt:map-busy', e => {
+    const { busy, source } = (e as CustomEvent).detail;
+    const updating = busy && source === 'range';
+    for (const root of document.querySelectorAll<HTMLElement>('.range-slider')) {
+      pendingStop.get(root)?.();
+      if (updating) {
+        if (!root.classList.contains('is-updating')) startedAt.set(root, performance.now());
+        root.classList.add('is-updating');
+        continue;
+      }
+      const button = root.querySelector('.reset');
+      if (!button || !root.classList.contains('is-updating')) continue;
+      if (performance.now() - (startedAt.get(root) ?? 0) < MORPH_MS) {
+        root.classList.remove('is-updating');
+        continue;
+      }
+      // The bars report each cycle; the timer covers bars whose animation is not running
+      let timer = 0;
+      const stop = () => {
+        cancel();
+        root.classList.remove('is-updating');
+      };
+      const cancel = () => {
+        clearTimeout(timer);
+        button.removeEventListener('animationiteration', stop);
+        pendingStop.delete(root);
+      };
+      timer = window.setTimeout(stop, MORPH_MS + CYCLE_MS + 200);
+      button.addEventListener('animationiteration', stop);
+      pendingStop.set(root, cancel);
+    }
+  });
+
+  // The pointer can be released anywhere on the page once a thumb is grabbed
+  const drop = () =>
+    document.querySelectorAll('.range-slider').forEach(r => r.classList.remove('is-dragging-lo', 'is-dragging-hi'));
+  document.addEventListener('pointerup', drop);
+  document.addEventListener('pointercancel', drop);
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.range-slider').forEach(initRangeSlider);
+  });
+</script>
+
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+  @use '../styles/panel' as *;
+
+  // Thumb centres run from half a thumb in at each end, so the rail, ticks and tags are inset to match
+  .range-slider {
+    --thumb: 1.125rem;
+    --thumb-height: 1.625rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .range-slider[hidden] {
+    display: none;
+  }
+
+  .control-name {
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--battleship);
+    white-space: nowrap;
+  }
+
+  .is-active .control-name {
+    color: var(--forest);
+  }
+
+  .scale {
+    display: flex;
+    flex: 0 1 15rem;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 8rem;
+    padding-top: 0.25rem;
+  }
+
+  // Two native ranges stacked; only their thumbs take the pointer, so either can be grabbed
+  .dual {
+    position: relative;
+    height: calc(var(--thumb-height) + 0.125rem);
+  }
+
+  .rail {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--thumb) / 2);
+    right: calc(var(--thumb) / 2);
+    height: 0.5rem;
+    transform: translateY(-50%);
+    border-radius: 0.25rem;
+    background: rgb(27 31 26 / 0.08);
+    box-shadow: inset 0 1px 3px rgb(27 31 26 / 0.12);
+  }
+
+  .rail-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: var(--gradient-leaf);
+  }
+
+  input[type='range'] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    appearance: none;
+    pointer-events: none;
+    outline: none;
+  }
+
+  .is-on-top {
+    z-index: 2;
+  }
+
+  // Keycap with two grip lines
+  @mixin thumb {
+    @include key;
+    width: var(--thumb);
+    height: var(--thumb-height);
+    border: 0;
+    border-radius: 0.3rem;
+    background:
+      linear-gradient(var(--battleship), var(--battleship)) calc(50% - 2px) 50% / 1.5px 0.5625rem no-repeat,
+      linear-gradient(var(--battleship), var(--battleship)) calc(50% + 2px) 50% / 1.5px 0.5625rem no-repeat,
+      var(--gradient-key);
+    cursor: grab;
+    pointer-events: auto;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+
+  @mixin thumb-lifted {
+    cursor: grabbing;
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 0.5px rgb(27 31 26 / 0.14),
+      0 4px 8px rgb(27 31 26 / 0.14),
+      0 8px 16px rgb(27 31 26 / 0.08),
+      inset 0 1px 0 #fff;
+  }
+
+  @mixin thumb-focus {
+    box-shadow:
+      0 0 0 0.5px rgb(27 31 26 / 0.14),
+      0 1px 2px rgb(27 31 26 / 0.1),
+      0 0 0 0.25rem rgb(47 143 59 / 0.2);
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    appearance: none;
+    @include thumb;
+  }
+
+  input[type='range']::-moz-range-thumb {
+    @include thumb;
+  }
+
+  input[type='range']::-webkit-slider-runnable-track,
+  input[type='range']::-moz-range-track {
+    background: none;
+  }
+
+  input[type='range']:focus-visible::-webkit-slider-thumb {
+    @include thumb-focus;
+  }
+
+  input[type='range']:focus-visible::-moz-range-thumb {
+    @include thumb-focus;
+  }
+
+  input[type='range']:active::-webkit-slider-thumb {
+    @include thumb-lifted;
+  }
+
+  input[type='range']:active::-moz-range-thumb {
+    @include thumb-lifted;
+  }
+
+  .tag {
+    @include key;
+    position: absolute;
+    bottom: calc(100% + 0.55rem);
+    left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0));
+    z-index: 3;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.3rem;
+    color: var(--charred);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 0.2rem);
+    transition: opacity 120ms ease, transform 160ms ease-out;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 0.4rem;
+      height: 0.4rem;
+      background: var(--bianca);
+      box-shadow: 0.5px 0.5px 0 rgb(27 31 26 / 0.14);
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+  }
+
+  .is-dragging-lo .tag-lo,
+  .is-dragging-hi .tag-hi,
+  .lo:focus-visible ~ .tag-lo,
+  .hi:focus-visible ~ .tag-hi {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .ticks {
+    position: relative;
+    height: 0.5rem;
+    margin-inline: calc(var(--thumb) / 2);
+
+    span {
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 0.1875rem;
+      background: var(--charred);
+      opacity: 0.35;
+    }
+
+    .mid {
+      height: 0.3125rem;
+      opacity: 0.7;
+    }
+
+    .major {
+      height: 0.5rem;
+      opacity: 0.7;
+    }
+  }
+
+  .value {
+    flex-shrink: 0;
+    width: var(--readout);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--charred);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .end {
+    display: grid;
+    place-items: center;
+  }
+
+  .end :global(.reset) {
+    --tile: 1.1rem;
+    --lift: 0.45rem;
+    --morph: 350ms;
+    --cycle: 1.6s;
+    --layer: var(--battleship);
+  }
+
+  .end :global(.reset .bar) {
+    transform: rotateX(0deg) rotate(45deg);
+    transition: width var(--morph) ease, height var(--morph) ease, border-radius var(--morph) ease, transform var(--morph) ease, background-color var(--morph) ease;
+  }
+
+  .end :global(.reset .bar + .bar) {
+    transform: rotateX(0deg) rotate(-45deg);
+  }
+
+  .end :global(.reset::after) {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: var(--tile);
+    height: var(--tile);
+    margin: auto;
+    background: var(--celery);
+    opacity: 0;
+    transform: rotateX(65deg) rotate(45deg);
+    transition: opacity var(--morph) ease;
+  }
+
+  .is-updating .end :global(.reset) {
+    visibility: visible;
+    pointer-events: none;
+  }
+
+  // The parked slider shares the grid cell of the live one, so its button stays hidden with it
+  .range-slider[hidden] .end :global(.reset) {
+    visibility: hidden;
+  }
+
+  .is-updating .end :global(.reset::before) {
+    opacity: 0;
+  }
+
+  .is-updating .end :global(.reset::after) {
+    opacity: 1;
+  }
+
+  .is-updating .end :global(.reset .bar) {
+    z-index: 3;
+    width: var(--tile);
+    height: var(--tile);
+    border-radius: 0;
+    background: var(--layer);
+    transform: rotateX(65deg) rotate(45deg);
+    animation: lift var(--cycle) linear var(--morph) infinite;
+  }
+
+  .is-updating .end :global(.reset .bar + .bar) {
+    z-index: 1;
+    transform: rotateX(65deg) rotate(-45deg);
+    animation-name: sink;
+  }
+
+  // Each cycle ends back in the stack, so a stop on the cycle boundary never jumps
+  @keyframes lift {
+    0%, 100% { translate: 0 0; }
+    45%, 55% { translate: 0 calc(-1 * var(--lift)); }
+  }
+
+  @keyframes sink {
+    0%, 100% { translate: 0 0; }
+    45%, 55% { translate: 0 var(--lift); }
+  }
+
+  @include touch {
+    .end :global(.reset) {
+      --tile: 1.35rem;
+      --lift: 0.55rem;
+    }
+  }
+
+  @include medium {
+    .range-slider {
+      gap: 0.5rem;
+    }
+    .scale {
+      flex: 1;
+    }
+  }
+
+  @include small {
+    .scale {
+      min-width: 5rem;
+    }
+  }
+
+  @include touch {
+    .range-slider {
+      --thumb: 1.5rem;
+      --thumb-height: 2.25rem;
+    }
+  }
+</style>

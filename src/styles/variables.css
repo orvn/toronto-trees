@@ -3,6 +3,8 @@
      Colors
   -------------------------------------------------------------------------- */
    --cararra: #f4f4f0;
+   --bianca: #fbfbf7;
+   --porcelain: #eceee7;
    --forest: #2f8f3b;
    --battleship: #6b7069;
    --charred: #1b1f1a;
@@ -34,6 +36,19 @@
    --geyser: #dee2e6;      /*  birch                             */
    --bombay: #adb5bd;      /*  other                             */
 
+   /* Gradients */
+   --gradient-forest: linear-gradient(90deg, var(--forest), var(--charred));
+   --gradient-leaf: linear-gradient(90deg, var(--forest), var(--killarney));
+   --gradient-key: linear-gradient(180deg, #fff, var(--bianca));
+   --gradient-well: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--porcelain), var(--charred) 4%),
+      var(--porcelain) 45%,
+      color-mix(in srgb, var(--porcelain), #fff 35%)
+   );
+   --gradient-fade: linear-gradient(90deg, color-mix(in srgb, var(--forest) 14%, transparent), transparent 85%);
+   --hatch: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px 4px);
+
 
    /* -------------------------------------------------------------------------
      Typography
@@ -61,7 +76,7 @@
   -------------------------------------------------------------------------- */
    --container-width: 1200px;
    --container-padding: clamp(1rem, 5vw, 2rem);
-   --gutter: clamp(2rem, 6vw, 5rem);
+   --gutter: clamp(1rem, 6vw, 5rem);
    --header-height: 4rem;
 
 

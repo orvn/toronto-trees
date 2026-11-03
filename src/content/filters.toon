@@ -1,0 +1,34 @@
+mode_label: Search mode
+mode_trees: Trees
+mode_address: Address
+placeholder: Scientific or common name
+placeholder_address: Street or address
+placeholder_number: "No. {min} to {max}"
+clear_label: Clear search
+loading_label: Loading
+drop_street: Change street
+drop_tree: "Remove {name}"
+no_results: No matching trees
+no_street: No street by that name
+no_tree: No tree found near that number
+age_label: Age
+age_min_label: Minimum estimated age
+age_max_label: Maximum estimated age
+age_any: any age
+age_under: "under {max} yrs"
+age_over: "over {min} yrs"
+age_between: "{min} to {max} yrs"
+reset_age: Reset age
+age_unit: yrs
+trunk_label: "Diameter"
+trunk_min_label: Minimum trunk diameter
+trunk_max_label: Maximum trunk diameter
+trunk_any: any size
+trunk_under: "under {max} cm"
+trunk_over: "over {min} cm"
+trunk_between: "{min} to {max} cm"
+reset_trunk: Reset trunk diameter
+trunk_unit: cm
+range_mode_label: Filter by
+range_mode_age: Age
+range_mode_trunk: "Diameter"

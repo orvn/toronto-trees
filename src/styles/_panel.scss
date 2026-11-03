@@ -1,0 +1,58 @@
+// Map filter panel
+// @include panel; @include well; @include key;
+@mixin panel($drop: 0.5rem) {
+  position: relative;
+  isolation: isolate;
+  border: 2px solid transparent;
+  border-radius: 0.625rem;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+  }
+
+  &::before {
+    z-index: -1;
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--bianca), var(--bianca)) padding-box,
+      var(--gradient-forest) border-box;
+    box-shadow: inset 0 -2px 0 var(--porcelain);
+  }
+
+  &::after {
+    z-index: -2;
+    background: var(--gradient-forest);
+    mask-image: var(--hatch);
+    transform: translate($drop, $drop);
+  }
+}
+
+@mixin well {
+  border-radius: 0.5rem;
+  background: var(--gradient-well);
+  box-shadow:
+    inset 0 1px 2px rgb(27 31 26 / 0.12),
+    inset 0 0 0 0.5px rgb(27 31 26 / 0.08),
+    0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+@mixin well-focus {
+  box-shadow:
+    inset 0 1px 2px rgb(27 31 26 / 0.12),
+    inset 0 0 0 1px rgb(47 143 59 / 0.4),
+    0 0 0 3px rgb(47 143 59 / 0.12);
+}
+
+// Raised cap that sits on a panel or in a well, lit from above
+@mixin key {
+  background: var(--gradient-key);
+  box-shadow:
+    0 0 0 0.5px rgb(27 31 26 / 0.14),
+    0 1px 2px rgb(27 31 26 / 0.1),
+    0 2px 6px rgb(27 31 26 / 0.06),
+    inset 0 1px 0 #fff;
+}
