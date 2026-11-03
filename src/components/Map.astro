@@ -344,6 +344,24 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         map.setPaintProperty('genus-tint', 'background-opacity', speciesMatch ? cfg.tintOpacity : 0);
       };
 
+      // Settle once the tree tiles have reparsed
+      // Paint change reaches workers on the next frame
+      const onceTreesLoaded = (cb: () => void) => {
+        const check = () => {
+          if (!map.isSourceLoaded(circles.source)) return;
+          map.off('sourcedata', check);
+          map.off('sourcedataabort', check);
+          map.off('idle', check);
+          cb();
+        };
+        map.once('render', () => {
+          map.on('sourcedata', check);
+          map.on('sourcedataabort', check);
+          map.on('idle', check);
+          check();
+        });
+      };
+
       // Tile queueing on filter update
       let drawing = false;
       let queued: 'species' | 'range' | null = null;
@@ -356,9 +374,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         }
         drawing = true;
         applyFilters();
-
-        map.triggerRepaint();
-        map.once('idle', () => {
+        onceTreesLoaded(() => {
           drawing = false;
           if (queued) {
             const next = queued;

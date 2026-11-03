@@ -62,8 +62,10 @@ const copy = loadFragment<Record<string, string>>('filters');
 </div>
 
 <script>
-  // Each control reports its own bounds; the bar merges them into one event for the map
+  // Each control reports its bounds and the bar merges them into one event to pass to map
   const RANGE_EVENT = 'tt:range-filter';
+  // Wait for range control to settle before passing to map
+  const RANGE_SETTLE_MS = 120;
 
   document.addEventListener('astro:page-load', () => {
     const bar = document.querySelector<HTMLElement>('.filters');
@@ -80,14 +82,15 @@ const copy = loadFragment<Record<string, string>>('filters');
       }
     });
     const state: Record<string, number | null> = { ageMin: null, ageMax: null, dbhMin: null, dbhMax: null };
-    let raf = 0;
+    let timer = 0;
     bar.addEventListener('tt:range', e => {
       const { name, min, max } = (e as CustomEvent).detail;
       state[`${name}Min`] = min;
       state[`${name}Max`] = max;
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() =>
-        document.dispatchEvent(new CustomEvent(RANGE_EVENT, { detail: { ...state } }))
+      clearTimeout(timer);
+      timer = window.setTimeout(
+        () => document.dispatchEvent(new CustomEvent(RANGE_EVENT, { detail: { ...state } })),
+        RANGE_SETTLE_MS
       );
     });
   });
