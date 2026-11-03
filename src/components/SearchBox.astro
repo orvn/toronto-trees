@@ -640,4 +640,24 @@ const { copy } = Astro.props;
       display: none;
     }
   }
+
+  @include small {
+    .field {
+      flex-wrap: wrap;
+      row-gap: 0.625rem;
+    }
+    .field > :global(.segmented) {
+      flex-basis: 100%;
+    }
+  }
+
+  @include touch {
+    .well {
+      min-height: 3rem;
+    }
+    // The on-screen keyboard takes about half the screen, so the list stays above it
+    .results {
+      max-height: min(22rem, 40svh);
+    }
+  }
 </style>

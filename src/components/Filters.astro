@@ -153,7 +153,8 @@ const copy = loadFragment<Record<string, string>>('filters');
     font-size: var(--text-xs);
   }
 
-  .bar :global(.query) {
+  .bar :global(.query),
+  .bar :global(.query:focus) {
     font-size: var(--text-sm);
   }
 
@@ -182,6 +183,14 @@ const copy = loadFragment<Record<string, string>>('filters');
     }
     .ranges > :global(*) {
       flex-basis: 100%;
+    }
+  }
+
+  // stabilize ios zoom on input
+  @include touch {
+    .bar :global(.query),
+    .bar :global(.query:focus) {
+      font-size: 1rem;
     }
   }
 </style>

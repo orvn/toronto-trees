@@ -36,6 +36,7 @@ const index = Math.max(0, options.findIndex((o: { value: string }) => o.value ==
 </script>
 
 <style lang="scss">
+  @use '../styles/breakpoints' as *;
   @use '../styles/panel' as *;
 
   .segmented {
@@ -96,5 +97,11 @@ const index = Math.max(0, options.findIndex((o: { value: string }) => o.value ==
   .option:focus-visible {
     outline: 2px solid var(--forest);
     outline-offset: 2px;
+  }
+
+  @include touch {
+    .option {
+      height: 2.5rem;
+    }
   }
 </style>

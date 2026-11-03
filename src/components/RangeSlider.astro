@@ -138,6 +138,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
   // Thumb centres run from half a thumb in at each end, so the rail, ticks and tags are inset to match
   .range-slider {
     --thumb: 1.125rem;
+    --thumb-height: 1.625rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -171,7 +172,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
   // Two native ranges stacked; only their thumbs take the pointer, so either can be grabbed
   .dual {
     position: relative;
-    height: 1.75rem;
+    height: calc(var(--thumb-height) + 0.125rem);
   }
 
   .rail {
@@ -215,7 +216,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
   @mixin thumb {
     @include key;
     width: var(--thumb);
-    height: 1.625rem;
+    height: var(--thumb-height);
     border: 0;
     border-radius: 0.3rem;
     background:
@@ -368,6 +369,19 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     }
     .scale {
       flex: 1;
+    }
+  }
+
+  @include small {
+    .scale {
+      min-width: 5rem;
+    }
+  }
+
+  @include touch {
+    .range-slider {
+      --thumb: 1.5rem;
+      --thumb-height: 2.25rem;
     }
   }
 </style>

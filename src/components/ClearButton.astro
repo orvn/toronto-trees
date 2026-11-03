@@ -8,6 +8,7 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false, 
 </button>
 
 <style lang="scss">
+  @use '../styles/breakpoints' as *;
   @use '../styles/panel' as *;
 
   .clear-btn {
@@ -101,5 +102,23 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false, 
   .md svg {
     width: 0.8rem;
     height: 0.8rem;
+  }
+
+  @include touch {
+    .sm,
+    .flat {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .md {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+
+    .lg {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
   }
 </style>
