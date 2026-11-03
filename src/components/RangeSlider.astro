@@ -488,4 +488,15 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
       --thumb-height: 2.25rem;
     }
   }
+
+  @include small {
+    .range-slider {
+      --thumb: 1.25rem;
+      --thumb-height: 1.875rem;
+    }
+    .scale {
+      gap: 0.15rem;
+      padding-top: 0.125rem;
+    }
+  }
 </style>
