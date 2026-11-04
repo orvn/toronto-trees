@@ -165,7 +165,7 @@ const copy = loadFragment<Record<string, string>>('filters');
 
   .filters {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 1.75rem;
   }
 
@@ -178,8 +178,9 @@ const copy = loadFragment<Record<string, string>>('filters');
   }
 
   .ranges {
-    flex: 1 1 30rem;
+    flex: 1 1 24rem;
     min-width: 0;
+    max-width: 30rem;
     padding-right: 1.125rem;
   }
 
@@ -199,8 +200,9 @@ const copy = loadFragment<Record<string, string>>('filters');
   }
 
   .search-bar {
-    flex: 1 1 22rem;
+    flex: 2 1 22rem;
     min-width: 0;
+    max-width: 44rem;
   }
 
   .search-bar > :global(*) {
@@ -285,6 +287,7 @@ const copy = loadFragment<Record<string, string>>('filters');
     .filters {
       @include panel;
       flex-wrap: nowrap;
+      align-items: center;
       gap: 0.5rem;
       padding: 0.375rem 0.625rem 0.375rem 0.375rem;
     }
@@ -295,6 +298,7 @@ const copy = loadFragment<Record<string, string>>('filters');
       position: static;
       flex: 1 1 0;
       min-width: 0;
+      max-width: none;
       padding: 0;
       border: 0;
 
