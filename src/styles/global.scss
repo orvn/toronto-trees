@@ -321,7 +321,7 @@ body.no-cursor  { cursor: none; }
   pointer-events: none;
   opacity: 0;
   z-index: 2;
-  transition: opacity 200ms ease, transform 200ms ease;
+  transition: opacity 200ms ease, transform 360ms var(--spring);
 }
 
 @media (hover: hover) {
@@ -398,16 +398,14 @@ body.no-cursor  { cursor: none; }
 }
 
 /* ---------------------------------------------------------------------------
-   .magnify-onhover — subtle scale on hover.
-   ease-in on enter, ease-out on leave (zero-core convention).
+   .magnify-onhover — subtle springy scale on hover
 --------------------------------------------------------------------------- */
 
 .magnify-onhover {
-  transition: transform 250ms ease-out;
+  transition: transform 360ms var(--spring);
 }
 
 .magnify-onhover:hover {
-  transition: transform 250ms ease-in;
   transform: scale(1.05);
 }
 

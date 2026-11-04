@@ -452,14 +452,15 @@ const { copy } = Astro.props;
   }
 
   .field > :global(.clear) {
-    transition: width 220ms ease, margin 220ms ease, opacity 180ms ease, transform 120ms ease, color 150ms ease, visibility 0s;
+    transition: width 320ms var(--spring-soft), margin 320ms var(--spring-soft), opacity 180ms ease, scale 380ms var(--spring), transform 120ms ease, color 150ms ease, visibility 0s;
   }
 
   .field > :global(.clear.ghost) {
     width: 0;
     margin-left: calc(-1 * var(--gap));
     opacity: 0;
-    transition: width 220ms ease, margin 220ms ease, opacity 120ms ease, transform 120ms ease, color 150ms ease, visibility 0s linear 220ms;
+    scale: 0;
+    transition: width 220ms ease, margin 220ms ease, opacity 200ms ease-in, scale 220ms ease-in, transform 120ms ease, color 150ms ease, visibility 0s linear 220ms;
   }
 
   // Flex children would otherwise override the hidden attribute
@@ -533,7 +534,7 @@ const { copy } = Astro.props;
   }
 
   .chip.is-entering {
-    animation: chip-in 220ms ease;
+    animation: chip-in 340ms var(--spring-soft);
   }
 
   .chip.is-leaving {
@@ -612,7 +613,7 @@ const { copy } = Astro.props;
     top: calc(100% + 2rem);
     left: calc(-0.625rem - 2px);
     right: calc(-0.625rem - 2px);
-    animation: rise 140ms ease-out;
+    animation: rise 320ms var(--spring-soft);
   }
 
   .results-panel:has(> .results[hidden]) {
@@ -620,7 +621,7 @@ const { copy } = Astro.props;
   }
 
   @keyframes rise {
-    from { opacity: 0; transform: translateY(-0.25rem); }
+    from { opacity: 0; transform: translateY(-0.5rem) scale(0.98); }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -767,13 +768,13 @@ const { copy } = Astro.props;
       margin: auto 0;
     }
     .field > :global(.clear.ghost) {
-      scale: 0.6;
+      scale: 0;
     }
     .field > :global(.clear) {
-      transition: opacity 180ms ease, scale 220ms ease, transform 120ms ease, color 150ms ease, visibility 0s;
+      transition: opacity 180ms ease, scale 380ms var(--spring), transform 120ms ease, color 150ms ease, visibility 0s;
     }
     .field > :global(.clear.ghost) {
-      transition: opacity 120ms ease, scale 220ms ease, transform 120ms ease, color 150ms ease, visibility 0s linear 220ms;
+      transition: opacity 200ms ease-in, scale 220ms ease-in, transform 120ms ease, color 150ms ease, visibility 0s linear 220ms;
     }
     .query,
     .query:focus {

@@ -103,7 +103,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
         const v = lastT ? ((p - lastP) * dual.offsetWidth) / Math.max(now - lastT, 8) : 0;
         lastP = p;
         lastT = now;
-        tag.style.setProperty('--tilt', `${Math.max(-18, Math.min(18, -v * 14))}deg`);
+        tag.style.setProperty('--tilt', `${Math.max(-30, Math.min(30, -v * 24))}deg`);
         clearTimeout(settle);
         settle = window.setTimeout(() => {
           tag.style.setProperty('--tilt', '0deg');
@@ -285,7 +285,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
       var(--gradient-key);
     cursor: grab;
     pointer-events: auto;
-    transition: transform 120ms ease, box-shadow 120ms ease;
+    transition: transform 280ms var(--spring), box-shadow 120ms ease;
   }
 
   @mixin handle-lifted {
@@ -355,8 +355,8 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     transform-origin: 50% calc(100% + 0.2rem);
     transition:
       opacity 120ms ease,
-      translate 160ms ease-out,
-      rotate 480ms cubic-bezier(0.34, 1.8, 0.5, 1);
+      translate 320ms var(--spring),
+      rotate 560ms cubic-bezier(0.34, 2.2, 0.5, 1);
 
     &::after {
       content: '';
@@ -426,7 +426,7 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     flex-shrink: 0;
     place-items: center;
     width: var(--reset);
-    transition: width 220ms ease, margin 220ms ease, opacity 180ms ease;
+    transition: width 320ms var(--spring-soft), margin 320ms var(--spring-soft), opacity 180ms ease, scale 380ms var(--spring);
 
     > :global(.reset) {
       width: 100%;
@@ -438,7 +438,8 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     width: 0;
     margin-left: calc(-1 * var(--gap));
     opacity: 0;
-    transition: width 220ms ease 300ms, margin 220ms ease 300ms, opacity 120ms ease 300ms;
+    scale: 0;
+    transition: width 220ms ease 300ms, margin 220ms ease 300ms, opacity 200ms ease-in 300ms, scale 220ms ease-in 300ms;
   }
 
   .end :global(.reset) {

@@ -93,7 +93,7 @@ const type = rest.href ? undefined : 'button';
       linear-gradient(var(--cararra), var(--cararra)) padding-box,
       var(--gradient-forest) border-box;
     cursor: pointer;
-    transition: color 200ms ease, transform 320ms ease-out;
+    transition: color 200ms ease, transform 480ms var(--spring);
 
     &.has-icon {
       padding-left: 0.6rem;
@@ -118,6 +118,7 @@ const type = rest.href ? undefined : 'button';
     &.is-pressed {
       transform: translate(0.2rem, 0.2rem);
       transition-duration: 200ms, 140ms;
+      transition-timing-function: ease, ease-out;
     }
   }
 </style>

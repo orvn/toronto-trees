@@ -48,6 +48,8 @@
    );
    --gradient-fade: linear-gradient(90deg, color-mix(in srgb, var(--forest) 14%, transparent), transparent 85%);
    --hatch: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px 4px);
+   --spring: cubic-bezier(0.34, 1.9, 0.56, 1);
+   --spring-soft: cubic-bezier(0.34, 1.4, 0.64, 1);
 
 
    /* -------------------------------------------------------------------------

@@ -459,6 +459,27 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
       let currentPopup: maplibregl.Popup | null = null;
 
+      // Tilt pins transform-origin to tree's screen point to pivot
+      const springPopup = (popup: maplibregl.Popup) => {
+        const el = popup.getElement();
+        const pin = () => {
+          const { x, y } = map.project(popup.getLngLat());
+          el.style.transformOrigin = `${x}px ${y}px`;
+        };
+        pin();
+        map.on('move', pin);
+        el.addEventListener('animationend', () => map.off('move', pin), { once: true });
+        const remove = popup.remove.bind(popup);
+        popup.remove = () => {
+          if (el.classList.contains('is-leaving') || !el.isConnected) return remove();
+          pin();
+          map.on('move', pin);
+          el.classList.add('is-leaving');
+          el.addEventListener('animationend', () => { map.off('move', pin); remove(); }, { once: true });
+          return popup;
+        };
+      };
+
       const openTreePopup = (p: Record<string, any>, lngLat: [number, number]) => {
         currentPopup?.remove();
 
@@ -478,7 +499,9 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         leaf.width = 24;
         leaf.height = 24;
         common.appendChild(leaf);
-        common.appendChild(document.createTextNode(readCommon(p.COMMON_NAME)));
+        const name = document.createElement('span');
+        name.textContent = readCommon(p.COMMON_NAME);
+        common.appendChild(name);
         wrap.appendChild(common);
 
         if (botanicalName) {
@@ -536,6 +559,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
           .setDOMContent(wrap)
           .addTo(map);
         currentPopup = popup;
+        springPopup(popup);
 
         const key = treeKey('t', p);
         if (key) {
@@ -759,7 +783,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     width: auto;
     gap: 0.3rem;
     padding-right: 0.7rem;
-    transition: gap 200ms ease, padding-right 200ms ease;
+    transition: gap 320ms var(--spring-soft), padding-right 320ms var(--spring-soft);
   }
 
   :global(.maplibregl-ctrl-group button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon) {
@@ -776,7 +800,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     white-space: nowrap;
     max-width: 10rem;
     overflow: hidden;
-    transition: max-width 200ms ease, opacity 150ms ease;
+    transition: max-width 320ms var(--spring-soft), opacity 150ms ease;
   }
 
   /* Collapses to the bare icon once the feature has been used.
@@ -815,6 +839,30 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     box-shadow: 0 0.125rem 0.5rem rgb(0 0 0 / 0.35);
   }
 
+  :global(.tp) {
+    animation: tp-in 420ms var(--spring-soft) both;
+  }
+
+  :global(.tp.is-leaving) {
+    pointer-events: none;
+    animation: tp-out 200ms ease-in forwards;
+  }
+
+  @keyframes tp-in {
+    from { opacity: 0; scale: 0.6; rotate: -10deg; }
+  }
+
+  @keyframes tp-out {
+    to { opacity: 0; scale: 0.7; rotate: 8deg; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.tp) { animation-name: fade-in; animation-timing-function: ease; }
+    :global(.tp.is-leaving) { animation-name: fade-out; }
+    @keyframes fade-in { from { opacity: 0; } }
+    @keyframes fade-out { to { opacity: 0; } }
+  }
+
   :global(.tp .maplibregl-popup-content) {
     background: var(--cararra);
     color: var(--charred);
@@ -844,7 +892,7 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
 
   :global(.tp-common) {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.5rem;
     font-weight: 700;
     font-size: var(--text-base);
@@ -858,7 +906,6 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
     width: auto;
     flex-shrink: 0;
     display: block;
-    margin-top: 0.05rem;
   }
 
   :global(.tp-botanical-wrap) {

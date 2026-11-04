@@ -100,7 +100,7 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false, 
     border-radius: 0.375rem;
     background: none;
     color: var(--charred);
-    transition: transform 120ms ease, color 150ms ease;
+    transition: transform 320ms var(--spring), color 150ms ease;
   }
 
   .key::before {
@@ -120,6 +120,7 @@ const { label, size = 'sm', variant = 'disc', class: className, hidden = false, 
 
   .key:active {
     transform: translateY(2px);
+    transition-duration: 80ms, 150ms;
   }
 
   .key:active::before {
