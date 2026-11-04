@@ -86,10 +86,15 @@ const icons = { github: GithubIcon };
 
   .footer-nav ul {
     display: flex;
+    align-items: center;
     gap: 1.25rem;
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+
+  .footer-nav li {
+    display: flex;
   }
 
   .footer-nav a {
@@ -97,6 +102,13 @@ const icons = { github: GithubIcon };
     align-items: center;
     gap: 0.4rem;
     font-size: var(--text-sm);
+    line-height: 1;
+
+    :global(svg) {
+      flex-shrink: 0;
+      width: 1.15em;
+      height: 1.15em;
+    }
     color: var(--battleship);
     text-decoration: none;
     transition: color 200ms ease;
