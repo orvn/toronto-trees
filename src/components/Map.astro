@@ -614,6 +614,8 @@ const copy = loadFragment<{ geolocate_label: string; geolocate_out_of_bounds: st
         map.getCanvas().style.cursor = hit ? 'pointer' : '';
       });
       map.on('mouseleave', 'trees-circles', () => { map.getCanvas().style.cursor = ''; });
+
+      document.dispatchEvent(new CustomEvent('tt:map-ready'));
     });
   }
 

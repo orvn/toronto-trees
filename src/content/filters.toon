@@ -3,10 +3,8 @@ mode_trees: Trees
 mode_address: Address
 placeholder: Scientific or common name
 placeholder_address: Street or address
-placeholder_number: "No. {min} to {max}"
 clear_label: Clear search
 loading_label: Loading
-drop_street: Change street
 drop_tree: "Remove {name}"
 no_results: No matching trees
 no_street: No street by that name

@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import SEO from '../components/SEO.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Superfooter from '../components/Superfooter.astro';
 import '../styles/global.scss';
 
 interface Props {
@@ -38,6 +39,11 @@ const canonicalURL = Astro.site
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+        document.querySelector('meta[name="viewport"]')?.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+      }
+    </script>
 
     <SEO
       title={title}
@@ -69,7 +75,9 @@ const canonicalURL = Astro.site
       <slot />
     </main>
 
-    <Footer />
+    <Footer>
+      <Superfooter />
+    </Footer>
 
     <script>
       document.addEventListener("click", (e) => {

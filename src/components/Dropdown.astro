@@ -18,8 +18,18 @@ const current = options.find((o: { value: string }) => o.value === value) ?? opt
 <script>
   document.addEventListener('change', e => {
     const select = e.target as HTMLSelectElement;
-    const current = select.closest('.dropdown')?.querySelector('.current');
-    if (current) current.textContent = select.selectedOptions[0]?.text ?? '';
+    const root = select.closest<HTMLElement>('.dropdown');
+    const current = root?.querySelector('.current');
+    if (!root || !current) return;
+    const from = root.offsetWidth;
+    current.textContent = select.selectedOptions[0]?.text ?? '';
+    root.style.width = '';
+    const to = root.offsetWidth;
+    if (from === to) return;
+    root.style.width = `${from}px`;
+    root.offsetWidth;
+    root.style.width = `${to}px`;
+    root.addEventListener('transitionend', () => (root.style.width = ''), { once: true });
   });
 </script>
 
@@ -39,8 +49,14 @@ const current = options.find((o: { value: string }) => o.value === value) ?? opt
     font-size: var(--text-xs);
     font-weight: 500;
     color: var(--charred);
+    overflow: hidden;
     white-space: nowrap;
     cursor: pointer;
+    transition: width 220ms ease;
+  }
+
+  .current {
+    min-width: 0;
   }
 
   .dropdown:has(select:focus-visible) {

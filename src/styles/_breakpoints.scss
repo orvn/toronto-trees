@@ -10,3 +10,5 @@
 @mixin xxxl { @media (max-width: 96rem) { @content; } }      // 1536px
 
 @mixin touch { @media (pointer: coarse) { @content; } }
+
+@mixin compact { @media (max-width: 30rem), (max-height: 30rem) and (pointer: coarse) { @content; } }
