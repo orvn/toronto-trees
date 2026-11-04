@@ -77,6 +77,8 @@ const copy = loadFragment<Record<string, string>>('filters');
 </div>
 
 <script>
+  import { readFilterParams, writeRangeParams, writeSpeciesParams } from '../lib/params';
+
   // Each control reports its bounds and the bar merges them into one event to pass to map
   const RANGE_EVENT = 'tt:range-filter';
   // Wait for range control to settle before passing to map
@@ -88,13 +90,17 @@ const copy = loadFragment<Record<string, string>>('filters');
   const paintActive = () =>
     document.querySelector('.filters')?.classList.toggle('has-filters', rangeOn || speciesOn);
   document.addEventListener(RANGE_EVENT, e => {
-    rangeOn = Object.values((e as CustomEvent).detail ?? {}).some(v => v !== null);
+    const detail = (e as CustomEvent).detail ?? {};
+    rangeOn = Object.values(detail).some(v => v !== null);
     paintActive();
+    writeRangeParams(detail);
   });
   document.addEventListener('tt:genus-filter', e => {
     const { icon = null, picks = [] } = (e as CustomEvent).detail ?? {};
     speciesOn = Boolean(icon || picks.length);
     paintActive();
+    const trees = picks.map((p: { genus?: string; botanical?: string }) => (p.genus ?? p.botanical ?? '').toLowerCase()).filter(Boolean);
+    writeSpeciesParams(trees, trees.length ? null : icon);
   });
 
   document.addEventListener('astro:page-load', () => {
@@ -148,6 +154,30 @@ const copy = loadFragment<Record<string, string>>('filters');
         RANGE_SETTLE_MS
       );
     });
+
+    const { age, dbh } = readFilterParams();
+    const restore = dbh ? { name: 'dbh', range: dbh } : age ? { name: 'age', range: age } : null;
+    if (restore) {
+      requestAnimationFrame(() => {
+        if (restore.name === 'dbh') bar.querySelector<HTMLButtonElement>('.ranges .segmented .option[data-value="dbh"]')?.click();
+        const slider = bar.querySelector<HTMLElement>(`.range-slider[data-name="${restore.name}"]`);
+        const lo = slider?.querySelector<HTMLInputElement>('.lo');
+        const hi = slider?.querySelector<HTMLInputElement>('.hi');
+        if (!lo || !hi) return;
+        if (restore.range.min !== null) lo.value = String(restore.range.min);
+        if (restore.range.max !== null) hi.value = String(restore.range.max);
+        hi.dispatchEvent(new Event('input'));
+      });
+    }
+
+    const swap = new AbortController();
+    document.addEventListener('astro:before-swap', () => swap.abort(), { once: true });
+    document.addEventListener('tt:map-ready', () => {
+      if (Object.values(state).some(v => v !== null)) {
+        clearTimeout(timer);
+        document.dispatchEvent(new CustomEvent(RANGE_EVENT, { detail: { ...state } }));
+      }
+    }, { once: true, signal: swap.signal });
   });
 </script>
 

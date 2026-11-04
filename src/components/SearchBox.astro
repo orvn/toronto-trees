@@ -70,6 +70,7 @@ const { copy } = Astro.props;
     buildTreeIndex, loadStreets, searchTrees, searchStreets, parseAddress, interpolate, boundsOf,
     type TreeEntry, type Street,
   } from '../lib/search';
+  import { readFilterParams } from '../lib/params';
 
   const FILTER_EVENT = 'tt:genus-filter';
   const LOCATE_EVENT = 'tt:locate';
@@ -409,10 +410,20 @@ const { copy } = Astro.props;
     document.addEventListener(FILTER_EVENT, onFilter);
     document.addEventListener(LOCATE_DONE_EVENT, onLocateDone);
     document.addEventListener(MAP_BUSY_EVENT, onMapBusy);
+
+    chosen = readFilterParams().trees
+      .map(t => treeIndex.find(e => e.kind === 'genus' && e.genus === t) ?? treeIndex.find(e => e.kind === 'species' && e.botanical?.toLowerCase() === t))
+      .filter((e): e is TreeEntry => Boolean(e));
+    const onMapReady = () => {
+      if (chosen.length) dispatchFilter();
+    };
+    document.addEventListener('tt:map-ready', onMapReady);
+
     teardown = () => {
       document.removeEventListener(FILTER_EVENT, onFilter);
       document.removeEventListener(LOCATE_DONE_EVENT, onLocateDone);
       document.removeEventListener(MAP_BUSY_EVENT, onMapBusy);
+      document.removeEventListener('tt:map-ready', onMapReady);
     };
     paintChrome();
   }

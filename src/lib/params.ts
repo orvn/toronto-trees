@@ -57,3 +57,42 @@ export function readSpotlightParam() {
 export function writeSpotlightParam(key: string | null) {
   updateQuery(q => (key === null ? q.delete('spotlight') : q.set('spotlight', key)));
 }
+
+type Range = { min: number | null; max: number | null };
+type RangeState = Record<'ageMin' | 'ageMax' | 'dbhMin' | 'dbhMax', number | null>;
+
+const readRange = (q: URLSearchParams, key: string): Range | null => {
+  const m = /^(\d*)-(\d*)$/.exec(q.get(key) ?? '');
+  if (!m || (!m[1] && !m[2])) return null;
+  return { min: m[1] ? Number(m[1]) : null, max: m[2] ? Number(m[2]) : null };
+};
+
+export function readFilterParams() {
+  const q = new URLSearchParams(location.search);
+  return {
+    age: readRange(q, 'age'),
+    dbh: readRange(q, 'dbh'),
+    trees: q.getAll('tree').map(t => t.trim().toLowerCase()).filter(Boolean),
+    group: q.get('group'),
+  };
+}
+
+export function writeRangeParams(state: RangeState) {
+  updateQuery(q => {
+    for (const key of ['age', 'dbh'] as const) {
+      const min = state[`${key}Min`];
+      const max = state[`${key}Max`];
+      if (min === null && max === null) q.delete(key);
+      else q.set(key, `${min ?? ''}-${max ?? ''}`);
+    }
+  });
+}
+
+export function writeSpeciesParams(trees: string[], group: string | null) {
+  updateQuery(q => {
+    q.delete('tree');
+    for (const t of trees) q.append('tree', t);
+    if (group) q.set('group', group);
+    else q.delete('group');
+  });
+}

@@ -107,6 +107,8 @@ const fmt = (p: number) =>
 </section>
 
 <script>
+  import { readFilterParams } from '../lib/params';
+
   // Selection is broadcast not passed down, so Map.astro is independent of legend
   const FILTER_EVENT = 'tt:genus-filter';
 
@@ -229,9 +231,21 @@ const fmt = (p: number) =>
       }
     };
     document.addEventListener('keydown', onKeydown);
+
+    const { trees, group } = readFilterParams();
+    if (!trees.length && group && buttons.some(b => b.dataset.icon === group)) {
+      selected = group;
+      paint();
+    }
+    const onMapReady = () => {
+      if (selected !== null) apply();
+    };
+    document.addEventListener('tt:map-ready', onMapReady);
+
     teardown = () => {
       document.removeEventListener('keydown', onKeydown);
       document.removeEventListener(FILTER_EVENT, onFilter);
+      document.removeEventListener('tt:map-ready', onMapReady);
       observer.disconnect();
     };
   }
