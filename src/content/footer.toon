@@ -1,0 +1,4 @@
+credit: Made with City of Toronto Open Data.
+links[2]{label,href,icon,aria_label}:
+  Privacy,/privacy,null,null
+  Feedback,"https://github.com/orvn/toronto-trees/issues/new",github,Feedback on GitHub issues

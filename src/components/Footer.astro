@@ -1,34 +1,72 @@
 ---
+import { loadFragment } from '../lib/content';
 import GithubIcon from './GithubIcon.astro';
+
+const { credit, links } = loadFragment<{
+  credit: string;
+  links: { label: string; href: string; icon: string | null; aria_label: string | null }[];
+}>('footer');
+const icons = { github: GithubIcon };
 ---
 
 <footer class="site-footer" role="contentinfo">
-  <div class="footer-inner">
-    <p class="footer-copy">
-      Made with City of Toronto Open Data.
-      <a
-        class="gh-link"
-        href="https://github.com/orvn/toronto-trees"
-        target="_blank"
-        rel="noopener"
-        aria-label="Feedback on GitHub"
-      >
-        <span>Feedback</span>
-        <GithubIcon />
-      </a>
-    </p>
+  <div class="footer-card">
+    <slot />
+    <div class="footer-inner">
+    <p class="footer-copy">{credit}</p>
     <nav class="footer-nav" aria-label="Footer navigation">
       <ul role="list">
-        <li><a href="/privacy">Privacy</a></li>
+        {links.map(({ label, href, icon, aria_label }) => {
+          const Icon = icon && icons[icon as keyof typeof icons];
+          const external = href.startsWith('http');
+          return (
+            <li>
+              <a
+                href={href}
+                aria-label={aria_label ?? undefined}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener' : undefined}
+              >
+                <span>{label}</span>
+                {Icon && <Icon />}
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </nav>
+    </div>
   </div>
 </footer>
 
-<style>
+<style lang="scss">
+  @use '../styles/breakpoints' as *;
+  @use '../styles/panel' as *;
+
   .site-footer {
+    --inset: 1.5rem;
+    position: relative;
+    isolation: isolate;
+    margin-top: 0.5rem;
+    padding: 2.5rem calc(var(--gutter) + var(--inset)) 3rem;
     background-color: var(--cararra);
-    padding: 1.5rem var(--gutter);
+  }
+
+  .site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0 var(--gutter);
+    z-index: -1;
+    background: var(--gradient-forest);
+    mask-image: var(--hatch);
+  }
+
+  .footer-card {
+    @include panel;
+  }
+
+  .footer-card > :global(* + .footer-inner) {
+    border-top: 1px solid var(--porcelain);
   }
 
   .footer-inner {
@@ -37,28 +75,13 @@ import GithubIcon from './GithubIcon.astro';
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
+    padding: 1.25rem 1.75rem;
   }
 
   .footer-copy {
     font-size: var(--text-sm);
     color: var(--battleship);
     margin: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .gh-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--battleship);
-    text-decoration: none;
-    transition: color 200ms ease;
-  }
-
-  .gh-link:hover {
-    color: var(--forest);
   }
 
   .footer-nav ul {
@@ -70,6 +93,9 @@ import GithubIcon from './GithubIcon.astro';
   }
 
   .footer-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: var(--text-sm);
     color: var(--battleship);
     text-decoration: none;
@@ -78,5 +104,12 @@ import GithubIcon from './GithubIcon.astro';
 
   .footer-nav a:hover {
     color: var(--forest);
+  }
+
+  @include small {
+    .site-footer {
+      --inset: 0.75rem;
+      padding-block: 1.5rem 2rem;
+    }
   }
 </style>
