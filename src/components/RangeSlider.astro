@@ -93,8 +93,8 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
 
     // Dual handles can't cross one another
     const dual = root.querySelector<HTMLElement>('.dual')!;
-    // Interia based tilt
-      const swing = (tag: HTMLElement) => {
+    // Inertia based tilt
+    const swing = (tag: HTMLElement) => {
       let lastP = 0;
       let lastT = 0;
       let settle = 0;
@@ -356,7 +356,6 @@ const readoutChars = Math.max(...[anyText, underText, overText, betweenText].map
     transition:
       opacity 120ms ease,
       translate 160ms ease-out,
-      left 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
       rotate 480ms cubic-bezier(0.34, 1.8, 0.5, 1);
 
     &::after {
